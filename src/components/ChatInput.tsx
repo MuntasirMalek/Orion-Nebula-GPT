@@ -314,20 +314,20 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 {/* Popover Menu inside Input Bar */}
                 {isModelMenuOpen && onSelectModel && (
                   <div
-                    className={`absolute bottom-full mb-2 left-0 z-50 w-72 p-2.5 rounded-2xl shadow-2xl backdrop-blur-2xl border animate-in fade-in zoom-in-95 duration-150 ${
+                    className={`absolute bottom-full mb-2 left-0 z-50 w-72 max-h-[min(75vh,520px)] flex flex-col p-2.5 rounded-2xl shadow-2xl backdrop-blur-2xl border animate-in fade-in zoom-in-95 duration-150 ${
                       isDark
                         ? "bg-slate-950/95 border-slate-800 text-slate-100 shadow-black/80"
                         : "bg-white/95 border-white/95 text-slate-900 shadow-slate-950/20"
                     }`}
                   >
                     <div
-                      className={`px-2 py-1 mb-1 border-b text-xs font-bold uppercase tracking-wider ${
+                      className={`px-2 py-1 mb-1 border-b text-xs font-bold uppercase tracking-wider shrink-0 ${
                         isDark ? "border-slate-800 text-slate-400" : "border-slate-100 text-slate-500"
                       }`}
                     >
                       Switch Model
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-1 overflow-y-auto flex-1 pr-1 overscroll-contain">
                       {AVAILABLE_MODELS.map((model) => {
                         const isItemActive = model.id === selectedModel.id;
                         const isItemClaude = model.id.includes("claude");

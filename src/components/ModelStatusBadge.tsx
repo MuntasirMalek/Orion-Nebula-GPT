@@ -128,14 +128,14 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
         {/* Dropdown Menu */}
         {isOpen && (
           <div
-            className={`absolute top-full mt-2 left-0 z-50 w-80 p-3 rounded-2xl shadow-2xl backdrop-blur-2xl border transition-all duration-200 animate-in fade-in zoom-in-95 ${
+            className={`absolute top-full mt-2 left-0 z-50 w-84 max-h-[calc(100vh-100px)] flex flex-col p-3 rounded-2xl shadow-2xl backdrop-blur-2xl border transition-all duration-200 animate-in fade-in zoom-in-95 ${
               isDark
                 ? "bg-slate-950/95 border-slate-800 text-slate-100 shadow-black/80"
                 : "bg-white/95 border-white/95 text-slate-900 shadow-slate-950/20"
             }`}
           >
             <div
-              className={`flex items-center justify-between pb-2 mb-2 border-b text-xs ${
+              className={`flex items-center justify-between pb-2 mb-2 border-b text-xs shrink-0 ${
                 isDark ? "border-slate-800 text-slate-400" : "border-slate-100 text-slate-500"
               }`}
             >
@@ -148,7 +148,7 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
               </span>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 overflow-y-auto flex-1 pr-1 overscroll-contain">
               {AVAILABLE_MODELS.map((model) => {
                 const isSelected = model.id === selectedModel.id;
                 const isModelClaude = model.id.includes("claude");
