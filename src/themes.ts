@@ -85,7 +85,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     category: "Literary Folio",
     badge: "Press Folio",
     rootClass: "theme-stripe-press text-stone-900",
-    bgOverlay: "bg-stone-900/10",
+    bgOverlay: "",
     header: {
       container: "bg-[#fcfbf9]/90 backdrop-blur-2xl border-b border-[#e6e0d4] shadow-xs",
       brandText: "text-sm font-semibold tracking-tight text-stone-900 font-sans",
@@ -140,7 +140,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     category: "Quiet Luxury",
     badge: "Nordic Pure",
     rootClass: "theme-nordic-alabaster text-slate-800",
-    bgOverlay: "bg-white/15",
+    bgOverlay: "",
     header: {
       container: "bg-[#f8fafc]/85 backdrop-blur-2xl border-b border-slate-200/80 shadow-xs",
       brandText: "text-sm font-medium tracking-normal text-slate-900",
@@ -194,7 +194,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     category: "Swiss Modernism",
     badge: "Swiss Grid",
     rootClass: "theme-swiss-modern text-black",
-    bgOverlay: "bg-white/20",
+    bgOverlay: "",
     header: {
       container: "bg-white/95 backdrop-blur-2xl border-b-2 border-black shadow-xs",
       brandText: "text-sm font-black tracking-tight text-black uppercase font-mono",
@@ -249,7 +249,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     category: "Organic Zen",
     badge: "Washi Zen",
     rootClass: "theme-kyoto-paper text-stone-800",
-    bgOverlay: "bg-[#f5f2ea]/25",
+    bgOverlay: "",
     header: {
       container: "bg-[#f7f5ee]/90 backdrop-blur-2xl border-b border-[#dfd8ca] shadow-xs",
       brandText: "text-sm font-medium tracking-wide text-stone-900",
@@ -304,7 +304,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     category: "Luxe Optical Glass",
     badge: "Vision Glass",
     rootClass: "theme-vision-glass text-slate-900",
-    bgOverlay: "bg-white/10",
+    bgOverlay: "",
     header: {
       container: "bg-white/75 backdrop-blur-3xl border-b border-white/80 shadow-xs",
       brandText: "text-sm font-semibold tracking-tight text-slate-900",
@@ -358,7 +358,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     category: "Industrial Design",
     badge: "Bauhaus 1960",
     rootClass: "theme-bauhaus-ceramic text-neutral-800",
-    bgOverlay: "bg-[#f2f1ec]/20",
+    bgOverlay: "",
     header: {
       container: "bg-[#f6f5f0]/92 backdrop-blur-2xl border-b border-[#d8d5cb] shadow-xs",
       brandText: "text-sm font-bold tracking-tight text-neutral-900 font-mono",
@@ -413,7 +413,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     category: "Diplomatic Editorial",
     badge: "Dispatch London",
     rootClass: "theme-monocle-dispatch text-zinc-900",
-    bgOverlay: "bg-[#f8f5ee]/25",
+    bgOverlay: "",
     header: {
       container: "bg-[#fbf9f4]/90 backdrop-blur-2xl border-b border-[#ded7c6] shadow-xs",
       brandText: "text-sm font-serif font-bold tracking-wide text-zinc-900 uppercase",
@@ -468,7 +468,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     category: "Luminous Opal",
     badge: "Opaline Sheen",
     rootClass: "theme-prism-opaline text-slate-800",
-    bgOverlay: "bg-white/10",
+    bgOverlay: "",
     header: {
       container: "bg-white/85 backdrop-blur-3xl border-b border-indigo-100/90 shadow-[0_4px_20px_rgba(129,140,248,0.06)]",
       brandText: "text-sm font-semibold tracking-tight text-slate-900",
@@ -522,7 +522,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     category: "Historical Archive",
     badge: "Vellum Folio",
     rootClass: "theme-archival-vellum text-[#2a241e]",
-    bgOverlay: "bg-[#ebe4d2]/25",
+    bgOverlay: "",
     header: {
       container: "bg-[#fbf7ee]/90 backdrop-blur-2xl border-b border-[#dad0b8] shadow-xs",
       brandText: "text-sm font-serif font-bold tracking-wide text-[#2a241e]",
@@ -577,7 +577,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     category: "Developer Tool",
     badge: "Raycast Light",
     rootClass: "theme-raycast-pearl text-slate-900",
-    bgOverlay: "bg-slate-100/15",
+    bgOverlay: "",
     header: {
       container: "bg-slate-50/90 backdrop-blur-2xl border-b border-slate-200 shadow-xs",
       brandText: "text-sm font-semibold tracking-tight text-slate-900 flex items-center gap-1.5",
@@ -671,10 +671,12 @@ export const THEME_ALIASES: Record<string, ThemeId> = {
   "pearl": "raycast_pearl",
   "cyber": "raycast_pearl",
   "hud": "raycast_pearl",
+  "default": "raycast_pearl",
+  "adaptive": "raycast_pearl",
 };
 
 export const RESOLVE_THEME_ID = (key: string | null | undefined): ThemeId => {
-  if (!key) return "stripe_press";
+  if (!key) return "raycast_pearl";
   const normalized = key.toLowerCase().trim();
   if (THEME_ALIASES[normalized]) {
     return THEME_ALIASES[normalized];
@@ -682,5 +684,5 @@ export const RESOLVE_THEME_ID = (key: string | null | undefined): ThemeId => {
   if (THEMES[normalized as ThemeId]) {
     return normalized as ThemeId;
   }
-  return "stripe_press";
+  return "raycast_pearl";
 };

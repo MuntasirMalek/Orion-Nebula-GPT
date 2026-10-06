@@ -29,13 +29,41 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Theme selection state with URL query param support (?theme=1..10 or name)
+  // Default is permanently set to Variation 10: Raycast Pearl
   const [currentTheme, setCurrentTheme] = useState<ThemeId>(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       return RESOLVE_THEME_ID(params.get("theme"));
     }
-    return "stripe_press";
+    return "raycast_pearl";
   });
+
+  // Extra variation: Adaptive Canvas Framing
+  // When ON: Wallpaper fills the chat workspace when the sidebar is open, and auto-expands to full screen when sidebar is hidden
+  const [adaptiveFraming, setAdaptiveFraming] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const framingParam = params.get("framing");
+      if (framingParam === "adaptive") return true;
+      if (framingParam === "full") return false;
+      const saved = localStorage.getItem("orion_adaptive_framing");
+      if (saved !== null) return saved === "true";
+    }
+    return true; // Default to Adaptive Framing so the user sees it in action immediately
+  });
+
+  const handleToggleAdaptiveFraming = () => {
+    setAdaptiveFraming((prev) => {
+      const next = !prev;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("orion_adaptive_framing", String(next));
+        const url = new URL(window.location.href);
+        url.searchParams.set("framing", next ? "adaptive" : "full");
+        window.history.replaceState({}, "", url.toString());
+      }
+      return next;
+    });
+  };
 
   const handleThemeChange = (newTheme: ThemeId) => {
     setCurrentTheme(newTheme);
@@ -51,6 +79,9 @@ export default function App() {
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
       setCurrentTheme(RESOLVE_THEME_ID(params.get("theme")));
+      const framingParam = params.get("framing");
+      if (framingParam === "adaptive") setAdaptiveFraming(true);
+      if (framingParam === "full") setAdaptiveFraming(false);
     };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
@@ -68,20 +99,22 @@ export default function App() {
     checkWidth();
   }, []);
 
-  const activeThemeConfig = THEMES[currentTheme] || THEMES.stripe_press;
+  const activeThemeConfig = THEMES[currentTheme] || THEMES.raycast_pearl;
 
   return (
-    <div className={`relative flex h-screen h-[100dvh] w-screen overflow-hidden ${activeThemeConfig.rootClass} selection:bg-cyan-500/25 selection:text-cyan-950 transition-colors duration-300`}>
-      {/* Orion Nebula 4K Optical Background (Option 1: Balanced Center) */}
-      <WallpaperBackground />
+    <div className={`relative flex h-screen h-[100dvh] w-screen overflow-hidden ${activeThemeConfig.rootClass} selection:bg-indigo-500/25 selection:text-indigo-950 transition-colors duration-300`}>
+      {/* Orion Nebula 4K Optical Background (with Adaptive Framing & Crisp Optical Contrast) */}
+      <WallpaperBackground
+        isSidebarOpen={isSidebarOpen}
+        adaptiveFraming={adaptiveFraming}
+      />
 
-      {/* Theme specific ambient scrim */}
-      <div className={`pointer-events-none fixed inset-0 -z-10 transition-colors duration-500 ${activeThemeConfig.bgOverlay}`} />
-
-      {/* Theme Switcher Toolbar */}
+      {/* Theme Studio & Framing Toolbar */}
       <ThemeStudioToolbar
         currentTheme={currentTheme}
         onThemeChange={handleThemeChange}
+        adaptiveFraming={adaptiveFraming}
+        onToggleAdaptiveFraming={handleToggleAdaptiveFraming}
       />
 
       {/* Translucent Glass Sidebar - True Edge-to-Edge Continuity */}
