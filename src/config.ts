@@ -121,8 +121,8 @@ export function isModelUnlocked(modelId: string, effort?: string): boolean {
   );
 }
 
-// Fallback backend URL (Points to your live Netlify serverless proxy)
+// Fallback backend URL (Points to your live Cloudflare Worker proxy)
 export const DEFAULT_BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL || "https://ornate-eclair-dbdce0.netlify.app/api/chat";
+  import.meta.env.VITE_BACKEND_URL || "https://lucky-mud-5827.mohammedabdulmalek197811.workers.dev";
 
 export const DEFAULT_SYSTEM_PROMPT = "";

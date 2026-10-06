@@ -56,7 +56,13 @@ export function useChat() {
         reasoningEffort: "low",
       }));
     }
-    if (!settings.backendUrl || settings.backendUrl.includes("papaya-trifle")) {
+    if (
+      !settings.backendUrl ||
+      settings.backendUrl.includes("papaya-trifle") ||
+      settings.backendUrl.includes("ornate-eclair") ||
+      settings.backendUrl.includes("symphonious-lamington") ||
+      settings.backendUrl.includes("netlify.app")
+    ) {
       setSettings((prev) => ({
         ...prev,
         backendUrl: DEFAULT_BACKEND_URL,
