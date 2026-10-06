@@ -4,7 +4,7 @@ import { Sidebar } from "./components/Sidebar";
 import { ChatInterface } from "./components/ChatInterface";
 import { SettingsModal } from "./components/SettingsModal";
 import { WallpaperBackground } from "./components/WallpaperBackground";
-import { THEMES, ThemeId } from "./themes";
+import { THEMES, ThemeId, RESOLVE_THEME_ID } from "./themes";
 import { ThemeStudioToolbar } from "./components/ThemeStudioToolbar";
 
 export default function App() {
@@ -28,23 +28,21 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Theme selection state with URL query param support (?theme=observatory|cyber|editorial|hud)
+  // Theme selection state with URL query param support (?theme=1..10 or name)
   const [currentTheme, setCurrentTheme] = useState<ThemeId>(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
-      const themeParam = params.get("theme") as ThemeId;
-      if (themeParam && THEMES[themeParam]) {
-        return themeParam;
-      }
+      return RESOLVE_THEME_ID(params.get("theme"));
     }
-    return "observatory";
+    return "stripe_press";
   });
 
   const handleThemeChange = (newTheme: ThemeId) => {
     setCurrentTheme(newTheme);
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
-      url.searchParams.set("theme", newTheme);
+      const th = THEMES[newTheme];
+      url.searchParams.set("theme", th ? th.index.toString() : newTheme);
       window.history.replaceState({}, "", url.toString());
     }
   };
@@ -52,10 +50,7 @@ export default function App() {
   useEffect(() => {
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
-      const themeParam = params.get("theme") as ThemeId;
-      if (themeParam && THEMES[themeParam]) {
-        setCurrentTheme(themeParam);
-      }
+      setCurrentTheme(RESOLVE_THEME_ID(params.get("theme")));
     };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
@@ -73,7 +68,7 @@ export default function App() {
     checkWidth();
   }, []);
 
-  const activeThemeConfig = THEMES[currentTheme] || THEMES.observatory;
+  const activeThemeConfig = THEMES[currentTheme] || THEMES.stripe_press;
 
   return (
     <div className={`relative flex h-screen h-[100dvh] w-screen overflow-hidden ${activeThemeConfig.rootClass} selection:bg-cyan-500/25 selection:text-cyan-950 transition-colors duration-300`}>

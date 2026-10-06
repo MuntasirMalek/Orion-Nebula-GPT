@@ -29,7 +29,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   const selectedModel =
     AVAILABLE_MODELS.find((m) => m.id === currentModelId) || AVAILABLE_MODELS[0];
-  const isDark = theme?.id === "cyber" || theme?.id === "hud";
+  const isDark = false;
 
   // Auto-resize textarea based on input content
   useEffect(() => {
@@ -86,16 +86,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     <div className={`w-full mx-auto px-4 pb-4 md:pb-6 pt-2 ${theme ? theme.input.container : "max-w-4xl"}`}>
       <form onSubmit={handleSubmit} className="relative">
         <div className={`relative transition-all duration-300 ${wrapperClass}`}>
-          {/* Tactical HUD Corner Reticles (if HUD mode) */}
-          {theme?.id === "hud" && (
-            <>
-              <span className="absolute -top-1 -left-1 w-2.5 h-2.5 border-t border-l border-cyan-400 pointer-events-none" />
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 border-t border-r border-cyan-400 pointer-events-none" />
-              <span className="absolute -bottom-1 -left-1 w-2.5 h-2.5 border-b border-l border-cyan-400 pointer-events-none" />
-              <span className="absolute -bottom-1 -right-1 w-2.5 h-2.5 border-b border-r border-cyan-400 pointer-events-none" />
-            </>
-          )}
-
           {/* Textarea */}
           <textarea
             ref={textareaRef}

@@ -76,8 +76,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, theme, index 
             <div className="flex items-center gap-2">
               {/* Optional Editorial Entry Index */}
               {theme.message.entryNumberPrefix && (
-                <span className="text-xs font-mono font-semibold text-stone-500 uppercase tracking-widest">
-                  #{entryNumber} ·
+                <span className="text-xs font-mono font-semibold opacity-60 uppercase tracking-wider">
+                  [{theme.message.entryNumberPrefix}{entryNumber}]
                 </span>
               )}
 

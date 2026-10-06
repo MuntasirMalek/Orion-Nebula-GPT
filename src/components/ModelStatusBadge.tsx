@@ -35,8 +35,8 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
 
   const isClaude = selectedModel.id.includes("claude");
 
-  // Dynamic theme classes
-  const isDark = theme?.id === "cyber" || theme?.id === "hud";
+  // Dynamic theme classes (all 10 variations are light mode)
+  const isDark = false;
   const btnBase = theme ? theme.header.badge : "text-xs font-semibold text-slate-800 bg-white/80 hover:bg-white border border-white/90";
 
   return (

@@ -180,64 +180,167 @@ textarea {
 }
 
 /* =========================================================
-   THEME STYLES & TYPOGRAPHY COHESION
+   10 LIGHT-MODE THEME STYLES & TYPOGRAPHY COHESION
    ========================================================= */
 
-/* Variation 1: Observatory Glass */
-.theme-observatory {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
-}
-.theme-observatory .prose p,
-.theme-observatory .prose li {
-  color: #0f172a;
-}
-
-/* Variation 2: Cyber-Orbital Precision Dark */
-.theme-cyber {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
-  color-scheme: dark;
-}
-.theme-cyber .prose p,
-.theme-cyber .prose li {
-  color: #f1f5f9;
-}
-.theme-cyber .prose code {
-  color: #38bdf8;
-  background: rgba(14, 165, 233, 0.15);
-  border-color: rgba(14, 165, 233, 0.3);
-}
-
-/* Variation 3: Editorial Quartz Monograph */
-.theme-editorial {
+/* 1. Stripe Press Monograph */
+.theme-stripe-press {
   font-family: -apple-system, BlinkMacSystemFont, "Charter", "Georgia", "Cambria", serif;
 }
-.theme-editorial .prose p,
-.theme-editorial .prose li {
+.theme-stripe-press .prose p,
+.theme-stripe-press .prose li {
   color: #1c1917;
   font-size: 0.9375rem;
-  line-height: 1.8;
+  line-height: 1.85;
 }
-.theme-editorial .prose code {
-  color: #92400e;
-  background: rgba(180, 83, 9, 0.08);
-  border-color: rgba(180, 83, 9, 0.25);
+.theme-stripe-press .prose code {
+  color: #9a3412;
+  background: rgba(234, 88, 12, 0.08);
+  border-color: rgba(234, 88, 12, 0.25);
   font-family: "SF Mono", "Fira Code", monospace;
 }
 
-/* Variation 4: Aerospace HUD Telemetry */
-.theme-hud {
-  font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
-  color-scheme: dark;
+/* 2. Nordic Alabaster */
+.theme-nordic-alabaster {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
-.theme-hud .prose p,
-.theme-hud .prose li {
-  color: #a5f3fc;
-  font-family: "JetBrains Mono", "SF Mono", monospace;
-  letter-spacing: -0.01em;
+.theme-nordic-alabaster .prose p,
+.theme-nordic-alabaster .prose li {
+  color: #1e293b;
+  line-height: 1.75;
 }
-.theme-hud .prose code {
-  color: #67e8f9;
-  background: rgba(6, 182, 212, 0.18);
-  border-color: rgba(6, 182, 212, 0.4);
+.theme-nordic-alabaster .prose code {
+  color: #334155;
+  background: rgba(241, 245, 249, 0.8);
+  border-color: #cbd5e1;
 }
+
+/* 3. Swiss International Grid */
+.theme-swiss-modern {
+  font-family: "Helvetica Neue", "Arial", "Inter", sans-serif;
+}
+.theme-swiss-modern .prose p,
+.theme-swiss-modern .prose li {
+  color: #000000;
+  line-height: 1.65;
+  font-weight: 500;
+}
+.theme-swiss-modern .prose code {
+  color: #dc2626;
+  background: #f5f5f5;
+  border-color: #000000;
+  font-family: "SF Mono", monospace;
+}
+
+/* 4. Kyoto Botanical Washi */
+.theme-kyoto-paper {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+}
+.theme-kyoto-paper .prose p,
+.theme-kyoto-paper .prose li {
+  color: #292524;
+  line-height: 1.8;
+}
+.theme-kyoto-paper .prose code {
+  color: #2f3d26;
+  background: rgba(62, 79, 50, 0.08);
+  border-color: rgba(62, 79, 50, 0.25);
+  font-family: "SF Mono", monospace;
+}
+
+/* 5. Vision Alabaster Glass */
+.theme-vision-glass {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+}
+.theme-vision-glass .prose p,
+.theme-vision-glass .prose li {
+  color: #0f172a;
+  line-height: 1.75;
+}
+.theme-vision-glass .prose code {
+  color: #0369a1;
+  background: rgba(14, 165, 233, 0.08);
+  border-color: rgba(14, 165, 233, 0.25);
+}
+
+/* 6. Bauhaus Ceramic */
+.theme-bauhaus-ceramic {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+.theme-bauhaus-ceramic .prose p,
+.theme-bauhaus-ceramic .prose li {
+  color: #171717;
+  line-height: 1.75;
+}
+.theme-bauhaus-ceramic .prose code {
+  color: #1d4ed8;
+  background: rgba(29, 78, 216, 0.08);
+  border-color: rgba(29, 78, 216, 0.25);
+  font-family: "SF Mono", monospace;
+}
+
+/* 7. Monocle Global Dispatch */
+.theme-monocle-dispatch {
+  font-family: -apple-system, BlinkMacSystemFont, "Charter", "Georgia", serif;
+}
+.theme-monocle-dispatch .prose p,
+.theme-monocle-dispatch .prose li {
+  color: #18181b;
+  font-size: 0.9375rem;
+  line-height: 1.85;
+}
+.theme-monocle-dispatch .prose code {
+  color: #14532d;
+  background: rgba(20, 83, 45, 0.08);
+  border-color: rgba(20, 83, 45, 0.25);
+  font-family: "SF Mono", monospace;
+}
+
+/* 8. Prism Opaline */
+.theme-prism-opaline {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+}
+.theme-prism-opaline .prose p,
+.theme-prism-opaline .prose li {
+  color: #1e293b;
+  line-height: 1.75;
+}
+.theme-prism-opaline .prose code {
+  color: #6d28d9;
+  background: rgba(109, 40, 217, 0.08);
+  border-color: rgba(109, 40, 217, 0.25);
+}
+
+/* 9. Archival Museum Vellum */
+.theme-archival-vellum {
+  font-family: -apple-system, BlinkMacSystemFont, "Charter", "Georgia", "Cambria", serif;
+}
+.theme-archival-vellum .prose p,
+.theme-archival-vellum .prose li {
+  color: #2a241e;
+  font-size: 0.9375rem;
+  line-height: 1.85;
+}
+.theme-archival-vellum .prose code {
+  color: #78350f;
+  background: rgba(120, 53, 15, 0.08);
+  border-color: rgba(120, 53, 15, 0.25);
+  font-family: "SF Mono", monospace;
+}
+
+/* 10. Raycast Pearl */
+.theme-raycast-pearl {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+.theme-raycast-pearl .prose p,
+.theme-raycast-pearl .prose li {
+  color: #0f172a;
+  line-height: 1.7;
+}
+.theme-raycast-pearl .prose code {
+  color: #4338ca;
+  background: rgba(67, 56, 202, 0.08);
+  border-color: rgba(67, 56, 202, 0.25);
+}
+
 
