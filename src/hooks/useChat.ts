@@ -1,6 +1,6 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Message, ChatSession, AppSettings } from "../types";
-import { DEFAULT_BACKEND_URL, DEFAULT_SYSTEM_PROMPT, DEFAULT_MODEL_ID } from "../config";
+import { DEFAULT_BACKEND_URL, DEFAULT_SYSTEM_PROMPT, DEFAULT_MODEL_ID, AVAILABLE_MODELS } from "../config";
 import { useLocalStorage } from "./useLocalStorage";
 import { streamChatCompletion } from "../services/api";
 
@@ -15,6 +15,9 @@ export function useChat() {
     systemPrompt: DEFAULT_SYSTEM_PROMPT,
     autoScroll: true,
     selectedModel: DEFAULT_MODEL_ID,
+    maxContextMessages: 8,
+    reasoningEffort: "low",
+    sendKeyMode: "enter",
   });
 
   const [sessions, setSessions] = useLocalStorage<ChatSession[]>("astra_sessions_v1", (): ChatSession[] => {
@@ -37,6 +40,29 @@ export function useChat() {
 
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Auto-migrate legacy cached prompt and model to GPT-6 Astra Low default
+  useEffect(() => {
+    if (
+      settings.systemPrompt &&
+      settings.systemPrompt.includes("You are a premier frontier intelligence model")
+    ) {
+      setSettings((prev) => ({ ...prev, systemPrompt: "" }));
+    }
+    if (settings.selectedModel === "deepseek-v4-flash") {
+      setSettings((prev) => ({
+        ...prev,
+        selectedModel: "gpt-6-astra-low",
+        reasoningEffort: "low",
+      }));
+    }
+    if (!settings.backendUrl || settings.backendUrl.includes("papaya-trifle")) {
+      setSettings((prev) => ({
+        ...prev,
+        backendUrl: DEFAULT_BACKEND_URL,
+      }));
+    }
+  }, []);
 
   // Fallback to first session if current ID is invalid
   const currentSession =
@@ -148,15 +174,17 @@ export function useChat() {
   }, [currentSessionId, setSessions]);
 
   const sendMessage = useCallback(
-    async (text: string) => {
+    async (text: string, images?: string[]) => {
       const content = text.trim();
-      if (!content || isStreaming) return;
+      const hasImages = Array.isArray(images) && images.length > 0;
+      if ((!content && !hasImages) || isStreaming) return;
 
       const userMsg: Message = {
         id: generateId(),
         role: "user",
         content,
         timestamp: Date.now(),
+        ...(hasImages ? { images } : {}),
       };
 
       const assistantMsgId = generateId();
@@ -172,9 +200,13 @@ export function useChat() {
       let newTitle = currentSession.title;
       if (
         (currentSession.messages.length === 0 || currentSession.title === "New Conversation") &&
-        content.length > 0
+        (content.length > 0 || hasImages)
       ) {
-        newTitle = content.slice(0, 32).trim() + (content.length > 32 ? "..." : "");
+        if (content.length > 0) {
+          newTitle = content.slice(0, 32).trim() + (content.length > 32 ? "..." : "");
+        } else {
+          newTitle = "Vision Analysis";
+        }
       }
 
       // Append messages into session
@@ -222,6 +254,8 @@ export function useChat() {
           model: currentSession.model || settings.selectedModel || DEFAULT_MODEL_ID,
           systemPrompt: settings.systemPrompt,
           temperature: settings.temperature,
+          maxContextMessages: settings.maxContextMessages ?? 16,
+          reasoningEffort: settings.reasoningEffort || "medium",
           signal: abortController.signal,
           onChunk: (chunk: string) => {
             accumulatedText += chunk;
@@ -315,7 +349,13 @@ export function useChat() {
 
   const changeModel = useCallback(
     (newModelId: string) => {
-      setSettings((prev) => ({ ...prev, selectedModel: newModelId }));
+      const modelDef = AVAILABLE_MODELS.find((m) => m.id === newModelId);
+      const effort = modelDef?.defaultEffort || "medium";
+      setSettings((prev) => ({
+        ...prev,
+        selectedModel: newModelId,
+        reasoningEffort: modelDef?.defaultEffort ? effort : prev.reasoningEffort,
+      }));
       setSessions((prev) =>
         prev.map((s) => (s.id === currentSessionId ? { ...s, model: newModelId } : s))
       );

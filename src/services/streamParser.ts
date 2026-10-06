@@ -48,10 +48,8 @@ export async function* parseEventStream(
 
           try {
             const parsed = JSON.parse(data);
-            const deltaContent =
-              parsed.choices?.[0]?.delta?.content ??
-              parsed.choices?.[0]?.text ??
-              "";
+            const delta = parsed.choices?.[0]?.delta;
+            const deltaContent = delta?.content ?? parsed.choices?.[0]?.text ?? "";
 
             if (deltaContent) {
               yield deltaContent;
@@ -71,10 +69,9 @@ export async function* parseEventStream(
         if (data !== "[DONE]") {
           try {
             const parsed = JSON.parse(data);
-            const deltaContent =
-              parsed.choices?.[0]?.delta?.content ??
-              parsed.choices?.[0]?.text ??
-              "";
+            const delta = parsed.choices?.[0]?.delta;
+            const deltaContent = delta?.content ?? parsed.choices?.[0]?.text ?? "";
+
             if (deltaContent) {
               yield deltaContent;
             }

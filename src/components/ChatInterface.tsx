@@ -16,10 +16,13 @@ interface ChatInterfaceProps {
   isStreaming: boolean;
   currentModelId: string;
   onSelectModel: (modelId: string) => void;
-  onSendMessage: (text: string) => void;
+  reasoningEffort?: "low" | "medium" | "high";
+  onSelectReasoningEffort?: (effort: "low" | "medium" | "high") => void;
+  onSendMessage: (text: string, images?: string[]) => void;
   onStopStreaming: () => void;
   onToggleSidebar: () => void;
   onOpenSettings: () => void;
+  sendKeyMode?: "enter" | "cmd_enter";
   theme: ThemeConfig;
 }
 
@@ -28,10 +31,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   isStreaming,
   currentModelId,
   onSelectModel,
+  reasoningEffort = "medium",
+  onSelectReasoningEffort,
   onSendMessage,
   onStopStreaming,
   onToggleSidebar,
   onOpenSettings,
+  sendKeyMode = "enter",
   theme,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -164,6 +170,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         isStreaming={isStreaming}
         currentModelId={currentModelId}
         onSelectModel={onSelectModel}
+        reasoningEffort={reasoningEffort}
+        onSelectReasoningEffort={onSelectReasoningEffort}
+        sendKeyMode={sendKeyMode}
         theme={theme}
       />
     </div>

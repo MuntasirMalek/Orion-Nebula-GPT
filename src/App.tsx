@@ -5,6 +5,7 @@ import { ChatInterface } from "./components/ChatInterface";
 import { SettingsModal } from "./components/SettingsModal";
 import { WallpaperBackground } from "./components/WallpaperBackground";
 import { THEMES, ThemeId, RESOLVE_THEME_ID } from "./themes";
+import { DEFAULT_MODEL_ID } from "./config";
 
 export default function App() {
   const {
@@ -104,12 +105,17 @@ export default function App() {
         <ChatInterface
           messages={currentSession.messages}
           isStreaming={isStreaming}
-          currentModelId={currentSession.model || settings.selectedModel || "gpt-6-astra"}
+          currentModelId={currentSession.model || settings.selectedModel || DEFAULT_MODEL_ID}
           onSelectModel={changeModel}
+          reasoningEffort={settings.reasoningEffort || "medium"}
+          onSelectReasoningEffort={(effort) =>
+            setSettings((prev) => ({ ...prev, reasoningEffort: effort }))
+          }
           onSendMessage={sendMessage}
           onStopStreaming={stopStreaming}
           onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
           onOpenSettings={() => setIsSettingsOpen(true)}
+          sendKeyMode={settings.sendKeyMode || "enter"}
           theme={activeThemeConfig}
         />
       </main>

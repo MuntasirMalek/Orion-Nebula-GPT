@@ -5,7 +5,14 @@ import { Message } from "../types";
 import { ThemeConfig } from "../themes";
 import { AstraLogo } from "./AstraLogo";
 import { CodeBlock } from "./CodeBlock";
-import { Copy, Check, User, AlertCircle } from "lucide-react";
+import {
+  Copy,
+  Check,
+  User,
+  AlertCircle,
+  Maximize2,
+  X,
+} from "lucide-react";
 
 interface ChatMessageProps {
   message: Message;
@@ -14,9 +21,19 @@ interface ChatMessageProps {
   onRetry?: () => void;
 }
 
+// Clean response content by removing any internal <think> traces
+function cleanDisplayContent(raw: string): string {
+  if (!raw) return "";
+  return raw
+    .replace(/<think>[\s\S]*?<\/think>/gi, "")
+    .replace(/<think>[\s\S]*$/gi, "")
+    .trim();
+}
+
 const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, theme, index = 0 }) => {
   const isUser = message.role === "user";
   const [copied, setCopied] = useState(false);
+  const [zoomImage, setZoomImage] = useState<string | null>(null);
 
   const handleCopyMessage = async () => {
     try {
@@ -35,160 +52,209 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, theme, inde
 
   const entryNumber = String(index + 1).padStart(2, "0");
 
+  const displayContent = isUser ? message.content : cleanDisplayContent(message.content);
+
   return (
-    <div
-      className={`group relative flex w-full my-2 transition-all ${
-        isUser ? "justify-end" : "justify-start"
-      }`}
-      style={{ contentVisibility: "auto", containIntrinsicSize: "0 80px" }}
-    >
+    <>
       <div
-        className={`relative flex items-start gap-3.5 transition-all duration-300 ${
-          isUser ? theme.message.userContainer : theme.message.assistantContainer
+        className={`group relative flex w-full my-2 transition-all ${
+          isUser ? "justify-end" : "justify-start"
         }`}
+        style={{ contentVisibility: "auto", containIntrinsicSize: "0 80px" }}
       >
-        {/* HUD Corner Reticles (Only in HUD mode) */}
-        {theme.message.cornerBrackets && (
-          <>
-            <span className="absolute -top-1 -left-1 w-2.5 h-2.5 border-t border-l border-cyan-400 pointer-events-none" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 border-t border-r border-cyan-400 pointer-events-none" />
-            <span className="absolute -bottom-1 -left-1 w-2.5 h-2.5 border-b border-l border-cyan-400 pointer-events-none" />
-            <span className="absolute -bottom-1 -right-1 w-2.5 h-2.5 border-b border-r border-cyan-400 pointer-events-none" />
-          </>
-        )}
-
-        {/* Avatar */}
-        <div className="shrink-0 mt-0.5">
-          {isUser ? (
-            <div className={theme.message.userAvatar}>
-              <User className="w-4 h-4" />
-            </div>
-          ) : (
-            <div className={theme.message.assistantAvatar}>
-              <AstraLogo size={20} />
-            </div>
+        <div
+          className={`relative flex items-start gap-3.5 transition-all duration-300 ${
+            isUser ? theme.message.userContainer : theme.message.assistantContainer
+          }`}
+        >
+          {/* HUD Corner Reticles (Only in HUD mode) */}
+          {theme.message.cornerBrackets && (
+            <>
+              <span className="absolute -top-1 -left-1 w-2.5 h-2.5 border-t border-l border-cyan-400 pointer-events-none" />
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 border-t border-r border-cyan-400 pointer-events-none" />
+              <span className="absolute -bottom-1 -left-1 w-2.5 h-2.5 border-b border-l border-cyan-400 pointer-events-none" />
+              <span className="absolute -bottom-1 -right-1 w-2.5 h-2.5 border-b border-r border-cyan-400 pointer-events-none" />
+            </>
           )}
-        </div>
 
-        {/* Content Box */}
-        <div className="flex-1 min-w-0">
-          {/* Header with Name & Actions */}
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              {/* Optional Editorial Entry Index */}
-              {theme.message.entryNumberPrefix && (
-                <span className="text-xs font-mono font-semibold opacity-60 uppercase tracking-wider">
-                  [{theme.message.entryNumberPrefix}{entryNumber}]
-                </span>
-              )}
-
-              <span className={isUser ? theme.message.authorTextUser : theme.message.authorTextAssistant}>
-                {isUser ? "You" : "Orion Nebula GPT"}
-              </span>
-
-              {!isUser && (
-                <span className={theme.message.badge}>
-                  Frontier
-                </span>
-              )}
-
-              <span className={theme.message.timestamp}>{formattedTime}</span>
-            </div>
-
-            {/* Copy button */}
-            {message.content && !message.isStreaming && (
-              <button
-                onClick={handleCopyMessage}
-                className={theme.message.copyButton}
-                title="Copy message"
-              >
-                {copied ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-500" />
-                ) : (
-                  <Copy className="w-3.5 h-3.5" />
-                )}
-              </button>
-            )}
-          </div>
-
-          {/* Main Message Body */}
-          <div className={isUser ? theme.message.bodyTextUser : theme.message.bodyTextAssistant}>
+          {/* Avatar */}
+          <div className="shrink-0 mt-0.5">
             {isUser ? (
-              <div className="whitespace-pre-wrap">
-                {message.content}
+              <div className={theme.message.userAvatar}>
+                <User className="w-4 h-4" />
               </div>
             ) : (
-              <div className="prose max-w-none">
-                <Markdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    // Custom Code Block component override
-                    code(props) {
-                      const { className, children } = props;
-                      const match = /language-(\w+)/.exec(className || "");
-                      const isInline = !match && !String(children).includes("\n");
-
-                      if (isInline) {
-                        return (
-                          <code className="font-mono text-xs px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20">
-                            {children}
-                          </code>
-                        );
-                      }
-
-                      return (
-                        <CodeBlock
-                          language={match ? match[1] : "text"}
-                          code={String(children).replace(/\n$/, "")}
-                        />
-                      );
-                    },
-                    p({ children }) {
-                      return <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>;
-                    },
-                    ul({ children }) {
-                      return <ul className="list-disc pl-5 mb-3 space-y-1">{children}</ul>;
-                    },
-                    ol({ children }) {
-                      return <ol className="list-decimal pl-5 mb-3 space-y-1">{children}</ol>;
-                    },
-                    li({ children }) {
-                      return <li className="leading-relaxed">{children}</li>;
-                    },
-                    h1({ children }) {
-                      return <h1 className="text-lg font-bold tracking-tight mt-4 mb-2">{children}</h1>;
-                    },
-                    h2({ children }) {
-                      return <h2 className="text-base font-bold tracking-tight mt-3 mb-2">{children}</h2>;
-                    },
-                    h3({ children }) {
-                      return <h3 className="text-sm font-semibold tracking-tight mt-2 mb-1">{children}</h3>;
-                    },
-                    blockquote({ children }) {
-                      return (
-                        <blockquote className="border-l-2 border-cyan-500/50 pl-3 italic my-2 opacity-90">
-                          {children}
-                        </blockquote>
-                      );
-                    },
-                  }}
-                >
-                  {message.content}
-                </Markdown>
+              <div className={theme.message.assistantAvatar}>
+                <AstraLogo size={20} />
               </div>
             )}
           </div>
 
-          {/* Error Banner */}
-          {message.error && (
-            <div className="mt-2.5 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{message.error}</span>
+          {/* Content Box */}
+          <div className="flex-1 min-w-0">
+            {/* Header with Name & Actions */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                {/* Optional Editorial Entry Index */}
+                {theme.message.entryNumberPrefix && (
+                  <span className="text-xs font-mono font-semibold opacity-60 uppercase tracking-wider">
+                    [{theme.message.entryNumberPrefix}{entryNumber}]
+                  </span>
+                )}
+
+                <span className={isUser ? theme.message.authorTextUser : theme.message.authorTextAssistant}>
+                  {isUser ? "You" : "Orion Nebula GPT"}
+                </span>
+
+                {!isUser && (
+                  <span className={theme.message.badge}>
+                    Frontier
+                  </span>
+                )}
+
+                <span className={theme.message.timestamp}>{formattedTime}</span>
+              </div>
+
+              {/* Copy button */}
+              {message.content && !message.isStreaming && (
+                <button
+                  onClick={handleCopyMessage}
+                  className={theme.message.copyButton}
+                  title="Copy message"
+                >
+                  {copied ? (
+                    <Check className="w-3.5 h-3.5 text-emerald-500" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              )}
             </div>
-          )}
+
+            {/* User Attached Images (Multimodal Vision) */}
+            {message.images && message.images.length > 0 && (
+              <div className="flex flex-wrap gap-2.5 mb-3">
+                {message.images.map((imgUrl, i) => (
+                  <div
+                    key={i}
+                    onClick={() => setZoomImage(imgUrl)}
+                    className="group/img relative rounded-xl overflow-hidden border border-slate-200 shadow-xs cursor-pointer hover:shadow-md transition-all max-w-[240px]"
+                  >
+                    <img
+                      src={imgUrl}
+                      alt={`Attached picture ${i + 1}`}
+                      className="max-h-52 w-auto object-cover rounded-xl"
+                    />
+                    <div className="absolute inset-0 bg-slate-900/0 group-hover/img:bg-slate-900/25 transition-colors flex items-center justify-center">
+                      <Maximize2 className="w-5 h-5 text-white opacity-0 group-hover/img:opacity-100 drop-shadow-md transition-opacity" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+
+            {/* Main Message Body */}
+            <div className={isUser ? theme.message.bodyTextUser : theme.message.bodyTextAssistant}>
+              {isUser ? (
+                <div className="whitespace-pre-wrap">
+                  {displayContent}
+                </div>
+              ) : (
+                <div className="prose max-w-none">
+                  <Markdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      code(props) {
+                        const { className, children } = props;
+                        const match = /language-(\w+)/.exec(className || "");
+                        const isInline = !match && !String(children).includes("\n");
+
+                        if (isInline) {
+                          return (
+                            <code className="font-mono text-xs px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20">
+                              {children}
+                            </code>
+                          );
+                        }
+
+                        return (
+                          <CodeBlock
+                            language={match ? match[1] : "text"}
+                            code={String(children).replace(/\n$/, "")}
+                          />
+                        );
+                      },
+                      p({ children }) {
+                        return <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>;
+                      },
+                      ul({ children }) {
+                        return <ul className="list-disc pl-5 mb-3 space-y-1">{children}</ul>;
+                      },
+                      ol({ children }) {
+                        return <ol className="list-decimal pl-5 mb-3 space-y-1">{children}</ol>;
+                      },
+                      li({ children }) {
+                        return <li className="leading-relaxed">{children}</li>;
+                      },
+                      h1({ children }) {
+                        return <h1 className="text-lg font-bold tracking-tight mt-4 mb-2">{children}</h1>;
+                      },
+                      h2({ children }) {
+                        return <h2 className="text-base font-bold tracking-tight mt-3 mb-2">{children}</h2>;
+                      },
+                      h3({ children }) {
+                        return <h3 className="text-sm font-semibold tracking-tight mt-2 mb-1">{children}</h3>;
+                      },
+                      blockquote({ children }) {
+                        return (
+                          <blockquote className="border-l-2 border-cyan-500/50 pl-3 italic my-2 opacity-90">
+                            {children}
+                          </blockquote>
+                        );
+                      },
+                    }}
+                  >
+                    {displayContent}
+                  </Markdown>
+                </div>
+              )}
+            </div>
+
+            {/* Error Banner */}
+            {message.error && (
+              <div className="mt-2.5 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{message.error}</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Fullscreen Image Zoom Lightbox Modal */}
+      {zoomImage && (
+        <div
+          onClick={() => setZoomImage(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/75 backdrop-blur-md animate-in fade-in duration-150"
+        >
+          <div className="relative max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl bg-white/10 p-2 shadow-2xl">
+            <button
+              onClick={() => setZoomImage(null)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-slate-900/80 hover:bg-rose-600 text-white transition-colors shadow-lg z-10"
+              title="Close image"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <img
+              src={zoomImage}
+              alt="Enlarged attachment"
+              className="max-h-[85vh] max-w-full object-contain rounded-xl"
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
@@ -200,6 +266,7 @@ export const ChatMessage = React.memo<ChatMessageProps>(
       prev.message.content === next.message.content &&
       prev.message.isStreaming === next.message.isStreaming &&
       prev.message.error === next.message.error &&
+      (prev.message.images?.length || 0) === (next.message.images?.length || 0) &&
       prev.theme.id === next.theme.id &&
       prev.index === next.index
     );
