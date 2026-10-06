@@ -5,7 +5,6 @@ import { ChatInterface } from "./components/ChatInterface";
 import { SettingsModal } from "./components/SettingsModal";
 import { WallpaperBackground } from "./components/WallpaperBackground";
 import { THEMES, ThemeId, RESOLVE_THEME_ID } from "./themes";
-import { ThemeStudioToolbar } from "./components/ThemeStudioToolbar";
 
 export default function App() {
   const {
@@ -49,31 +48,8 @@ export default function App() {
       const saved = localStorage.getItem("orion_adaptive_framing");
       if (saved !== null) return saved === "true";
     }
-    return true; // Default to Adaptive Framing so the user sees it in action immediately
+    return true; // Default to Adaptive Framing so wallpaper fills chat screen when sidebar is on
   });
-
-  const handleToggleAdaptiveFraming = () => {
-    setAdaptiveFraming((prev) => {
-      const next = !prev;
-      if (typeof window !== "undefined") {
-        localStorage.setItem("orion_adaptive_framing", String(next));
-        const url = new URL(window.location.href);
-        url.searchParams.set("framing", next ? "adaptive" : "full");
-        window.history.replaceState({}, "", url.toString());
-      }
-      return next;
-    });
-  };
-
-  const handleThemeChange = (newTheme: ThemeId) => {
-    setCurrentTheme(newTheme);
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      const th = THEMES[newTheme];
-      url.searchParams.set("theme", th ? th.index.toString() : newTheme);
-      window.history.replaceState({}, "", url.toString());
-    }
-  };
 
   useEffect(() => {
     const handlePopState = () => {
@@ -107,14 +83,6 @@ export default function App() {
       <WallpaperBackground
         isSidebarOpen={isSidebarOpen}
         adaptiveFraming={adaptiveFraming}
-      />
-
-      {/* Theme Studio & Framing Toolbar */}
-      <ThemeStudioToolbar
-        currentTheme={currentTheme}
-        onThemeChange={handleThemeChange}
-        adaptiveFraming={adaptiveFraming}
-        onToggleAdaptiveFraming={handleToggleAdaptiveFraming}
       />
 
       {/* Translucent Glass Sidebar - True Edge-to-Edge Continuity */}
