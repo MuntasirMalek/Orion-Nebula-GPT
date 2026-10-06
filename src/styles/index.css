@@ -178,3 +178,66 @@ textarea {
   animation: cursorBlink 0.9s infinite ease-in-out;
   box-shadow: 0 0 8px rgba(8, 145, 178, 0.5);
 }
+
+/* =========================================================
+   THEME STYLES & TYPOGRAPHY COHESION
+   ========================================================= */
+
+/* Variation 1: Observatory Glass */
+.theme-observatory {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+}
+.theme-observatory .prose p,
+.theme-observatory .prose li {
+  color: #0f172a;
+}
+
+/* Variation 2: Cyber-Orbital Precision Dark */
+.theme-cyber {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+  color-scheme: dark;
+}
+.theme-cyber .prose p,
+.theme-cyber .prose li {
+  color: #f1f5f9;
+}
+.theme-cyber .prose code {
+  color: #38bdf8;
+  background: rgba(14, 165, 233, 0.15);
+  border-color: rgba(14, 165, 233, 0.3);
+}
+
+/* Variation 3: Editorial Quartz Monograph */
+.theme-editorial {
+  font-family: -apple-system, BlinkMacSystemFont, "Charter", "Georgia", "Cambria", serif;
+}
+.theme-editorial .prose p,
+.theme-editorial .prose li {
+  color: #1c1917;
+  font-size: 0.9375rem;
+  line-height: 1.8;
+}
+.theme-editorial .prose code {
+  color: #92400e;
+  background: rgba(180, 83, 9, 0.08);
+  border-color: rgba(180, 83, 9, 0.25);
+  font-family: "SF Mono", "Fira Code", monospace;
+}
+
+/* Variation 4: Aerospace HUD Telemetry */
+.theme-hud {
+  font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
+  color-scheme: dark;
+}
+.theme-hud .prose p,
+.theme-hud .prose li {
+  color: #a5f3fc;
+  font-family: "JetBrains Mono", "SF Mono", monospace;
+  letter-spacing: -0.01em;
+}
+.theme-hud .prose code {
+  color: #67e8f9;
+  background: rgba(6, 182, 212, 0.18);
+  border-color: rgba(6, 182, 212, 0.4);
+}
+

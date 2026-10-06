@@ -2,16 +2,19 @@ import React, { useState } from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Message } from "../types";
+import { ThemeConfig } from "../themes";
 import { AstraLogo } from "./AstraLogo";
 import { CodeBlock } from "./CodeBlock";
 import { Copy, Check, User, AlertCircle } from "lucide-react";
 
 interface ChatMessageProps {
   message: Message;
+  theme: ThemeConfig;
+  index?: number;
   onRetry?: () => void;
 }
 
-export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
+export const ChatMessage: React.FC<ChatMessageProps> = ({ message, theme, index = 0 }) => {
   const isUser = message.role === "user";
   const [copied, setCopied] = useState(false);
 
@@ -30,6 +33,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
     minute: "2-digit",
   });
 
+  const entryNumber = String(index + 1).padStart(2, "0");
+
   return (
     <div
       className={`group relative flex w-full my-2 transition-all ${
@@ -37,20 +42,28 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
       }`}
     >
       <div
-        className={`flex items-start gap-3.5 max-w-3xl rounded-2xl p-4 md:p-5 shadow-lg backdrop-blur-xl border ${
-          isUser
-            ? "bg-white/92 border-white/95 text-slate-900 shadow-slate-900/10"
-            : "bg-white/85 border-white/80 text-slate-900 shadow-slate-900/15 w-full"
+        className={`relative flex items-start gap-3.5 transition-all duration-300 ${
+          isUser ? theme.message.userContainer : theme.message.assistantContainer
         }`}
       >
+        {/* HUD Corner Reticles (Only in HUD mode) */}
+        {theme.message.cornerBrackets && (
+          <>
+            <span className="absolute -top-1 -left-1 w-2.5 h-2.5 border-t border-l border-cyan-400 pointer-events-none" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 border-t border-r border-cyan-400 pointer-events-none" />
+            <span className="absolute -bottom-1 -left-1 w-2.5 h-2.5 border-b border-l border-cyan-400 pointer-events-none" />
+            <span className="absolute -bottom-1 -right-1 w-2.5 h-2.5 border-b border-r border-cyan-400 pointer-events-none" />
+          </>
+        )}
+
         {/* Avatar */}
         <div className="shrink-0 mt-0.5">
           {isUser ? (
-            <div className="w-8 h-8 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-700 shadow-xs">
-              <User className="w-4 h-4 text-slate-700" />
+            <div className={theme.message.userAvatar}>
+              <User className="w-4 h-4" />
             </div>
           ) : (
-            <div className="w-8 h-8 rounded-full bg-white border border-cyan-200 flex items-center justify-center shadow-xs">
+            <div className={theme.message.assistantAvatar}>
               <AstraLogo size={20} />
             </div>
           )}
@@ -59,28 +72,37 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
         {/* Content Box */}
         <div className="flex-1 min-w-0">
           {/* Header with Name & Actions */}
-          <div className="flex items-center justify-between mb-1.5">
+          <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold tracking-wide text-slate-900">
+              {/* Optional Editorial Entry Index */}
+              {theme.message.entryNumberPrefix && (
+                <span className="text-xs font-mono font-semibold text-stone-500 uppercase tracking-widest">
+                  #{entryNumber} ·
+                </span>
+              )}
+
+              <span className={isUser ? theme.message.authorTextUser : theme.message.authorTextAssistant}>
                 {isUser ? "You" : "Orion Nebula GPT"}
               </span>
+
               {!isUser && (
-                <span className="text-[10px] text-cyan-900 font-mono font-bold bg-cyan-100/90 px-1.5 py-0.2 rounded border border-cyan-200">
+                <span className={theme.message.badge}>
                   Frontier
                 </span>
               )}
-              <span className="text-[11px] text-slate-500 font-medium">{formattedTime}</span>
+
+              <span className={theme.message.timestamp}>{formattedTime}</span>
             </div>
 
             {/* Copy button */}
             {message.content && !message.isStreaming && (
               <button
                 onClick={handleCopyMessage}
-                className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-slate-200/70 text-slate-500 hover:text-slate-900"
+                className={theme.message.copyButton}
                 title="Copy message"
               >
                 {copied ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  <Check className="w-3.5 h-3.5 text-emerald-500" />
                 ) : (
                   <Copy className="w-3.5 h-3.5" />
                 )}
@@ -89,13 +111,13 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
           </div>
 
           {/* Main Message Body */}
-          <div className="text-[15px] leading-relaxed text-slate-900 break-words font-medium">
+          <div className={isUser ? theme.message.bodyTextUser : theme.message.bodyTextAssistant}>
             {isUser ? (
-              <div className="whitespace-pre-wrap font-sans text-slate-900">
+              <div className="whitespace-pre-wrap">
                 {message.content}
               </div>
             ) : (
-              <div className="prose max-w-none text-slate-900">
+              <div className="prose max-w-none">
                 <Markdown
                   remarkPlugins={[remarkGfm]}
                   components={{
@@ -107,7 +129,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
 
                       if (isInline) {
                         return (
-                          <code className="text-cyan-900 bg-cyan-50 px-1.5 py-0.5 rounded text-[13px] border border-cyan-200 font-mono font-semibold">
+                          <code className="font-mono text-xs px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20">
                             {children}
                           </code>
                         );
@@ -115,45 +137,54 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
 
                       return (
                         <CodeBlock
-                          language={match ? match[1] : ""}
+                          language={match ? match[1] : "text"}
                           code={String(children).replace(/\n$/, "")}
                         />
                       );
                     },
-                    a(props) {
+                    p({ children }) {
+                      return <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>;
+                    },
+                    ul({ children }) {
+                      return <ul className="list-disc pl-5 mb-3 space-y-1">{children}</ul>;
+                    },
+                    ol({ children }) {
+                      return <ol className="list-decimal pl-5 mb-3 space-y-1">{children}</ol>;
+                    },
+                    li({ children }) {
+                      return <li className="leading-relaxed">{children}</li>;
+                    },
+                    h1({ children }) {
+                      return <h1 className="text-lg font-bold tracking-tight mt-4 mb-2">{children}</h1>;
+                    },
+                    h2({ children }) {
+                      return <h2 className="text-base font-bold tracking-tight mt-3 mb-2">{children}</h2>;
+                    },
+                    h3({ children }) {
+                      return <h3 className="text-sm font-semibold tracking-tight mt-2 mb-1">{children}</h3>;
+                    },
+                    blockquote({ children }) {
                       return (
-                        <a
-                          {...props}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-cyan-800 hover:text-cyan-950 underline underline-offset-4 font-bold"
-                        />
+                        <blockquote className="border-l-2 border-cyan-500/50 pl-3 italic my-2 opacity-90">
+                          {children}
+                        </blockquote>
                       );
                     },
                   }}
                 >
                   {message.content}
                 </Markdown>
-
-                {/* Pulsing cursor while streaming */}
-                {message.isStreaming && <span className="streaming-cursor" />}
-              </div>
-            )}
-
-            {/* Error Card */}
-            {message.error && (
-              <div className="mt-3 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-950 text-xs flex items-start gap-2.5 shadow-sm">
-                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <div className="font-bold text-rose-900 mb-0.5">Connection Error</div>
-                  <div className="text-rose-800 leading-relaxed font-medium">{message.error}</div>
-                  <div className="mt-2 text-[11px] text-slate-600">
-                    💡 Check that your backend proxy is running and configured with valid gateway credentials in Netlify or Settings.
-                  </div>
-                </div>
               </div>
             )}
           </div>
+
+          {/* Error Banner */}
+          {message.error && (
+            <div className="mt-2.5 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{message.error}</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

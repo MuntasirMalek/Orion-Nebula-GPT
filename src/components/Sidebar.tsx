@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ChatSession } from "../types";
+import { ThemeConfig } from "../themes";
 import { AstraLogo } from "./AstraLogo";
 import {
   Plus,
@@ -24,6 +25,7 @@ interface SidebarProps {
   onClearAll: () => void;
   onExport?: (format: "markdown" | "json") => void;
   onOpenSettings?: () => void;
+  theme?: ThemeConfig;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -36,6 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onDeleteSession,
   onRenameSession,
   onClearAll,
+  theme,
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
@@ -47,9 +50,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setEditTitle(session.title);
   };
 
-  const handleSaveRename = (id: string, e: React.MouseEvent | React.FormEvent) => {
+  const handleSaveRename = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    onRenameSession(id, editTitle);
+    if (editTitle.trim()) {
+      onRenameSession(id, editTitle.trim());
+    }
     setEditingId(null);
   };
 
@@ -62,196 +67,200 @@ export const Sidebar: React.FC<SidebarProps> = ({
     s.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const containerClass = theme ? theme.sidebar.container : "bg-white/40 backdrop-blur-2xl border-r border-white/30";
+  const headerClass = theme ? theme.sidebar.header : "border-b border-white/30 bg-white/20";
+  const brandClass = theme ? theme.sidebar.brandText : "text-sm font-bold tracking-wide text-slate-900";
+  const subClass = theme ? theme.sidebar.subText : "text-xs font-semibold text-cyan-900";
+  const newChatClass = theme ? theme.sidebar.newChatBtn : "bg-white/70 hover:bg-white/90 border border-white/80 text-slate-900 font-semibold text-xs";
+  const activeClass = theme ? theme.sidebar.sessionItemActive : "bg-white/90 border border-white/95 text-slate-950 font-semibold";
+  const inactiveClass = theme ? theme.sidebar.sessionItemInactive : "text-slate-700 hover:text-slate-950 hover:bg-white/40 font-medium";
+  const footerClass = theme ? theme.sidebar.footer : "border-t border-white/30 bg-white/20 text-xs text-slate-600";
+
   return (
     <>
-      {/* Mobile Backdrop Overlay */}
+      {/* Mobile Backdrop */}
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 md:hidden transition-opacity"
+          className="fixed inset-0 z-40 bg-slate-900/30 backdrop-blur-xs md:hidden animate-in fade-in duration-200"
         />
       )}
 
-      {/* Sidebar Container with Translucent Frosted Glass */}
+      {/* Sidebar Container */}
       <aside
-        className={`fixed md:relative inset-y-0 left-0 z-50 flex flex-col bg-white/40 backdrop-blur-2xl transition-all duration-300 ease-in-out shadow-2xl md:shadow-none overflow-hidden ${
+        className={`fixed md:relative inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 ease-in-out shadow-2xl md:shadow-none overflow-hidden ${containerClass} ${
           isOpen
-            ? "w-72 lg:w-80 translate-x-0 border-r border-white/30 opacity-100"
+            ? "w-72 lg:w-80 translate-x-0 opacity-100"
             : "w-0 -translate-x-full md:translate-x-0 border-r-0 pointer-events-none opacity-0"
         }`}
       >
         <div className="w-72 lg:w-80 flex flex-col h-full shrink-0">
           {/* Top Header */}
-          <div className="flex items-center justify-between px-4 h-14 md:h-16 border-b border-white/30 bg-white/20">
-          <div className="flex items-center gap-2.5">
-            <AstraLogo size={24} />
-            <div>
-              <span className="text-sm font-bold tracking-wide text-slate-900 drop-shadow-xs">Orion Nebula GPT</span>
-              <span className="block text-[10px] text-cyan-900 font-mono font-semibold">Frontier Intelligence</span>
+          <div className={`flex items-center justify-between px-4 h-14 md:h-16 ${headerClass}`}>
+            <div className="flex items-center gap-2.5">
+              <AstraLogo size={24} />
+              <div>
+                <span className={brandClass}>Orion Nebula GPT</span>
+                <span className={`block ${subClass}`}>Frontier Intelligence</span>
+              </div>
             </div>
+
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg opacity-70 hover:opacity-100 hover:bg-white/40 transition-colors md:flex hidden"
+              title="Collapse Sidebar"
+            >
+              <PanelLeftClose className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg opacity-70 hover:opacity-100 hover:bg-white/40 transition-colors md:hidden"
+              title="Close Menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-700 hover:text-slate-950 hover:bg-white/40 transition-colors md:flex hidden"
-            title="Collapse Sidebar"
-          >
-            <PanelLeftClose className="w-4 h-4" />
-          </button>
-
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-700 hover:text-slate-950 hover:bg-white/40 transition-colors md:hidden"
-            title="Close Menu"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Search Chats */}
-        {sessions.length > 3 && (
-          <div className="px-3 pt-3 pb-2">
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-500" />
-              <input
-                type="text"
-                placeholder="Search history..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white/60 border border-white/70 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-900 placeholder-slate-500 focus:outline-none focus:border-cyan-600 focus:bg-white"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Sessions List */}
-        <div className="flex-1 overflow-y-auto px-2 space-y-1 py-1">
-          <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-700">
-            Recent Conversations ({sessions.length})
+          {/* New Chat Button */}
+          <div className="p-3">
+            <button
+              onClick={() => {
+                onNewSession();
+                if (window.innerWidth < 768) onClose();
+              }}
+              className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-200 shadow-sm active:scale-[0.98] ${newChatClass}`}
+            >
+              <Plus className="w-4 h-4 text-cyan-600" />
+              <span>New Conversation</span>
+            </button>
           </div>
 
-          {filteredSessions.length === 0 ? (
-            <div className="p-4 text-center text-xs text-slate-600">
-              {searchQuery ? "No matching chats found." : "No saved chats yet."}
+          {/* Search Chats */}
+          {sessions.length > 3 && (
+            <div className="px-3 pb-2">
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 opacity-50" />
+                <input
+                  type="text"
+                  placeholder="Search history..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-white/40 dark:bg-slate-900/40 border border-white/50 dark:border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:border-cyan-500"
+                />
+              </div>
             </div>
-          ) : (
-            filteredSessions.map((session) => {
-              const isActive = session.id === currentSessionId;
-              const isEditing = editingId === session.id;
+          )}
 
-              return (
-                <div
-                  key={session.id}
-                  onClick={() => {
-                    onSelectSession(session.id);
-                    if (window.innerWidth < 768) onClose();
-                  }}
-                  className={`group relative flex items-center justify-between px-3 py-2.5 rounded-xl text-xs cursor-pointer transition-all duration-150 ${
-                    isActive
-                      ? "bg-white/85 text-slate-950 font-bold border border-cyan-500/50 shadow-md"
-                      : "text-slate-800 hover:text-slate-950 hover:bg-white/50 border border-transparent font-medium"
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                    <MessageSquare
-                      className={`w-3.5 h-3.5 shrink-0 ${
-                        isActive ? "text-cyan-700" : "text-slate-600 group-hover:text-slate-800"
-                      }`}
-                    />
+          {/* Sessions List */}
+          <div className="flex-1 overflow-y-auto px-2 space-y-1 py-1">
+            <div className="px-2 py-1 text-xs font-semibold uppercase tracking-wider opacity-60">
+              Recent Conversations ({sessions.length})
+            </div>
 
-                    {isEditing ? (
-                      <form
-                        onSubmit={(e) => handleSaveRename(session.id, e)}
-                        className="flex items-center gap-1 flex-1"
-                        onClick={(e) => e.stopPropagation()}
-                      >
+            {filteredSessions.length === 0 ? (
+              <div className="p-4 text-center text-xs opacity-60">
+                {searchQuery ? "No matching chats found." : "No saved chats yet."}
+              </div>
+            ) : (
+              filteredSessions.map((session) => {
+                const isActive = session.id === currentSessionId;
+                const isEditing = editingId === session.id;
+
+                return (
+                  <div
+                    key={session.id}
+                    onClick={() => {
+                      onSelectSession(session.id);
+                      if (window.innerWidth < 768) onClose();
+                    }}
+                    className={`group relative flex items-center justify-between p-2.5 rounded-xl text-xs cursor-pointer transition-all duration-150 ${
+                      isActive ? activeClass : inactiveClass
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <MessageSquare className="w-3.5 h-3.5 shrink-0 opacity-60" />
+                      {isEditing ? (
                         <input
                           type="text"
                           value={editTitle}
                           onChange={(e) => setEditTitle(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleSaveRename(session.id, e as any);
+                            if (e.key === "Escape") handleCancelRename(e as any);
+                          }}
                           autoFocus
-                          className="bg-white border border-cyan-500 rounded px-1.5 py-0.5 text-xs text-slate-900 focus:outline-none w-full"
+                          className="bg-white dark:bg-slate-900 border border-cyan-400 rounded px-1.5 py-0.5 text-xs focus:outline-none flex-1 min-w-0"
                         />
-                        <button
-                          type="submit"
-                          className="p-1 text-emerald-600 hover:text-emerald-700"
-                          title="Save"
-                        >
-                          <Check className="w-3 h-3" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleCancelRename}
-                          className="p-1 text-slate-600 hover:text-slate-800"
-                          title="Cancel"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </form>
-                    ) : (
-                      <span className="truncate">{session.title}</span>
-                    )}
-                  </div>
-
-                  {/* Actions on hover/active */}
-                  {!isEditing && (
-                    <div
-                      className={`flex items-center gap-1 shrink-0 ${
-                        isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                      } transition-opacity`}
-                    >
-                      <button
-                        onClick={(e) => handleStartRename(session, e)}
-                        className="p-1 rounded text-slate-600 hover:text-cyan-800 hover:bg-white/60"
-                        title="Rename"
-                      >
-                        <Edit2 className="w-3 h-3" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDeleteSession(session.id);
-                        }}
-                        className="p-1 rounded text-slate-600 hover:text-rose-600 hover:bg-white/60"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
+                      ) : (
+                        <span className="truncate">{session.title}</span>
+                      )}
                     </div>
-                  )}
-                </div>
-              );
-            })
-          )}
-        </div>
 
-        {/* Bottom Section: New Chat & Utility Controls */}
-        <div className="p-4 border-t border-white/30 bg-white/20 space-y-2 mt-auto">
-          <button
-            onClick={() => {
-              onNewSession();
-              if (window.innerWidth < 768) onClose();
-            }}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/70 hover:bg-white/90 border border-white/80 hover:border-cyan-400 text-slate-900 font-semibold text-xs tracking-wide transition-all duration-200 shadow-md active:scale-[0.98]"
-          >
-            <Plus className="w-4 h-4 text-cyan-700" />
-            <span>New Chat Session</span>
-          </button>
+                    {/* Actions */}
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
+                      {isEditing ? (
+                        <>
+                          <button
+                            onClick={(e) => handleSaveRename(session.id, e)}
+                            className="p-1 hover:text-emerald-500 rounded"
+                            title="Save"
+                          >
+                            <Check className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={handleCancelRename}
+                            className="p-1 hover:text-rose-500 rounded"
+                            title="Cancel"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={(e) => handleStartRename(session, e)}
+                            className="p-1 hover:opacity-100 rounded"
+                            title="Rename"
+                          >
+                            <Edit2 className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteSession(session.id);
+                            }}
+                            className="p-1 hover:text-rose-500 rounded"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
 
-          {sessions.length > 1 && (
-            <button
-              onClick={() => {
-                if (window.confirm("Are you sure you want to delete all saved conversations?")) {
-                  onClearAll();
-                }
-              }}
-              className="w-full text-center py-1.5 text-sm text-slate-700 hover:text-rose-600 font-semibold transition-colors cursor-pointer"
-            >
-              Clear all chat history
-            </button>
-          )}
+          {/* Footer */}
+          <div className={`p-3 flex items-center justify-between ${footerClass}`}>
+            <span className="text-xs opacity-75">
+              Zero-Server Client History
+            </span>
+            {sessions.length > 0 && (
+              <button
+                onClick={onClearAll}
+                className="text-xs text-rose-500 hover:text-rose-600 transition-colors"
+                title="Clear all stored sessions"
+              >
+                Clear all
+              </button>
+            )}
+          </div>
         </div>
-      </div>
       </aside>
     </>
   );

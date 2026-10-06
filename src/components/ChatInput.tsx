@@ -1,14 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
-import { AVAILABLE_MODELS } from "../config";
 import { ArrowUp, Square, Sparkles, ChevronUp, Check } from "lucide-react";
+import { AVAILABLE_MODELS } from "../config";
+import { ThemeConfig } from "../themes";
 
 interface ChatInputProps {
-  onSendMessage: (text: string) => void;
+  onSendMessage: (content: string) => void;
   onStopStreaming: () => void;
   isStreaming: boolean;
   disabled?: boolean;
   currentModelId?: string;
   onSelectModel?: (modelId: string) => void;
+  theme?: ThemeConfig;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({
@@ -18,6 +20,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   disabled = false,
   currentModelId = "gpt-6-astra",
   onSelectModel,
+  theme,
 }) => {
   const [text, setText] = useState("");
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
@@ -26,8 +29,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   const selectedModel =
     AVAILABLE_MODELS.find((m) => m.id === currentModelId) || AVAILABLE_MODELS[0];
-
-  const isClaude = selectedModel.id.includes("claude");
+  const isDark = theme?.id === "cyber" || theme?.id === "hud";
 
   // Auto-resize textarea based on input content
   useEffect(() => {
@@ -73,18 +75,28 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  return (
-    <div className="w-full max-w-4xl mx-auto px-4 pb-4 md:pb-6 pt-2">
-      <form onSubmit={handleSubmit} className="relative">
-        <div className="relative rounded-2xl bg-white/85 backdrop-blur-2xl border border-white/95 focus-within:border-cyan-500/80 shadow-2xl shadow-slate-900/10 transition-all duration-300 focus-within:shadow-[0_0_25px_rgba(6,182,212,0.2)]">
-          {/* Subtle top ambient accent line */}
-          <div
-            className={`absolute top-0 left-6 right-6 h-[1px] bg-gradient-to-r from-transparent ${
-              isClaude ? "via-amber-500/40" : "via-cyan-500/40"
-            } to-transparent`}
-          />
+  const wrapperClass = theme ? theme.input.wrapper : "rounded-2xl bg-white/85 backdrop-blur-2xl border border-white/95 focus-within:border-cyan-500/80 shadow-2xl shadow-slate-900/10";
+  const textareaClass = theme ? theme.input.textarea : "text-sm text-slate-900 placeholder-slate-400";
+  const modelPillClass = theme ? theme.input.modelPill : "text-xs font-semibold text-slate-700 bg-slate-100/80 border border-slate-200 rounded-xl px-2.5 py-1.5";
+  const sendBtnClass = theme ? theme.input.sendButton : "bg-cyan-600 hover:bg-cyan-700 text-white p-2.5 rounded-xl shadow-xs";
+  const stopBtnClass = theme ? theme.input.stopButton : "bg-rose-500 hover:bg-rose-600 text-white p-2.5 rounded-xl shadow-xs";
+  const hintClass = theme ? theme.input.keyboardHint : "text-xs text-slate-500";
 
-          {/* Textarea - Clean, No Scrollbar Slider */}
+  return (
+    <div className={`w-full mx-auto px-4 pb-4 md:pb-6 pt-2 ${theme ? theme.input.container : "max-w-4xl"}`}>
+      <form onSubmit={handleSubmit} className="relative">
+        <div className={`relative transition-all duration-300 ${wrapperClass}`}>
+          {/* Tactical HUD Corner Reticles (if HUD mode) */}
+          {theme?.id === "hud" && (
+            <>
+              <span className="absolute -top-1 -left-1 w-2.5 h-2.5 border-t border-l border-cyan-400 pointer-events-none" />
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 border-t border-r border-cyan-400 pointer-events-none" />
+              <span className="absolute -bottom-1 -left-1 w-2.5 h-2.5 border-b border-l border-cyan-400 pointer-events-none" />
+              <span className="absolute -bottom-1 -right-1 w-2.5 h-2.5 border-b border-r border-cyan-400 pointer-events-none" />
+            </>
+          )}
+
+          {/* Textarea */}
           <textarea
             ref={textareaRef}
             value={text}
@@ -93,7 +105,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             placeholder={`Message ${selectedModel.name}...`}
             rows={1}
             disabled={disabled}
-            className="w-full resize-none bg-transparent pt-4 pb-12 pl-4 pr-14 text-[15px] leading-relaxed text-slate-900 placeholder-slate-400 focus:outline-none min-h-[58px] max-h-[220px] font-medium overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            className={`w-full resize-none bg-transparent pt-4 pb-12 pl-4 pr-14 leading-relaxed focus:outline-none min-h-[58px] max-h-[220px] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${textareaClass}`}
           />
 
           {/* Action Row */}
@@ -103,33 +115,37 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               <button
                 type="button"
                 onClick={() => setIsModelMenuOpen(!isModelMenuOpen)}
-                className={`group flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border transition-all duration-150 cursor-pointer shadow-xs active:scale-95 ${
-                  isClaude
-                    ? "bg-amber-100 hover:bg-amber-200/80 text-amber-950 border-amber-300"
-                    : "bg-cyan-100 hover:bg-cyan-200/80 text-cyan-950 border-cyan-300"
-                }`}
+                className={`group flex items-center gap-1.5 transition-all duration-150 cursor-pointer active:scale-95 ${modelPillClass}`}
                 title="Click to switch frontier model"
               >
-                <Sparkles
-                  className={`w-3 h-3 ${isClaude ? "text-amber-600" : "text-cyan-700"}`}
-                />
+                <Sparkles className="w-3.5 h-3.5 opacity-80" />
                 <span>{selectedModel.name}</span>
                 <ChevronUp
-                  className={`w-3 h-3 text-slate-500 transition-transform duration-150 ${
+                  className={`w-3.5 h-3.5 opacity-60 transition-transform duration-150 ${
                     isModelMenuOpen ? "rotate-180" : ""
                   }`}
                 />
               </button>
 
-              <span className="hidden sm:inline text-[10px] text-slate-500 font-medium">
+              <span className={`hidden sm:inline ${hintClass}`}>
                 Shift + Enter for newline
               </span>
 
               {/* Popover Menu inside Input Bar */}
               {isModelMenuOpen && onSelectModel && (
-                <div className="absolute bottom-full mb-2 left-0 z-50 w-72 p-2 rounded-2xl bg-white/95 backdrop-blur-2xl border border-white/95 shadow-2xl shadow-slate-950/20 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="px-2 py-1 mb-1 border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                    Switch Active Model
+                <div
+                  className={`absolute bottom-full mb-2 left-0 z-50 w-72 p-2.5 rounded-2xl shadow-2xl backdrop-blur-2xl border animate-in fade-in zoom-in-95 duration-150 ${
+                    isDark
+                      ? "bg-slate-950/95 border-slate-800 text-slate-100 shadow-black/80"
+                      : "bg-white/95 border-white/95 text-slate-900 shadow-slate-950/20"
+                  }`}
+                >
+                  <div
+                    className={`px-2 py-1 mb-1 border-b text-xs font-bold uppercase tracking-wider ${
+                      isDark ? "border-slate-800 text-slate-400" : "border-slate-100 text-slate-500"
+                    }`}
+                  >
+                    Switch Model
                   </div>
                   <div className="space-y-1">
                     {AVAILABLE_MODELS.map((model) => {
@@ -144,33 +160,27 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                             onSelectModel(model.id);
                             setIsModelMenuOpen(false);
                           }}
-                          className={`w-full text-left p-2.5 rounded-xl transition-all border flex items-start justify-between gap-2 ${
+                          className={`w-full text-left p-2.5 rounded-xl transition-all duration-150 border flex items-center justify-between gap-2 ${
                             isItemActive
-                              ? isItemClaude
+                              ? isDark
+                                ? isItemClaude
+                                  ? "bg-amber-950/60 border-amber-500/80"
+                                  : "bg-cyan-950/60 border-cyan-500/80"
+                                : isItemClaude
                                 ? "bg-amber-50 border-amber-300"
                                 : "bg-cyan-50 border-cyan-300"
-                              : "bg-white/60 hover:bg-white border-transparent hover:border-slate-200"
+                              : isDark
+                              ? "bg-transparent hover:bg-slate-900 border-transparent text-slate-300"
+                              : "bg-transparent hover:bg-slate-100/70 border-transparent text-slate-700"
                           }`}
                         >
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-0.5">
-                              <span className="text-xs font-bold text-slate-900 truncate">
-                                {model.name}
-                              </span>
-                              {isItemActive && (
-                                <Check className="w-3.5 h-3.5 text-cyan-700 shrink-0" />
-                              )}
-                            </div>
-                            <span
-                              className={`inline-block text-[9px] font-bold px-1.5 py-0.2 rounded-full border ${
-                                isItemClaude
-                                  ? "bg-amber-100 text-amber-950 border-amber-300"
-                                  : "bg-cyan-100 text-cyan-950 border-cyan-300"
-                              }`}
-                            >
-                              {model.tag}
-                            </span>
+                          <div className="space-y-0.5">
+                            <div className="text-xs font-semibold">{model.name}</div>
+                            <div className="text-[11px] opacity-75">{model.tag}</div>
                           </div>
+                          {isItemActive && (
+                            <Check className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
+                          )}
                         </button>
                       );
                     })}
@@ -179,31 +189,25 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               )}
             </div>
 
-            {/* Send / Stop button */}
-            <div className="pointer-events-auto">
+            {/* Send / Stop Generation Button */}
+            <div className="pointer-events-auto flex items-center gap-1.5">
               {isStreaming ? (
                 <button
                   type="button"
                   onClick={onStopStreaming}
-                  className="flex items-center justify-center w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-all duration-150 active:scale-95 shadow-sm"
+                  className={stopBtnClass}
                   title="Stop generating"
                 >
-                  <Square className="w-3.5 h-3.5 fill-current" />
+                  <Square className="w-4 h-4 fill-current" />
                 </button>
               ) : (
                 <button
                   type="submit"
                   disabled={!text.trim() || disabled}
-                  className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 active:scale-95 ${
-                    text.trim() && !disabled
-                      ? isClaude
-                        ? "bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/30 cursor-pointer hover:opacity-95"
-                        : "bg-gradient-to-br from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-600/30 cursor-pointer hover:opacity-95"
-                      : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
-                  }`}
-                  title="Send prompt"
+                  className={`${sendBtnClass} disabled:opacity-30 disabled:pointer-events-none`}
+                  title="Send message"
                 >
-                  <ArrowUp className="w-4 h-4 stroke-[2.5]" />
+                  <ArrowUp className="w-4 h-4" />
                 </button>
               )}
             </div>

@@ -6,7 +6,12 @@ A fast, responsive, and elegant static web client powered by frontier models (Op
 
 ## Key Features
 
-- **Hubble 4K Cosmic Wallpaper:** Pristine optical crop from the Hubble 2006 Orion Nebula mosaic, rendered in native 4K with frosted glass cards and light mode aesthetics.
+- **Hubble 4K Cosmic Wallpaper:** Pristine optical crop from the Hubble 2006 Orion Nebula mosaic, rendered in native 4K with frosted glass cards and optical light clarity.
+- **4 Distinct Portfolio Design Themes (Interactive Theme Studio):**
+  - **1. Observatory Glass:** Apple Vision Pro / Liquid Light frosted glass with pristine optical translucency.
+  - **2. Cyber-Orbital:** Linear, Raycast, and Obsidian-inspired precision dark mode with obsidian borders and cyan laser accents.
+  - **3. Editorial Quartz:** Stripe Press and intellectual monograph serif folio with warm stone aesthetics.
+  - **4. Aerospace HUD:** SpaceX Dragon and interstellar cockpit telemetry with tactical cyan glow and terminal telemetry.
 - **Frontier Model Support:** 
   - **GPT-6 Astra** (`OpenAI Most Powerful Model`)
   - **Claude Opus 5.5** (`Claude Most Powerful Model`)
@@ -62,9 +67,8 @@ The static bundle will be generated into `dist/`. Assets use relative path resol
 1. Create a repository on GitHub (e.g. `orion-nebula-gpt`).
 2. Push this `frontend` directory to GitHub:
    ```bash
-   git init
    git add .
-   git commit -m "Initial commit: Orion Nebula GPT"
+   git commit -m "Launch Orion Nebula GPT with 4 portfolio themes"
    git branch -M main
    git remote add origin https://github.com/<YOUR_USERNAME>/<YOUR_REPO>.git
    git push -u origin main
@@ -81,8 +85,8 @@ Alternatively, push the pre-built `dist/` folder to a `gh-pages` branch or selec
 
 ## Backend Proxy Endpoint
 
-To connect to your Netlify serverless proxy, enter your Netlify URL in the app's Settings:
+The default verified serverless proxy is configured to:
 ```
-https://cool-palmier-9f4ae5.netlify.app/api/chat
+https://papaya-trifle-e337c3.netlify.app/api/chat
 ```
-Or set it as the default in `src/config.ts`.
+You can also override this URL at runtime via the in-app Settings modal.

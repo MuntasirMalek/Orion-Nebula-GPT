@@ -1,17 +1,20 @@
 import React, { useState, useRef, useEffect } from "react";
 import { AVAILABLE_MODELS } from "../config";
+import { ThemeConfig } from "../themes";
 import { ChevronDown, Check, Sparkles, Cpu } from "lucide-react";
 
 interface ModelStatusBadgeProps {
   currentModelId?: string;
   onSelectModel: (modelId: string) => void;
   isStreaming?: boolean;
+  theme?: ThemeConfig;
 }
 
 export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
   currentModelId = "gpt-6-astra",
   onSelectModel,
   isStreaming = false,
+  theme,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -32,13 +35,17 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
 
   const isClaude = selectedModel.id.includes("claude");
 
+  // Dynamic theme classes
+  const isDark = theme?.id === "cyber" || theme?.id === "hud";
+  const btnBase = theme ? theme.header.badge : "text-xs font-semibold text-slate-800 bg-white/80 hover:bg-white border border-white/90";
+
   return (
     <div ref={containerRef} className="relative inline-flex items-center">
       {/* Trigger Button */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 hover:bg-white border border-white/90 hover:border-cyan-400 transition-all duration-200 cursor-pointer shadow-xs active:scale-98"
+        className={`group flex items-center gap-2 px-3 py-1.5 transition-all duration-200 cursor-pointer shadow-xs active:scale-98 ${btnBase}`}
         aria-label="Select AI Model"
       >
         {/* Pulsing online status indicator */}
@@ -64,23 +71,27 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
         </span>
 
         {/* Current Model Name */}
-        <span className="text-xs font-bold tracking-wide text-slate-900">
+        <span className="text-xs font-bold tracking-wide">
           {selectedModel.name}
         </span>
 
         {/* Tag Pill */}
         <span
-          className={`hidden sm:inline-flex items-center text-[10px] tracking-tight font-bold px-2 py-0.5 rounded-full border ${
+          className={`hidden sm:inline-flex items-center text-xs tracking-tight font-semibold px-2 py-0.5 rounded-full border ${
             isClaude
-              ? "bg-amber-100 text-amber-900 border-amber-300"
-              : "bg-cyan-100 text-cyan-900 border-cyan-300"
+              ? isDark
+                ? "bg-amber-950/80 text-amber-300 border-amber-700/60"
+                : "bg-amber-100/90 text-amber-900 border-amber-300"
+              : isDark
+              ? "bg-cyan-950/80 text-cyan-300 border-cyan-700/60"
+              : "bg-cyan-100/90 text-cyan-900 border-cyan-300"
           }`}
         >
           {selectedModel.tag}
         </span>
 
         <ChevronDown
-          className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${
+          className={`w-3.5 h-3.5 opacity-60 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
           }`}
         />
@@ -88,13 +99,33 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
 
       {/* Model Selection Dropdown Menu */}
       {isOpen && (
-        <div className="absolute top-full mt-2 left-0 sm:left-auto sm:right-0 z-50 w-72 sm:w-80 p-2.5 rounded-2xl bg-white/95 backdrop-blur-2xl border border-white/95 shadow-2xl shadow-slate-950/20 animate-in fade-in zoom-in-95 duration-150">
-          <div className="px-2 py-1.5 mb-1.5 border-b border-slate-100 flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-              <Cpu className="w-3.5 h-3.5 text-cyan-700" />
-              <span>Frontier Intelligence Models</span>
+        <div
+          className={`absolute top-full mt-2 left-0 sm:left-auto sm:right-0 z-50 w-72 sm:w-80 p-3 rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl border ${
+            isDark
+              ? "bg-slate-950/95 border-slate-800 text-slate-100 shadow-black/80"
+              : "bg-white/95 border-white/95 text-slate-900 shadow-slate-950/20"
+          }`}
+        >
+          <div
+            className={`px-2 py-1.5 mb-2 border-b flex items-center justify-between ${
+              isDark ? "border-slate-800" : "border-slate-100"
+            }`}
+          >
+            <span
+              className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${
+                isDark ? "text-slate-400" : "text-slate-600"
+              }`}
+            >
+              <Cpu className="w-3.5 h-3.5 text-cyan-500" />
+              <span>Frontier Models</span>
             </span>
-            <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+            <span
+              className={`text-xs font-mono px-2 py-0.5 rounded border ${
+                isDark
+                  ? "text-emerald-400 bg-emerald-950/80 border-emerald-800/80"
+                  : "text-emerald-800 bg-emerald-50 border-emerald-200"
+              }`}
+            >
               Active
             </span>
           </div>
@@ -113,28 +144,38 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
                   }}
                   className={`w-full text-left p-3 rounded-xl transition-all duration-150 border flex items-start justify-between gap-3 ${
                     isSelected
-                      ? isModelClaude
+                      ? isDark
+                        ? isModelClaude
+                          ? "bg-amber-950/60 border-amber-500/80 shadow-xs"
+                          : "bg-cyan-950/60 border-cyan-500/80 shadow-xs"
+                        : isModelClaude
                         ? "bg-amber-50/90 border-amber-400/80 shadow-xs"
                         : "bg-cyan-50/90 border-cyan-400/80 shadow-xs"
+                      : isDark
+                      ? "bg-slate-900/40 hover:bg-slate-900/80 border-transparent hover:border-slate-850"
                       : "bg-white/60 hover:bg-white border-transparent hover:border-slate-200"
                   }`}
                 >
-                  <div className="space-y-1 flex-1">
+                  <div className="space-y-1.5 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-slate-900">
+                      <span className="text-xs font-bold">
                         {model.name}
                       </span>
                       {isSelected && (
-                        <Check className="w-3.5 h-3.5 text-cyan-700 shrink-0" />
+                        <Check className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
                       )}
                     </div>
 
                     {/* Most Powerful Model Tag Badge */}
                     <div>
                       <span
-                        className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                        className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full border ${
                           isModelClaude
-                            ? "bg-amber-100 text-amber-950 border-amber-300"
+                            ? isDark
+                              ? "bg-amber-950/80 text-amber-300 border-amber-700/60"
+                              : "bg-amber-100 text-amber-950 border-amber-300"
+                            : isDark
+                            ? "bg-cyan-950/80 text-cyan-300 border-cyan-700/60"
                             : "bg-cyan-100 text-cyan-950 border-cyan-300"
                         }`}
                       >
@@ -142,12 +183,20 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
                       </span>
                     </div>
 
-                    <p className="text-[11px] text-slate-600 leading-snug">
+                    <p
+                      className={`text-xs leading-relaxed ${
+                        isDark ? "text-slate-400" : "text-slate-600"
+                      }`}
+                    >
                       {model.description}
                     </p>
 
-                    <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-mono pt-0.5">
-                      <Sparkles className="w-3 h-3 text-cyan-600" />
+                    <div
+                      className={`flex items-center gap-1.5 text-xs font-mono pt-0.5 ${
+                        isDark ? "text-slate-500" : "text-slate-500"
+                      }`}
+                    >
+                      <Sparkles className="w-3 h-3 text-cyan-500" />
                       <span>{model.contextWindow}</span>
                     </div>
                   </div>
@@ -156,8 +205,12 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
             })}
           </div>
 
-          <div className="mt-2 pt-2 border-t border-slate-100 px-2 text-[10px] text-slate-500 leading-relaxed">
-            Requests are authenticated securely by your private serverless proxy.
+          <div
+            className={`mt-2.5 pt-2 border-t px-2 text-xs leading-relaxed ${
+              isDark ? "border-slate-800 text-slate-500" : "border-slate-100 text-slate-500"
+            }`}
+          >
+            Authenticated securely by your Netlify serverless proxy.
           </div>
         </div>
       )}

@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Message } from "../types";
+import { ThemeConfig } from "../themes";
 import { AstraLogo } from "./AstraLogo";
 import { ModelStatusBadge } from "./ModelStatusBadge";
 import { ChatMessage } from "./ChatMessage";
@@ -19,6 +20,7 @@ interface ChatInterfaceProps {
   onStopStreaming: () => void;
   onToggleSidebar: () => void;
   onOpenSettings: () => void;
+  theme: ThemeConfig;
 }
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({
@@ -30,6 +32,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   onStopStreaming,
   onToggleSidebar,
   onOpenSettings,
+  theme,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const bottomAnchorRef = useRef<HTMLDivElement>(null);
@@ -65,12 +68,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   return (
     <div className="relative flex flex-col flex-1 h-full min-w-0 bg-transparent overflow-hidden">
-      {/* Top Bar Header - Translucent Glass */}
-      <header className="sticky top-0 z-30 flex items-center justify-between px-4 md:px-6 h-14 md:h-16 bg-white/30 backdrop-blur-xl border-b border-white/30 shadow-xs">
+      {/* Top Bar Header */}
+      <header className={`sticky top-0 z-30 flex items-center justify-between px-4 md:px-6 h-14 md:h-16 transition-colors duration-300 ${theme.header.container}`}>
         <div className="flex items-center gap-3">
           <button
             onClick={onToggleSidebar}
-            className="p-2 rounded-xl text-slate-800 hover:text-slate-950 hover:bg-white/40 transition-colors active:scale-95"
+            className={theme.header.button}
             title="Toggle Sidebar"
           >
             <Menu className="w-5 h-5" />
@@ -79,15 +82,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           <div className="flex items-center gap-2.5">
             <AstraLogo size={24} />
             <div className="flex items-center gap-2">
-              <span className="font-bold text-sm tracking-wide text-slate-900 drop-shadow-xs">
+              <span className={theme.header.brandText}>
                 Orion Nebula GPT
               </span>
-              <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-slate-400" />
+              <span className="hidden sm:inline-block w-1 h-1 rounded-full opacity-40 bg-current" />
               <div className="hidden sm:flex items-center">
                 <ModelStatusBadge
                   currentModelId={currentModelId}
                   onSelectModel={onSelectModel}
                   isStreaming={isStreaming}
+                  theme={theme}
                 />
               </div>
             </div>
@@ -102,15 +106,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               currentModelId={currentModelId}
               onSelectModel={onSelectModel}
               isStreaming={isStreaming}
+              theme={theme}
             />
           </div>
 
           <button
             onClick={onOpenSettings}
-            className="p-2 rounded-xl text-black hover:bg-white/50 border border-transparent hover:border-white/40 transition-all duration-150 active:scale-95"
+            className={theme.header.button}
             title="Settings"
           >
-            <SettingsIcon className="w-5 h-5 text-black stroke-[2.2]" />
+            <SettingsIcon className="w-4 h-4" />
           </button>
         </div>
       </header>
@@ -122,13 +127,18 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         className="flex-1 overflow-y-auto overflow-x-hidden relative flex flex-col"
       >
         {messages.length === 0 ? (
-          /* Empty State: Center card removed as requested. Full unobstructed view of the wallpaper! */
+          /* Empty State: Full unobstructed view of the wallpaper */
           <div className="flex-1" />
         ) : (
           /* Active Chat Messages Stream */
           <div className="flex-1 py-6 px-4 max-w-4xl mx-auto w-full space-y-4">
-            {messages.map((message) => (
-              <ChatMessage key={message.id} message={message} />
+            {messages.map((message, idx) => (
+              <ChatMessage
+                key={message.id}
+                message={message}
+                theme={theme}
+                index={idx}
+              />
             ))}
             <div ref={bottomAnchorRef} className="h-4" />
           </div>
@@ -139,7 +149,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       {showScrollBottom && (
         <button
           onClick={scrollToBottom}
-          className="absolute bottom-24 right-6 z-20 flex items-center justify-center p-2.5 rounded-full bg-white/90 backdrop-blur-md border border-white text-cyan-800 hover:text-cyan-950 hover:bg-white transition-all duration-200 shadow-xl active:scale-95"
+          className="absolute bottom-24 right-6 z-20 flex items-center justify-center p-2.5 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-white/50 text-cyan-600 dark:text-cyan-400 shadow-xl active:scale-95 transition-all"
           title="Scroll to bottom"
         >
           <ChevronDown className="w-4 h-4 animate-bounce" />
@@ -153,6 +163,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         isStreaming={isStreaming}
         currentModelId={currentModelId}
         onSelectModel={onSelectModel}
+        theme={theme}
       />
     </div>
   );
