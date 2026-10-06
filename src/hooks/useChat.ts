@@ -193,6 +193,7 @@ export function useChat() {
         content: "",
         timestamp: Date.now(),
         isStreaming: true,
+        model: settings.selectedModel,
       };
 
       // Auto title session from first user message if title is default

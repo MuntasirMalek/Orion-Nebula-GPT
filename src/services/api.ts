@@ -148,12 +148,19 @@ export async function streamChatCompletion({
     let errorMessage = `Orion Proxy returned HTTP ${response.status}`;
     try {
       const errJson = await response.json();
-      errorMessage =
-        errJson.error ||
-        errJson.message ||
-        errJson.msg ||
-        errJson.details?.msg ||
-        errorMessage;
+      if (errJson) {
+        if (typeof errJson.error === "object" && errJson.error?.message) {
+          errorMessage = errJson.error.message;
+        } else if (typeof errJson.error === "string") {
+          errorMessage = errJson.error;
+        } else if (errJson.message) {
+          errorMessage = errJson.message;
+        } else if (errJson.msg) {
+          errorMessage = errJson.msg;
+        } else if (errJson.details?.msg) {
+          errorMessage = errJson.details.msg;
+        }
+      }
     } catch {
       try {
         const text = await response.text();

@@ -6,6 +6,7 @@ export interface Message {
   images?: string[]; // Array of base64 data URLs for multimodal vision support
   isStreaming?: boolean;
   error?: string;
+  model?: string;
 }
 
 export interface ChatSession {
