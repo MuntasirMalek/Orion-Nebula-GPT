@@ -52,6 +52,8 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, theme, inde
 
   const entryNumber = String(index + 1).padStart(2, "0");
 
+  const thinkMatch = /<think>([\s\S]*?)(?:<\/think>|$)/i.exec(message.content);
+  const thinkingContent = thinkMatch ? thinkMatch[1].trim() : "";
   const displayContent = isUser ? message.content : cleanDisplayContent(message.content);
 
   return (
@@ -162,61 +164,92 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, theme, inde
                 </div>
               ) : (
                 <div className="prose max-w-none">
-                  <Markdown
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                      code(props) {
-                        const { className, children } = props;
-                        const match = /language-(\w+)/.exec(className || "");
-                        const isInline = !match && !String(children).includes("\n");
+                  {/* Thought Process Accordion */}
+                  {thinkingContent && (
+                    <div className="not-prose mb-3 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50/80 dark:bg-slate-800/50 p-2.5 text-xs transition-all shadow-xs">
+                      <details className="group" open={!displayContent}>
+                        <summary className="cursor-pointer font-mono font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 select-none flex items-center justify-between">
+                          <span className="flex items-center gap-1.5">
+                            <span className="text-emerald-500">🧠</span>
+                            <span>Thought Process</span>
+                          </span>
+                          <span className="text-[10px] text-slate-400 group-open:hidden uppercase font-semibold">Show reasoning</span>
+                        </summary>
+                        <div className="mt-2 pl-3 border-l-2 border-emerald-400/60 font-mono text-[11px] leading-relaxed whitespace-pre-wrap text-slate-600 dark:text-slate-300 max-h-60 overflow-y-auto">
+                          {thinkingContent}
+                        </div>
+                      </details>
+                    </div>
+                  )}
 
-                        if (isInline) {
+                  {/* Thinking Pulse Indicator while waiting for initial text */}
+                  {message.isStreaming && !displayContent && (
+                    <div className="not-prose flex items-center gap-2 py-1 px-3 rounded-xl bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-slate-600 dark:text-slate-300 text-xs font-mono w-fit animate-pulse my-1 shadow-xs">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                      </span>
+                      <span className="tracking-wider uppercase font-semibold text-[11px]">Thinking...</span>
+                    </div>
+                  )}
+
+                  {displayContent && (
+                    <Markdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        code(props) {
+                          const { className, children } = props;
+                          const match = /language-(\w+)/.exec(className || "");
+                          const isInline = !match && !String(children).includes("\n");
+
+                          if (isInline) {
+                            return (
+                              <code className="font-mono text-xs px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20">
+                                {children}
+                              </code>
+                            );
+                          }
+
                           return (
-                            <code className="font-mono text-xs px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20">
-                              {children}
-                            </code>
+                            <CodeBlock
+                              language={match ? match[1] : "text"}
+                              code={String(children).replace(/\n$/, "")}
+                            />
                           );
-                        }
-
-                        return (
-                          <CodeBlock
-                            language={match ? match[1] : "text"}
-                            code={String(children).replace(/\n$/, "")}
-                          />
-                        );
-                      },
-                      p({ children }) {
-                        return <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>;
-                      },
-                      ul({ children }) {
-                        return <ul className="list-disc pl-5 mb-3 space-y-1">{children}</ul>;
-                      },
-                      ol({ children }) {
-                        return <ol className="list-decimal pl-5 mb-3 space-y-1">{children}</ol>;
-                      },
-                      li({ children }) {
-                        return <li className="leading-relaxed">{children}</li>;
-                      },
-                      h1({ children }) {
-                        return <h1 className="text-lg font-bold tracking-tight mt-4 mb-2">{children}</h1>;
-                      },
-                      h2({ children }) {
-                        return <h2 className="text-base font-bold tracking-tight mt-3 mb-2">{children}</h2>;
-                      },
-                      h3({ children }) {
-                        return <h3 className="text-sm font-semibold tracking-tight mt-2 mb-1">{children}</h3>;
-                      },
-                      blockquote({ children }) {
-                        return (
-                          <blockquote className="border-l-2 border-cyan-500/50 pl-3 italic my-2 opacity-90">
-                            {children}
-                          </blockquote>
-                        );
-                      },
-                    }}
-                  >
-                    {displayContent}
-                  </Markdown>
+                        },
+                        p({ children }) {
+                          return <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>;
+                        },
+                        ul({ children }) {
+                          return <ul className="list-disc pl-5 mb-3 space-y-1">{children}</ul>;
+                        },
+                        ol({ children }) {
+                          return <ol className="list-decimal pl-5 mb-3 space-y-1">{children}</ol>;
+                        },
+                        li({ children }) {
+                          return <li className="leading-relaxed">{children}</li>;
+                        },
+                        h1({ children }) {
+                          return <h1 className="text-lg font-bold tracking-tight mt-4 mb-2">{children}</h1>;
+                        },
+                        h2({ children }) {
+                          return <h2 className="text-base font-bold tracking-tight mt-3 mb-2">{children}</h2>;
+                        },
+                        h3({ children }) {
+                          return <h3 className="text-sm font-semibold tracking-tight mt-2 mb-1">{children}</h3>;
+                        },
+                        blockquote({ children }) {
+                          return (
+                            <blockquote className="border-l-2 border-cyan-500/50 pl-3 italic my-2 opacity-90">
+                              {children}
+                            </blockquote>
+                          );
+                        },
+                      }}
+                    >
+                      {displayContent}
+                    </Markdown>
+                  )}
                 </div>
               )}
             </div>
