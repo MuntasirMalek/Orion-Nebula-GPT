@@ -36,7 +36,7 @@ export const DEFAULT_MODEL_ID = "gpt-6-astra";
 
 // Fallback backend URL (Points to your live Netlify serverless proxy)
 export const DEFAULT_BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL || "https://cool-palmier-9f4ae5.netlify.app/api/chat";
+  import.meta.env.VITE_BACKEND_URL || "https://lovely-pika-48d182.netlify.app/api/chat";
 
 export const DEFAULT_SYSTEM_PROMPT =
   "You are a premier frontier intelligence model. You provide rigorous, deeply structured, and clear analyses with precision engineering and high-order cognitive synthesis.";

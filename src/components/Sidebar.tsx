@@ -108,23 +108,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
 
-        {/* Action: New Chat */}
-        <div className="p-3">
-          <button
-            onClick={() => {
-              onNewSession();
-              if (window.innerWidth < 768) onClose();
-            }}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/70 hover:bg-white/90 border border-white/80 hover:border-cyan-400 text-slate-900 font-semibold text-xs tracking-wide transition-all duration-200 shadow-md active:scale-[0.98]"
-          >
-            <Plus className="w-4 h-4 text-cyan-700" />
-            <span>New Chat Session</span>
-          </button>
-        </div>
-
         {/* Search Chats */}
         {sessions.length > 3 && (
-          <div className="px-3 pb-2">
+          <div className="px-3 pt-3 pb-2">
             <div className="relative">
               <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-500" />
               <input
@@ -239,21 +225,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
 
-        {/* Bottom Utility Controls */}
-        {sessions.length > 1 && (
-          <div className="p-3 border-t border-white/30 bg-white/15 pb-safe">
+        {/* Bottom Section: New Chat & Utility Controls */}
+        <div className="p-4 border-t border-white/30 bg-white/20 space-y-2 mt-auto">
+          <button
+            onClick={() => {
+              onNewSession();
+              if (window.innerWidth < 768) onClose();
+            }}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/70 hover:bg-white/90 border border-white/80 hover:border-cyan-400 text-slate-900 font-semibold text-xs tracking-wide transition-all duration-200 shadow-md active:scale-[0.98]"
+          >
+            <Plus className="w-4 h-4 text-cyan-700" />
+            <span>New Chat Session</span>
+          </button>
+
+          {sessions.length > 1 && (
             <button
               onClick={() => {
                 if (window.confirm("Are you sure you want to delete all saved conversations?")) {
                   onClearAll();
                 }
               }}
-              className="w-full text-center py-1 text-[10px] text-slate-700 hover:text-rose-600 font-semibold transition-colors cursor-pointer"
+              className="w-full text-center py-1.5 text-sm text-slate-700 hover:text-rose-600 font-semibold transition-colors cursor-pointer"
             >
               Clear all chat history
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
       </aside>
     </>

@@ -74,7 +74,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 pb-4 md:pb-6 pt-2 pb-safe">
+    <div className="w-full max-w-4xl mx-auto px-4 pb-4 md:pb-6 pt-2">
       <form onSubmit={handleSubmit} className="relative">
         <div className="relative rounded-2xl bg-white/85 backdrop-blur-2xl border border-white/95 focus-within:border-cyan-500/80 shadow-2xl shadow-slate-900/10 transition-all duration-300 focus-within:shadow-[0_0_25px_rgba(6,182,212,0.2)]">
           {/* Subtle top ambient accent line */}
