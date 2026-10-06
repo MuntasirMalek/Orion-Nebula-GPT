@@ -113,7 +113,7 @@ export async function streamChatCompletion({
     (model?.includes("deepseek")
       ? localStorage.getItem("orion_code_deepseek")
       : model?.includes("-low") || reasoningEffort === "low"
-      ? localStorage.getItem("orion_code_low") || localStorage.getItem("orion_code_medium_high")
+      ? localStorage.getItem("orion_code_low")
       : localStorage.getItem("orion_code_medium_high")) ||
     localStorage.getItem("astra_frontier_unlocked_code") ||
     "";

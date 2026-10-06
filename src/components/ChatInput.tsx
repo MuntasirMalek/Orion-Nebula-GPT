@@ -450,16 +450,32 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       <PasscodeModal
         isOpen={Boolean(passcodeTarget)}
         onClose={() => setPasscodeTarget(null)}
-        onSuccess={(_code) => {
+        onSuccess={(_code, switchedModelId) => {
           setIsUnlocked(true);
-          if (passcodeTarget) {
-            if (passcodeTarget.defaultEffort && onSelectReasoningEffort) {
-              onSelectReasoningEffort(passcodeTarget.defaultEffort);
+          const effectiveModelId = switchedModelId || passcodeTarget?.id;
+          const target = switchedModelId
+            ? AVAILABLE_MODELS.find((m) => m.id === switchedModelId) || passcodeTarget
+            : passcodeTarget;
+
+          if (target) {
+            if (target.defaultEffort && onSelectReasoningEffort) {
+              onSelectReasoningEffort(target.defaultEffort);
             }
-            if (onSelectModel) {
-              onSelectModel(passcodeTarget.id);
+            if (onSelectModel && effectiveModelId) {
+              onSelectModel(effectiveModelId);
             }
-            setPasscodeTarget(null);
+          }
+          setPasscodeTarget(null);
+
+          // Auto-send pending message seamlessly upon unlock
+          const trimmed = text.trim();
+          if (trimmed || images.length > 0) {
+            onSendMessage(trimmed, images.length > 0 ? images : undefined);
+            setText("");
+            setImages([]);
+            if (textareaRef.current) {
+              textareaRef.current.style.height = "auto";
+            }
           }
         }}
         targetModel={passcodeTarget}

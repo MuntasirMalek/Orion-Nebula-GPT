@@ -49,13 +49,6 @@ export function useChat() {
     ) {
       setSettings((prev) => ({ ...prev, systemPrompt: "" }));
     }
-    if (settings.selectedModel === "deepseek-v4-flash") {
-      setSettings((prev) => ({
-        ...prev,
-        selectedModel: "gpt-6-astra-low",
-        reasoningEffort: "low",
-      }));
-    }
     if (
       !settings.backendUrl ||
       settings.backendUrl.includes("papaya-trifle") ||

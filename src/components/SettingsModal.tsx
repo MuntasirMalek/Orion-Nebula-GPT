@@ -525,15 +525,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       <PasscodeModal
         isOpen={Boolean(passcodeTarget)}
         onClose={() => setPasscodeTarget(null)}
-        onSuccess={(_code) => {
+        onSuccess={(_code, switchedModelId) => {
           setIsUnlocked(true);
-          if (passcodeTarget) {
-            if (passcodeTarget.defaultEffort) {
-              setReasoningEffort(passcodeTarget.defaultEffort);
-            }
-            setSelectedModel(passcodeTarget.id);
-            setPasscodeTarget(null);
+          const target = switchedModelId
+            ? AVAILABLE_MODELS.find((m) => m.id === switchedModelId) || passcodeTarget
+            : passcodeTarget;
+          const targetId = switchedModelId || passcodeTarget?.id;
+
+          if (target && target.defaultEffort) {
+            setReasoningEffort(target.defaultEffort);
           }
+          if (targetId) {
+            setSelectedModel(targetId);
+          }
+          setPasscodeTarget(null);
         }}
         targetModel={passcodeTarget}
         targetModelName={passcodeTarget?.name}

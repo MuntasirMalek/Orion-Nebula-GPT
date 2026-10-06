@@ -96,7 +96,9 @@ export const DEFAULT_MODEL_ID = "gpt-6-astra-low";
 export function isModelUnlocked(modelId: string, effort?: string): boolean {
   if (typeof window === "undefined") return false;
   // If master access was granted
-  if (localStorage.getItem("orion_unlocked_all") === "true") return true;
+  if (localStorage.getItem("orion_unlocked_all") === "true") {
+    return true;
+  }
 
   if (modelId.includes("deepseek")) {
     return (

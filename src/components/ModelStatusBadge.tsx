@@ -49,10 +49,11 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
     setIsOpen(false);
   };
 
-  const handlePasscodeSuccess = () => {
+  const handlePasscodeSuccess = (_code?: string, switchedModelId?: string) => {
     setIsUnlocked(true);
-    if (passcodeTarget) {
-      onSelectModel(passcodeTarget.id);
+    const targetId = switchedModelId || passcodeTarget?.id;
+    if (targetId) {
+      onSelectModel(targetId);
       setPasscodeTarget(null);
     }
   };

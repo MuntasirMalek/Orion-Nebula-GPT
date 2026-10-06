@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Lock, X, CheckCircle2, ShieldCheck, Loader2 } from "lucide-react";
-import { ModelOption, DEFAULT_BACKEND_URL } from "../config";
+import { ModelOption } from "../config";
 
 interface PasscodeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (code: string) => void;
+  onSuccess: (code: string, switchedModelId?: string) => void;
   targetModel?: ModelOption | null;
   targetModelName?: string;
   reasoningEffort?: "low" | "medium" | "high";
@@ -19,7 +19,7 @@ export const PasscodeModal: React.FC<PasscodeModalProps> = ({
   onSuccess,
   targetModel,
   targetModelName,
-  backendUrl,
+  backendUrl: _backendUrl,
 }) => {
   const [code, setCode] = useState("");
   const [error, setError] = useState(false);
@@ -53,60 +53,90 @@ export const PasscodeModal: React.FC<PasscodeModalProps> = ({
     setError(false);
     setErrorMessage("");
 
+    // Determine target tier
+    const isDeepSeekTarget = modelId.includes("deepseek");
+    const isLowTarget = modelId.includes("-low");
+
+    // Salted cryptographic hashes of authorized cohort passcodes
+    // Prevents plaintext passcodes from being exposed in public repositories
+    const MASTER_HASH = "814f76ba52f531349ec55800af3850e356bbda4352d32a057533b47b1f3eee80";
+    const DEEPSEEK_HASH = "922d49186cfbe2d73264530da0850e2bfebd5ff5f1dbbca3887cdd5c2c111f0b";
+    const LOW_HASH = "a373b6750a7851b7e0f56fca634c454569a86a22b2f762017600bea041420074";
+
+    let isValid = false;
+    let switchedModelId: string | undefined = undefined;
+
     try {
-      const baseUrl = (backendUrl || localStorage.getItem("orion_custom_backend_url") || DEFAULT_BACKEND_URL).trim();
-      const verifyEndpoint = `${baseUrl.replace(/\/+$/, "")}?action=verify&model=${encodeURIComponent(modelId)}`;
+      const enc = new TextEncoder().encode(`orion_frontier_salt_2026_${entered}`);
+      const buf = await crypto.subtle.digest("SHA-256", enc);
+      const enteredHash = Array.from(new Uint8Array(buf))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
 
-      const res = await fetch(verifyEndpoint, {
-        method: "GET",
-        headers: {
-          "x-access-code": entered,
-        },
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setIsSuccess(true);
-        setIsVerifying(false);
-
-        // Securely store unlock state and code for API calls
-        if (data.tier === "all") {
-          localStorage.setItem("orion_unlocked_all", "true");
-          localStorage.setItem("orion_unlocked_deepseek", "true");
-          localStorage.setItem("orion_unlocked_low", "true");
-          localStorage.setItem("orion_unlocked_medium_high", "true");
-          localStorage.setItem("orion_access_code", entered);
-        } else if (data.tier === "deepseek") {
-          localStorage.setItem("orion_unlocked_deepseek", "true");
-          localStorage.setItem("orion_code_deepseek", entered);
-        } else if (data.tier === "low") {
-          localStorage.setItem("orion_unlocked_low", "true");
-          localStorage.setItem("orion_code_low", entered);
-        } else {
-          localStorage.setItem("orion_unlocked_medium_high", "true");
-          localStorage.setItem("orion_code_medium_high", entered);
-        }
-
+      if (enteredHash === MASTER_HASH) {
+        // Master code unlocks everything
+        isValid = true;
+        localStorage.setItem("orion_unlocked_all", "true");
+        localStorage.setItem("orion_unlocked_deepseek", "true");
+        localStorage.setItem("orion_unlocked_low", "true");
+        localStorage.setItem("orion_unlocked_medium_high", "true");
+        localStorage.setItem("orion_access_code", entered);
+        localStorage.setItem("orion_code_deepseek", entered);
+        localStorage.setItem("orion_code_low", entered);
+        localStorage.setItem("orion_code_medium_high", entered);
+        localStorage.setItem("astra_frontier_unlocked", "true");
         localStorage.setItem("astra_frontier_unlocked_code", entered);
-
-        setTimeout(() => {
-          onSuccess(entered);
-          onClose();
-        }, 350);
-      } else {
-        const errData = await res.json().catch(() => ({}));
-        setIsVerifying(false);
-        setError(true);
-        setErrorMessage(errData.error || "Incorrect passcode. Access denied.");
-        setCode("");
-        inputRef.current?.focus();
+      } else if (enteredHash === DEEPSEEK_HASH) {
+        // DeepSeek passcode
+        isValid = true;
+        localStorage.setItem("orion_unlocked_deepseek", "true");
+        localStorage.setItem("orion_code_deepseek", entered);
+        localStorage.setItem("orion_access_code", entered);
+        localStorage.setItem("astra_frontier_unlocked", "true");
+        localStorage.setItem("astra_frontier_unlocked_code", entered);
+        if (!isDeepSeekTarget) {
+          switchedModelId = "deepseek-v4-flash";
+        }
+      } else if (enteredHash === LOW_HASH) {
+        // Low thinking passcode
+        if (isDeepSeekTarget) {
+          setIsVerifying(false);
+          setError(true);
+          setErrorMessage("Incorrect passcode. Access denied.");
+          setCode("");
+          inputRef.current?.focus();
+          return;
+        }
+        isValid = true;
+        localStorage.setItem("orion_unlocked_low", "true");
+        localStorage.setItem("orion_code_low", entered);
+        localStorage.setItem("orion_access_code", entered);
+        localStorage.setItem("astra_frontier_unlocked", "true");
+        localStorage.setItem("astra_frontier_unlocked_code", entered);
+        if (!isLowTarget) {
+          switchedModelId = "gpt-6-astra-low";
+        }
       }
     } catch {
-      setIsVerifying(false);
-      setError(true);
-      setErrorMessage("Unable to connect to verification server. Please verify proxy URL.");
-      inputRef.current?.focus();
+      // Ignore subtle crypto failure
     }
+
+    if (isValid) {
+      setIsSuccess(true);
+      setIsVerifying(false);
+
+      setTimeout(() => {
+        onSuccess(entered, switchedModelId);
+        onClose();
+      }, 350);
+      return;
+    }
+
+    setIsVerifying(false);
+    setError(true);
+    setErrorMessage("Incorrect passcode. Access denied.");
+    setCode("");
+    inputRef.current?.focus();
   };
 
   const modalNode = (
