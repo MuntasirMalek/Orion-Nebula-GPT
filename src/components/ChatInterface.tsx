@@ -39,10 +39,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [showScrollBottom, setShowScrollBottom] = useState(false);
   const userScrolledUpRef = useRef(false);
 
-  // Auto-scroll handler
+  // Instant zero-overhead auto-scroll handler
   useEffect(() => {
-    if (!userScrolledUpRef.current) {
-      bottomAnchorRef.current?.scrollIntoView({ behavior: isStreaming ? "auto" : "smooth" });
+    if (!userScrolledUpRef.current && scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      container.scrollTop = container.scrollHeight;
     }
   }, [messages, isStreaming]);
 

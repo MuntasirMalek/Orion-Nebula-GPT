@@ -18,7 +18,7 @@ interface CodeBlockProps {
   code: string;
 }
 
-export const CodeBlock: React.FC<CodeBlockProps> = ({ language, code }) => {
+const CodeBlockComponent: React.FC<CodeBlockProps> = ({ language, code }) => {
   const [copied, setCopied] = useState(false);
 
   const cleanLang = (language || "text").toLowerCase().replace(/^language-/, "");
@@ -91,3 +91,8 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ language, code }) => {
     </div>
   );
 };
+
+export const CodeBlock = React.memo<CodeBlockProps>(
+  CodeBlockComponent,
+  (prev, next) => prev.code === next.code && prev.language === next.language
+);

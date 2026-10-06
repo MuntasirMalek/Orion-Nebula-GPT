@@ -17,18 +17,22 @@ export const WallpaperBackground: React.FC<WallpaperBackgroundProps> = ({
         <div className="hidden md:block fixed top-0 bottom-0 left-0 w-72 lg:w-80 -z-30 bg-slate-950 border-r border-slate-800" />
       )}
 
-      {/* 4K Hubble Orion Nebula Optical Canvas */}
+      {/* 4K Hubble Orion Nebula Optical Canvas - GPU Accelerated & Pre-baked */}
       <div
-        className={`pointer-events-none fixed top-0 bottom-0 right-0 -z-20 overflow-hidden bg-black select-none transition-all duration-300 ease-in-out ${
+        className={`pointer-events-none fixed top-0 bottom-0 right-0 -z-20 overflow-hidden bg-black select-none transform-gpu transition-all duration-300 ease-in-out ${
           adaptiveFraming && isSidebarOpen
             ? "left-0 md:left-72 lg:left-80"
             : "left-0"
         }`}
+        style={{ willChange: "left" }}
       >
         <img
           src={bgCenter}
           alt="Orion Nebula 4K Hubble Mosaic"
-          className="w-full h-full object-cover object-center brightness-105 contrast-[1.08] saturate-[1.12]"
+          className="w-full h-full object-cover object-center transform-gpu"
+          decoding="async"
+          // @ts-ignore
+          fetchpriority="high"
         />
       </div>
     </>

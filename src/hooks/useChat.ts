@@ -199,6 +199,22 @@ export function useChat() {
 
       try {
         let accumulatedText = "";
+        let rafId: number | null = null;
+
+        const flushStreamUpdate = () => {
+          rafId = null;
+          setSessions((prev) =>
+            prev.map((s) => {
+              if (s.id !== currentSessionId) return s;
+              const msgs = s.messages.map((m) =>
+                m.id === assistantMsgId
+                  ? { ...m, content: accumulatedText, isStreaming: true }
+                  : m
+              );
+              return { ...s, messages: msgs, updatedAt: Date.now() };
+            })
+          );
+        };
 
         await streamChatCompletion({
           backendUrl: settings.backendUrl,
@@ -209,26 +225,23 @@ export function useChat() {
           signal: abortController.signal,
           onChunk: (chunk: string) => {
             accumulatedText += chunk;
-            setSessions((prev) =>
-              prev.map((s) => {
-                if (s.id !== currentSessionId) return s;
-                const msgs = s.messages.map((m) =>
-                  m.id === assistantMsgId
-                    ? { ...m, content: accumulatedText, isStreaming: true }
-                    : m
-                );
-                return { ...s, messages: msgs, updatedAt: Date.now() };
-              })
-            );
+            if (rafId === null) {
+              rafId = requestAnimationFrame(flushStreamUpdate);
+            }
           },
         });
 
-        // Mark streaming finished
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
+
+        // Mark streaming finished and commit final text
         setSessions((prev) =>
           prev.map((s) => {
             if (s.id !== currentSessionId) return s;
             const msgs = s.messages.map((m) =>
-              m.id === assistantMsgId ? { ...m, isStreaming: false } : m
+              m.id === assistantMsgId ? { ...m, content: accumulatedText, isStreaming: false } : m
             );
             return { ...s, messages: msgs, updatedAt: Date.now() };
           })

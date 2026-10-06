@@ -14,7 +14,7 @@ interface ChatMessageProps {
   onRetry?: () => void;
 }
 
-export const ChatMessage: React.FC<ChatMessageProps> = ({ message, theme, index = 0 }) => {
+const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, theme, index = 0 }) => {
   const isUser = message.role === "user";
   const [copied, setCopied] = useState(false);
 
@@ -40,6 +40,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, theme, index 
       className={`group relative flex w-full my-2 transition-all ${
         isUser ? "justify-end" : "justify-start"
       }`}
+      style={{ contentVisibility: "auto", containIntrinsicSize: "0 80px" }}
     >
       <div
         className={`relative flex items-start gap-3.5 transition-all duration-300 ${
@@ -190,3 +191,17 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, theme, index 
     </div>
   );
 };
+
+export const ChatMessage = React.memo<ChatMessageProps>(
+  ChatMessageComponent,
+  (prev, next) => {
+    return (
+      prev.message.id === next.message.id &&
+      prev.message.content === next.message.content &&
+      prev.message.isStreaming === next.message.isStreaming &&
+      prev.message.error === next.message.error &&
+      prev.theme.id === next.theme.id &&
+      prev.index === next.index
+    );
+  }
+);
