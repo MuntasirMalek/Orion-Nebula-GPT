@@ -38,10 +38,26 @@ export async function streamChatCompletion({
     throw new Error("Backend Proxy URL is not configured. Please check your settings.");
   }
 
-  // Filter valid conversation messages
-  const validMessages = messages.filter(
-    (msg) => (msg.role === "user" || msg.role === "assistant" || msg.role === "system") && !msg.error
-  );
+  // Filter valid conversation messages:
+  // 1. Skip any message that has an explicit error flag.
+  // 2. Skip any user prompt whose corresponding assistant response failed with an error
+  //    (prevents failed/blocked turns from poisoning the conversation history and breaking future messages).
+  const validMessages: Message[] = [];
+  for (let i = 0; i < messages.length; i++) {
+    const msg = messages[i];
+    if (msg.error) continue;
+
+    if (msg.role === "user") {
+      const nextMsg = messages[i + 1];
+      if (nextMsg && nextMsg.role === "assistant" && nextMsg.error) {
+        continue;
+      }
+    }
+
+    if (msg.role === "user" || msg.role === "assistant" || msg.role === "system") {
+      validMessages.push(msg);
+    }
+  }
 
   // Model-specific Context Window Optimization:
   // Expensive frontier models (Astra / Claude): Pruning kicks in directly at Question 3 (max 3 messages = 1 prior Q&A turn + current question) to maximize token savings.
