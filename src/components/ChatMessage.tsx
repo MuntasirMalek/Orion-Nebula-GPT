@@ -14,6 +14,7 @@ import {
   AlertCircle,
   Maximize2,
   X,
+  Sparkles,
 } from "lucide-react";
 
 interface ChatMessageProps {
@@ -179,7 +180,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, theme, inde
                       <details className="group" open={!displayContent}>
                         <summary className="cursor-pointer font-mono font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 select-none flex items-center justify-between">
                           <span className="flex items-center gap-1.5">
-                            <span className="text-emerald-500">🧠</span>
+                            <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                             <span>Thought Process</span>
                           </span>
                           <span className="text-[10px] text-slate-400 group-open:hidden uppercase font-semibold">Show reasoning</span>

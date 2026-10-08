@@ -698,7 +698,6 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
       bodyTextUser: "text-sm leading-relaxed text-stone-900 font-serif font-normal",
       bodyTextAssistant: "text-sm leading-relaxed text-stone-900 font-serif",
       copyButton: "text-stone-500 hover:text-stone-900 hover:bg-stone-100 p-1.5 rounded transition-colors",
-      entryNumberPrefix: "FOLIO_",
     },
     input: {
       container: "max-w-4xl",
