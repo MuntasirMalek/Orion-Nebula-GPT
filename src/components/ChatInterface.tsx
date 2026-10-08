@@ -51,7 +51,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   useEffect(() => {
     if (!userScrolledUpRef.current && scrollContainerRef.current) {
       const container = scrollContainerRef.current;
-      container.scrollTop = container.scrollHeight;
+      const rafId = requestAnimationFrame(() => {
+        if (!userScrolledUpRef.current && container) {
+          container.scrollTop = container.scrollHeight;
+        }
+      });
+      return () => cancelAnimationFrame(rafId);
     }
   }, [messages, isStreaming]);
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Message } from "../types";
@@ -78,10 +78,21 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, theme, inde
 
   const entryNumber = String(index + 1).padStart(2, "0");
 
-  const thinkingContent = extractThinkingContent(message.content);
-  const displayContent = isUser ? message.content : cleanDisplayContent(message.content);
+  const thinkingContent = useMemo(
+    () => (isUser ? "" : extractThinkingContent(message.content)),
+    [isUser, message.content]
+  );
+  const displayContent = useMemo(
+    () => (isUser ? message.content : cleanDisplayContent(message.content)),
+    [isUser, message.content]
+  );
   const textToCopy = isUser ? message.content : displayContent;
   const hasTextToCopy = Boolean(textToCopy && textToCopy.trim().length > 0);
+
+  const wordCount = useMemo(() => {
+    if (message.isStreaming || !displayContent) return 0;
+    return displayContent.trim().split(/\s+/).filter(Boolean).length;
+  }, [displayContent, message.isStreaming]);
 
   const handleCopyMessage = async () => {
     if (!textToCopy) return;
@@ -122,13 +133,13 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, theme, inde
   return (
     <>
       <div
-        className={`group relative flex w-full my-2 transition-all ${
+        className={`group relative flex w-full my-2 ${
           isUser ? "justify-end" : "justify-start"
         }`}
         style={{ contentVisibility: "auto", containIntrinsicSize: "0 80px" }}
       >
         <div
-          className={`relative flex items-start gap-3.5 transition-all duration-300 ${
+          className={`relative flex items-start gap-3.5 transition-colors duration-150 ${
             isUser ? theme.message.userContainer : theme.message.assistantContainer
           }`}
         >
@@ -340,9 +351,11 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, theme, inde
                     )}
                   </button>
 
-                  <span className="text-[11px] font-mono opacity-50 select-none hidden xs:inline-block">
-                    {displayContent.trim().split(/\s+/).filter(Boolean).length} words
-                  </span>
+                  {wordCount > 0 && (
+                    <span className="text-[11px] font-mono opacity-50 select-none hidden xs:inline-block">
+                      {wordCount} words
+                    </span>
+                  )}
                 </div>
 
                 <div className="text-[11px] font-mono opacity-50 select-none">
