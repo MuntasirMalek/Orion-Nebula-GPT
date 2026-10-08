@@ -9,6 +9,7 @@ import {
   Menu,
   Settings as SettingsIcon,
   ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 interface ChatInterfaceProps {
@@ -43,6 +44,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const bottomAnchorRef = useRef<HTMLDivElement>(null);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const userScrolledUpRef = useRef(false);
 
   // Instant zero-overhead auto-scroll handler
@@ -65,6 +67,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       setShowScrollBottom(false);
       userScrolledUpRef.current = false;
     }
+
+    if (scrollTop > 150) {
+      setShowScrollTop(true);
+    } else {
+      setShowScrollTop(false);
+    }
+  };
+
+  const scrollToTop = () => {
+    if (!scrollContainerRef.current) return;
+    scrollContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const scrollToBottom = () => {
@@ -154,16 +167,32 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         )}
       </div>
 
-      {/* Floating Scroll to Bottom Button */}
-      {showScrollBottom && (
-        <button
-          onClick={scrollToBottom}
-          className="absolute bottom-24 right-6 z-20 flex items-center justify-center p-2.5 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-white/50 text-cyan-600 dark:text-cyan-400 shadow-xl active:scale-95 transition-all"
-          title="Scroll to bottom"
-        >
-          <ChevronDown className="w-4 h-4 animate-bounce" />
-        </button>
-      )}
+      {/* Floating Scroll Navigation Controls */}
+      <div className="absolute bottom-24 right-4 sm:right-6 z-20 flex flex-col items-center gap-2 pointer-events-none">
+        {showScrollTop && (
+          <button
+            type="button"
+            onClick={scrollToTop}
+            className="w-10 h-10 rounded-full bg-white/95 dark:bg-stone-900/95 backdrop-blur-md border border-stone-200/90 dark:border-stone-700/80 text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 shadow-lg hover:shadow-xl active:scale-95 transition-all flex items-center justify-center cursor-pointer pointer-events-auto group"
+            title="Scroll to top"
+            aria-label="Scroll to top"
+          >
+            <ChevronUp className="w-5 h-5 shrink-0 block transition-transform group-hover:-translate-y-0.5" strokeWidth={2.5} />
+          </button>
+        )}
+
+        {showScrollBottom && (
+          <button
+            type="button"
+            onClick={scrollToBottom}
+            className="w-10 h-10 rounded-full bg-white/95 dark:bg-stone-900/95 backdrop-blur-md border border-stone-200/90 dark:border-stone-700/80 text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 shadow-lg hover:shadow-xl active:scale-95 transition-all flex items-center justify-center cursor-pointer pointer-events-auto group"
+            title="Scroll to bottom"
+            aria-label="Scroll to bottom"
+          >
+            <ChevronDown className="w-5 h-5 shrink-0 block transition-transform group-hover:translate-y-0.5" strokeWidth={2.5} />
+          </button>
+        )}
+      </div>
 
       {/* Input Area */}
       <ChatInput
