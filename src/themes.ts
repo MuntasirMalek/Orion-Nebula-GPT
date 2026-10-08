@@ -687,8 +687,8 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
       footer: "border-t border-stone-200 bg-stone-100/60 text-xs text-stone-500 font-mono tracking-wider uppercase",
     },
     message: {
-      userContainer: "bg-white/95 backdrop-blur-2xl border border-stone-200 text-stone-900 shadow-sm rounded-xl p-4 md:p-5",
-      assistantContainer: "bg-[#fdfcf9]/95 backdrop-blur-2xl border border-stone-200 text-stone-900 shadow-md rounded-xl p-4 md:p-5 w-full font-serif",
+      userContainer: "bg-white border border-stone-200 text-stone-900 shadow-sm rounded-xl p-4 md:p-5",
+      assistantContainer: "bg-[#fdfcf9] border border-stone-200 text-stone-900 shadow-md rounded-xl p-4 md:p-5 w-full font-serif",
       userAvatar: "w-8 h-8 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-700 shadow-sm",
       assistantAvatar: "w-8 h-8 rounded-full bg-stone-900 border border-stone-800 flex items-center justify-center shadow-sm text-white font-bold",
       authorTextUser: "text-xs font-mono uppercase tracking-widest text-stone-600 font-medium",

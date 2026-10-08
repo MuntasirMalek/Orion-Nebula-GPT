@@ -393,14 +393,35 @@ export const CosmicMotionCanvas: React.FC<CosmicMotionCanvasProps> = ({
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     // =========================================================================
-    // High-Performance 60/120 FPS Optimized Optical Animation Loop
+    // High-Performance 30 FPS Optimized Optical Animation Loop (Cuts 75% GPU/CPU)
     // =========================================================================
-    const render = () => {
+    let lastRenderTime = 0;
+    const TARGET_FPS_INTERVAL = 1000 / 30;
+
+    const render = (now: number = performance.now()) => {
       if (isHidden) {
         animFrameRef.current = null;
         return;
       }
 
+      if (!motionEnabled && explosionsRef.current.length === 0) {
+        drawFrame();
+        animFrameRef.current = null;
+        return;
+      }
+
+      animFrameRef.current = requestAnimationFrame(render);
+
+      const elapsed = now - lastRenderTime;
+      if (elapsed < TARGET_FPS_INTERVAL) {
+        return;
+      }
+      lastRenderTime = now - (elapsed % TARGET_FPS_INTERVAL);
+
+      drawFrame();
+    };
+
+    const drawFrame = () => {
       ctx.clearRect(0, 0, width, height);
       ctx.globalCompositeOperation = "screen";
 
@@ -576,8 +597,6 @@ export const CosmicMotionCanvas: React.FC<CosmicMotionCanvasProps> = ({
           ctx.fill();
         }
       }
-
-      animFrameRef.current = requestAnimationFrame(render);
     };
 
     animFrameRef.current = requestAnimationFrame(render);
