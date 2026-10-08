@@ -76,23 +76,25 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   return (
     <div className="relative flex flex-col flex-1 h-full min-w-0 bg-transparent overflow-hidden">
       {/* Top Bar Header */}
-      <header className={`sticky top-0 z-30 flex items-center justify-between px-4 md:px-6 h-14 md:h-16 transition-colors duration-300 ${theme.header.container}`}>
-        <div className="flex items-center gap-3">
+      <header className={`sticky top-0 z-30 flex items-center justify-between px-2.5 sm:px-6 h-14 md:h-16 w-full max-w-full transition-colors duration-300 ${theme.header.container}`}>
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 mr-1.5 sm:mr-2">
           <button
             onClick={onToggleSidebar}
-            className={theme.header.button}
+            className={`shrink-0 ${theme.header.button}`}
             title="Toggle Sidebar"
           >
             <Menu className="w-5 h-5" />
           </button>
 
-          <div className="flex items-center gap-2.5">
-            <AstraLogo size={24} />
-            <div className="flex items-center gap-2">
-              <span className={theme.header.brandText}>
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="shrink-0">
+              <AstraLogo size={22} />
+            </div>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className={`truncate text-xs sm:text-sm font-bold sm:font-semibold ${theme.header.brandText}`}>
                 Orion Nebula GPT
               </span>
-              <span className="hidden sm:inline-block w-1 h-1 rounded-full opacity-40 bg-current" />
+              <span className="hidden sm:inline-block w-1 h-1 rounded-full opacity-40 bg-current shrink-0" />
               <div className="hidden sm:flex items-center">
                 <ModelStatusBadge
                   currentModelId={currentModelId}
@@ -106,7 +108,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         </div>
 
         {/* Right side controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           {/* Mobile Model Status Selector */}
           <div className="sm:hidden">
             <ModelStatusBadge
@@ -119,7 +121,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
           <button
             onClick={onOpenSettings}
-            className={theme.header.button}
+            className={`shrink-0 ${theme.header.button}`}
             title="Settings"
           >
             <SettingsIcon className="w-4 h-4" />

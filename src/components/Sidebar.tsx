@@ -199,7 +199,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
+                    <div className="flex items-center gap-1 opacity-80 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
                       {isEditing ? (
                         <>
                           <button

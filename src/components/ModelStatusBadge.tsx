@@ -30,16 +30,24 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
   }, []);
 
   const handleSelectModel = (model: ModelOption) => {
+    if (model.id === currentModelId) {
+      setIsOpen(false);
+      return;
+    }
     if (model.requiresPasscode && !isModelUnlocked(model.id, model.defaultEffort)) {
       setPasscodeTarget(model);
       setIsOpen(false);
@@ -61,17 +69,27 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
   const isClaude = selectedModel.id.includes("claude");
   const isDeepSeek = selectedModel.id.includes("deepseek");
 
-  const isDark = false;
-  const btnBase = theme ? theme.header.badge : "text-xs font-semibold text-slate-800 bg-white/80 hover:bg-white border border-white/90";
+  const btnBase = theme ? theme.header.badge : "text-xs font-semibold text-stone-900 bg-white hover:bg-stone-50 border border-stone-200 shadow-sm";
 
   return (
     <>
+      {/* Mobile backdrop to easily close on tap */}
+      {isOpen && (
+        <div
+          className="sm:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-[1px] transition-opacity"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
       <div ref={containerRef} className="relative inline-flex items-center">
         {/* Trigger Button */}
         <button
           type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className={`group flex items-center gap-2 px-3 py-1.5 transition-all duration-200 cursor-pointer shadow-xs active:scale-98 ${btnBase}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen((prev) => !prev);
+          }}
+          className={`group flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 transition-all duration-200 cursor-pointer shadow-sm active:scale-98 shrink-0 ${btnBase}`}
           aria-label="Select AI Model"
         >
           {/* Pulsing online status indicator */}
@@ -81,9 +99,9 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
                 isStreaming
                   ? "bg-cyan-500 animate-ping"
                   : isClaude
-                  ? "bg-amber-500 animate-ping duration-1000"
+                  ? "bg-rose-500 animate-ping duration-1000"
                   : isDeepSeek
-                  ? "bg-blue-500 animate-ping duration-1000"
+                  ? "bg-sky-500 animate-ping duration-1000"
                   : "bg-emerald-500 animate-ping duration-1000"
               }`}
             />
@@ -92,58 +110,50 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
                 isStreaming
                   ? "bg-cyan-600"
                   : isClaude
-                  ? "bg-amber-500 shadow-[0_0_8px_#f59e0b]"
+                  ? "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]"
                   : isDeepSeek
-                  ? "bg-blue-600 shadow-[0_0_8px_#2563eb]"
-                  : "bg-emerald-500 shadow-[0_0_8px_#10b981]"
+                  ? "bg-sky-600 shadow-[0_0_8px_rgba(2,132,199,0.6)]"
+                  : "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"
               }`}
             />
           </span>
 
           {/* Current Model Name */}
-          <span className="text-xs font-bold tracking-wide">
-            <ModelNameLabel name={selectedModel.name} iconClassName="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0 inline -mt-0.5" />
+          <span className="text-[11px] sm:text-xs font-bold tracking-wide truncate max-w-[95px] xs:max-w-[140px] sm:max-w-none">
+            <ModelNameLabel name={selectedModel.name} shortOnMobile={true} />
           </span>
 
           {/* Tag Pill */}
           <span
-            className={`hidden sm:inline-flex items-center text-xs tracking-tight font-semibold px-2 py-0.5 rounded-full border ${
+            className={`hidden sm:inline-flex items-center text-[10px] tracking-tight font-semibold px-2 py-0.5 rounded-full border ${
               isClaude
-                ? "bg-amber-100/90 text-amber-900 border-amber-300"
+                ? "bg-rose-50 text-rose-800 border-rose-200"
                 : isDeepSeek
-                ? "bg-blue-100/90 text-blue-900 border-blue-300"
-                : "bg-emerald-100/90 text-emerald-950 border-emerald-300"
+                ? "bg-sky-50 text-sky-800 border-sky-200"
+                : "bg-emerald-50 text-emerald-800 border-emerald-200"
             }`}
           >
             {selectedModel.tag}
           </span>
 
           <ChevronDown
-            className={`w-3.5 h-3.5 opacity-60 transition-transform duration-200 ${
+            className={`w-3.5 h-3.5 opacity-60 transition-transform duration-200 shrink-0 ${
               isOpen ? "rotate-180" : ""
             }`}
           />
         </button>
 
-        {/* Dropdown Menu */}
+        {/* Dropdown Menu Window: Bulletproof responsive positioning & crisp solid card */}
         {isOpen && (
           <div
-            className={`absolute top-full mt-2 left-0 z-50 w-84 max-h-[calc(100vh-100px)] flex flex-col p-3 rounded-2xl shadow-2xl backdrop-blur-2xl border transition-all duration-200 animate-in fade-in zoom-in-95 ${
-              isDark
-                ? "bg-slate-950/95 border-slate-800 text-slate-100 shadow-black/80"
-                : "bg-white/95 border-white/95 text-slate-900 shadow-slate-950/20"
-            }`}
+            className="fixed inset-x-3 top-16 sm:absolute sm:inset-x-auto sm:top-full sm:mt-2 sm:left-0 z-50 w-auto sm:w-[380px] max-h-[min(540px,calc(100vh-84px))] flex flex-col p-3 rounded-2xl bg-white border border-stone-200 shadow-2xl transition-all duration-200 animate-in fade-in zoom-in-95 text-stone-900"
           >
-            <div
-              className={`flex items-center justify-between pb-2 mb-2 border-b text-xs shrink-0 ${
-                isDark ? "border-slate-800 text-slate-400" : "border-slate-100 text-slate-500"
-              }`}
-            >
-              <span className="font-bold tracking-wider uppercase text-[10px]">
-                Available Models
+            <div className="flex items-center justify-between pb-2 mb-2 border-b border-stone-100 text-xs shrink-0">
+              <span className="font-bold tracking-wider uppercase text-[10px] text-stone-500 font-mono">
+                Select Frontier Model
               </span>
-              <span className="text-[10px] font-mono text-emerald-600 font-semibold flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
+              <span className="text-[10px] font-mono text-emerald-700 font-semibold flex items-center gap-1 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
                 Active
               </span>
             </div>
@@ -162,66 +172,52 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
                     key={model.id}
                     type="button"
                     onClick={() => handleSelectModel(model)}
-                    className={`w-full text-left p-3 rounded-xl transition-all duration-150 border flex items-start justify-between gap-3 cursor-pointer ${
+                    className={`w-full text-left p-2.5 rounded-xl transition-all duration-150 border flex items-start justify-between gap-2.5 cursor-pointer ${
                       isSelected
-                        ? isModelClaude
-                          ? "bg-amber-50/90 border-amber-400/80 shadow-xs"
-                          : isModelDeepSeek
-                          ? "bg-blue-50/90 border-blue-400/80 shadow-xs"
-                          : "bg-emerald-50/90 border-emerald-400/80 shadow-xs"
-                        : "bg-white/60 hover:bg-white border-transparent hover:border-slate-200"
+                        ? "bg-stone-100 border-stone-300 text-stone-950 font-medium shadow-sm"
+                        : "bg-white hover:bg-stone-50 border-stone-200 hover:border-stone-300 text-stone-800"
                     }`}
                   >
-                    <div className="space-y-1.5 flex-1">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold">
+                    <div className="space-y-1 flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1.5">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="text-xs font-bold text-stone-900 truncate">
                             <ModelNameLabel name={model.name} />
                           </span>
                           {isLocked ? (
-                            <Lock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                            <Lock className="w-3 h-3 text-stone-400 shrink-0" />
                           ) : (
-                            <Unlock className="w-3.5 h-3.5 text-emerald-600 shrink-0 opacity-80" />
+                            <Unlock className="w-3 h-3 text-emerald-600 shrink-0 opacity-80" />
                           )}
                         </div>
                         {isSelected && (
                           <Check className={`w-3.5 h-3.5 shrink-0 ${
-                            isModelClaude ? "text-amber-600" : isModelDeepSeek ? "text-blue-600" : "text-emerald-600"
+                            isModelClaude ? "text-rose-600" : isModelDeepSeek ? "text-sky-600" : "text-emerald-600"
                           }`} />
                         )}
                       </div>
 
-                      {/* Model Tag Badge */}
-                      <div>
+                      <div className="flex items-center gap-2">
                         <span
-                          className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border ${
+                          className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
                             isModelClaude
-                              ? "bg-amber-100 text-amber-950 border-amber-300"
+                              ? "bg-rose-50 text-rose-800 border-rose-200"
                               : isModelDeepSeek
-                              ? "bg-blue-100 text-blue-950 border-blue-300"
-                              : "bg-emerald-100 text-emerald-950 border-emerald-300"
+                              ? "bg-sky-50 text-sky-800 border-sky-200"
+                              : "bg-emerald-50 text-emerald-800 border-emerald-200"
                           }`}
                         >
                           {model.tag}
                         </span>
+                        <div className="flex items-center gap-1 text-[10px] font-mono text-stone-500">
+                          <Sparkles className="w-3 h-3 text-stone-400" />
+                          <span>{model.contextWindow}</span>
+                        </div>
                       </div>
 
-                      <p
-                        className={`text-[11px] leading-relaxed ${
-                          isDark ? "text-slate-400" : "text-slate-600"
-                        }`}
-                      >
+                      <p className="text-[11px] leading-snug text-stone-600 line-clamp-1">
                         {model.description}
                       </p>
-
-                      <div
-                        className={`flex items-center gap-1.5 text-[11px] font-mono pt-0.5 ${
-                          isDark ? "text-slate-500" : "text-slate-500"
-                        }`}
-                      >
-                        <Sparkles className="w-3 h-3 text-cyan-500" />
-                        <span>{model.contextWindow}</span>
-                      </div>
                     </div>
                   </button>
                 );

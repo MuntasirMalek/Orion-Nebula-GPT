@@ -6,13 +6,15 @@
   color-scheme: light;
 }
 
-body {
+html, body, #root {
   margin: 0;
   padding: 0;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
   background-color: transparent;
   color: #0f172a;
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  overflow: hidden;
   height: 100vh;
   height: 100dvh;
 }
@@ -44,6 +46,17 @@ textarea::-webkit-scrollbar {
   height: 0 !important;
 }
 textarea {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* Hide scrollbars for horizontal pill bars */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.no-scrollbar {
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
 }

@@ -277,10 +277,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                       isSelected
                         ? isClaude
-                          ? "bg-amber-50/90 border-amber-400 shadow-xs"
+                          ? "bg-rose-50/90 border-rose-400 shadow-sm"
                           : isDeepSeek
-                          ? "bg-blue-50/90 border-blue-400 shadow-xs"
-                          : "bg-emerald-50/90 border-emerald-400 shadow-xs"
+                          ? "bg-sky-50/90 border-sky-400 shadow-sm"
+                          : "bg-emerald-50/90 border-emerald-400 shadow-sm"
                         : "bg-white/60 hover:bg-white border-slate-200"
                     }`}
                   >
@@ -289,21 +289,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         <span className="text-xs font-bold text-slate-900 leading-snug">
                           <ModelNameLabel name={model.name} />
                         </span>
-                        {isLocked && <Lock className="w-3 h-3 text-amber-500 inline ml-1 -mt-0.5 align-middle" />}
+                        {isLocked && <Lock className="w-3 h-3 text-stone-400 inline ml-1 -mt-0.5 align-middle" />}
                       </div>
                       {isSelected && (
                         <Check className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${
-                          isClaude ? "text-amber-600" : isDeepSeek ? "text-blue-600" : "text-emerald-600"
+                          isClaude ? "text-rose-600" : isDeepSeek ? "text-sky-600" : "text-emerald-600"
                         }`} />
                       )}
                     </div>
                     <span
                       className={`inline-block text-[9px] font-bold px-1.5 py-0.5 rounded-full border mb-1 ${
                         isClaude
-                          ? "bg-amber-100 text-amber-950 border-amber-300"
+                          ? "bg-rose-50 text-rose-900 border-rose-200"
                           : isDeepSeek
-                          ? "bg-blue-100 text-blue-950 border-blue-300"
-                          : "bg-emerald-100 text-emerald-950 border-emerald-300"
+                          ? "bg-sky-50 text-sky-900 border-sky-200"
+                          : "bg-emerald-50 text-emerald-950 border-emerald-200"
                       }`}
                     >
                       {model.tag}

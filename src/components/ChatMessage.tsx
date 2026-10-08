@@ -6,6 +6,7 @@ import { ThemeConfig } from "../themes";
 import { AstraLogo } from "./AstraLogo";
 import { CodeBlock } from "./CodeBlock";
 import { AVAILABLE_MODELS } from "../config";
+import { ModelNameLabel } from "./ModelNameLabel";
 import {
   Copy,
   Check,
@@ -111,9 +112,14 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, theme, inde
 
                 {!isUser && (
                   <span className={theme.message.badge}>
-                    {message.model
-                      ? AVAILABLE_MODELS.find((m) => m.id === message.model)?.name || "Frontier"
-                      : "Frontier"}
+                    <ModelNameLabel
+                      name={
+                        message.model
+                          ? AVAILABLE_MODELS.find((m) => m.id === message.model)?.name || "Frontier"
+                          : "Frontier"
+                      }
+                      shortOnMobile={true}
+                    />
                   </span>
                 )}
 
