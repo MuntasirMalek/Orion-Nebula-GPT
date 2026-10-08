@@ -55,16 +55,13 @@ export const PasscodeModal: React.FC<PasscodeModalProps> = ({
 
     // Determine target tier
     const isDeepSeekTarget = modelId.includes("deepseek");
-    const isLowTarget = modelId.includes("-low");
 
     // Salted cryptographic hashes of authorized cohort passcodes
     // Prevents plaintext passcodes from being exposed in public repositories
-    const MASTER_HASH = "814f76ba52f531349ec55800af3850e356bbda4352d32a057533b47b1f3eee80";
     const DEEPSEEK_HASH = "922d49186cfbe2d73264530da0850e2bfebd5ff5f1dbbca3887cdd5c2c111f0b";
-    const LOW_HASH = "a373b6750a7851b7e0f56fca634c454569a86a22b2f762017600bea041420074";
+    const FRONTIER_HASH = "a373b6750a7851b7e0f56fca634c454569a86a22b2f762017600bea041420074";
 
     let isValid = false;
-    let switchedModelId: string | undefined = undefined;
 
     try {
       const enc = new TextEncoder().encode(`orion_frontier_salt_2026_${entered}`);
@@ -73,48 +70,19 @@ export const PasscodeModal: React.FC<PasscodeModalProps> = ({
         .map((b) => b.toString(16).padStart(2, "0"))
         .join("");
 
-      if (enteredHash === MASTER_HASH) {
-        // Master code unlocks everything
-        isValid = true;
-        localStorage.setItem("orion_unlocked_all", "true");
-        localStorage.setItem("orion_unlocked_deepseek", "true");
-        localStorage.setItem("orion_unlocked_low", "true");
-        localStorage.setItem("orion_unlocked_medium_high", "true");
-        localStorage.setItem("orion_access_code", entered);
-        localStorage.setItem("orion_code_deepseek", entered);
-        localStorage.setItem("orion_code_low", entered);
-        localStorage.setItem("orion_code_medium_high", entered);
-        localStorage.setItem("astra_frontier_unlocked", "true");
-        localStorage.setItem("astra_frontier_unlocked_code", entered);
-      } else if (enteredHash === DEEPSEEK_HASH) {
-        // DeepSeek passcode
-        isValid = true;
-        localStorage.setItem("orion_unlocked_deepseek", "true");
-        localStorage.setItem("orion_code_deepseek", entered);
-        localStorage.setItem("orion_access_code", entered);
-        localStorage.setItem("astra_frontier_unlocked", "true");
-        localStorage.setItem("astra_frontier_unlocked_code", entered);
-        if (!isDeepSeekTarget) {
-          switchedModelId = "deepseek-v4-flash";
+      if (isDeepSeekTarget) {
+        // DeepSeek requires strictly the DeepSeek passcode
+        if (enteredHash === DEEPSEEK_HASH) {
+          isValid = true;
+          localStorage.setItem("orion_unlocked_deepseek", "true");
+          localStorage.setItem("orion_code_deepseek", entered);
         }
-      } else if (enteredHash === LOW_HASH) {
-        // Low thinking passcode
-        if (isDeepSeekTarget) {
-          setIsVerifying(false);
-          setError(true);
-          setErrorMessage("Incorrect passcode. Access denied.");
-          setCode("");
-          inputRef.current?.focus();
-          return;
-        }
-        isValid = true;
-        localStorage.setItem("orion_unlocked_low", "true");
-        localStorage.setItem("orion_code_low", entered);
-        localStorage.setItem("orion_access_code", entered);
-        localStorage.setItem("astra_frontier_unlocked", "true");
-        localStorage.setItem("astra_frontier_unlocked_code", entered);
-        if (!isLowTarget) {
-          switchedModelId = "gpt-6-astra-low";
+      } else {
+        // All Astra & Claude models (low, medium, high) require strictly the Frontier passcode
+        if (enteredHash === FRONTIER_HASH) {
+          isValid = true;
+          localStorage.setItem("orion_unlocked_frontier", "true");
+          localStorage.setItem("orion_code_frontier", entered);
         }
       }
     } catch {
@@ -126,7 +94,7 @@ export const PasscodeModal: React.FC<PasscodeModalProps> = ({
       setIsVerifying(false);
 
       setTimeout(() => {
-        onSuccess(entered, switchedModelId);
+        onSuccess(entered);
         onClose();
       }, 350);
       return;

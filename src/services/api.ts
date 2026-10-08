@@ -129,16 +129,11 @@ export async function streamChatCompletion({
     "Content-Type": "application/json",
   };
 
-  // Attach user's authorized access code from localStorage
-  const userAccessCode =
-    localStorage.getItem("orion_access_code") ||
-    (model?.includes("deepseek")
-      ? localStorage.getItem("orion_code_deepseek")
-      : model?.includes("-low") || reasoningEffort === "low"
-      ? localStorage.getItem("orion_code_low")
-      : localStorage.getItem("orion_code_medium_high")) ||
-    localStorage.getItem("astra_frontier_unlocked_code") ||
-    "";
+  // Attach user's authorized access code from localStorage based on target model
+  const isDeepSeek = model?.includes("deepseek");
+  const userAccessCode = isDeepSeek
+    ? (localStorage.getItem("orion_code_deepseek") || "")
+    : (localStorage.getItem("orion_code_frontier") || localStorage.getItem("orion_code_low") || "");
 
   if (userAccessCode) {
     requestHeaders["x-access-code"] = userAccessCode;

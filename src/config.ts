@@ -93,33 +93,48 @@ export const AVAILABLE_MODELS: ModelOption[] = [
 
 export const DEFAULT_MODEL_ID = "gpt-6-astra-low";
 
-export function isModelUnlocked(modelId: string, effort?: string): boolean {
-  if (typeof window === "undefined") return false;
-  // If master access was granted
-  if (localStorage.getItem("orion_unlocked_all") === "true") {
-    return true;
+// Self-healing cleanup for legacy keys and cross-contaminated storage
+if (typeof window !== "undefined") {
+  try {
+    const dsCode = localStorage.getItem("orion_code_deepseek");
+    const frontierCode = localStorage.getItem("orion_code_frontier");
+    const lowCode = localStorage.getItem("orion_code_low");
+
+    // Clean obsolete master keys
+    localStorage.removeItem("orion_unlocked_all");
+    localStorage.removeItem("astra_frontier_unlocked");
+    localStorage.removeItem("astra_frontier_unlocked_code");
+
+    // If frontier code was cross-contaminated with deepseek or master code, wipe it
+    if (frontierCode && (frontierCode === dsCode || frontierCode === "00001971")) {
+      localStorage.removeItem("orion_unlocked_frontier");
+      localStorage.removeItem("orion_code_frontier");
+    }
+
+    // Auto-migrate valid lowCode (1952) to frontierCode if present
+    if (!localStorage.getItem("orion_code_frontier") && lowCode && lowCode !== dsCode && lowCode !== "00001971") {
+      localStorage.setItem("orion_unlocked_frontier", "true");
+      localStorage.setItem("orion_code_frontier", lowCode);
+    }
+  } catch {
+    // Ignore storage errors in sandbox environments
   }
+}
+
+export function isModelUnlocked(modelId: string, _effort?: string): boolean {
+  if (typeof window === "undefined") return false;
 
   if (modelId.includes("deepseek")) {
     return (
-      localStorage.getItem("orion_unlocked_deepseek") === "true" ||
+      localStorage.getItem("orion_unlocked_deepseek") === "true" &&
       Boolean(localStorage.getItem("orion_code_deepseek"))
     );
   }
 
-  const eff = modelId.includes("-low") ? "low" : modelId.includes("-high") ? "high" : (effort || "medium");
-  if (eff === "low") {
-    return (
-      localStorage.getItem("orion_unlocked_low") === "true" ||
-      localStorage.getItem("orion_unlocked_medium_high") === "true" ||
-      Boolean(localStorage.getItem("orion_code_low")) ||
-      Boolean(localStorage.getItem("orion_code_medium_high"))
-    );
-  }
-
+  // All GPT Astra and Claude models (Low, Medium, High)
   return (
-    localStorage.getItem("orion_unlocked_medium_high") === "true" ||
-    Boolean(localStorage.getItem("orion_code_medium_high"))
+    localStorage.getItem("orion_unlocked_frontier") === "true" &&
+    Boolean(localStorage.getItem("orion_code_frontier"))
   );
 }
 
