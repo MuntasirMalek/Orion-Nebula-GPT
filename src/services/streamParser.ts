@@ -77,7 +77,12 @@ export async function* parseEventStream(
             const parsed = JSON.parse(data);
             const delta = parsed.choices?.[0]?.delta;
             const deltaContent = delta?.content ?? parsed.choices?.[0]?.text ?? "";
-            const reasoningContent = delta?.reasoning_content ?? "";
+            const reasoningContent =
+              delta?.reasoning_content ??
+              delta?.thinking ??
+              delta?.reasoning ??
+              delta?.thought ??
+              "";
 
             if (reasoningContent) {
               if (!inThinking) {
@@ -111,7 +116,12 @@ export async function* parseEventStream(
             const parsed = JSON.parse(data);
             const delta = parsed.choices?.[0]?.delta;
             const deltaContent = delta?.content ?? parsed.choices?.[0]?.text ?? "";
-            const reasoningContent = delta?.reasoning_content ?? "";
+            const reasoningContent =
+              delta?.reasoning_content ??
+              delta?.thinking ??
+              delta?.reasoning ??
+              delta?.thought ??
+              "";
 
             if (reasoningContent) {
               yield reasoningContent;
