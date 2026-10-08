@@ -271,6 +271,40 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, theme, inde
                 <span>{message.error}</span>
               </div>
             )}
+
+            {/* Bottom Actions Bar (Quick Copy option at bottom of text) */}
+            {message.content && !message.isStreaming && (
+              <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-black/5 dark:border-white/10">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCopyMessage}
+                    className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md transition-all active:scale-95 cursor-pointer ${theme.message.copyButton}`}
+                    title="Copy full message"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copy message</span>
+                      </>
+                    )}
+                  </button>
+
+                  <span className="text-[11px] font-mono opacity-50 select-none hidden xs:inline-block">
+                    {displayContent.trim().split(/\s+/).filter(Boolean).length} words
+                  </span>
+                </div>
+
+                <div className="text-[11px] font-mono opacity-50 select-none">
+                  {formattedTime}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

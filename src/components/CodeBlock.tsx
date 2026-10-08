@@ -88,6 +88,33 @@ const CodeBlockComponent: React.FC<CodeBlockProps> = ({ language, code }) => {
           </pre>
         )}
       </div>
+
+      {/* Code Bottom Bar (for multi-line code snippets) */}
+      {code.includes("\n") && (
+        <div className="flex items-center justify-between px-4 py-2 bg-[#1e293b]/90 border-t border-slate-700/60 text-xs">
+          <span className="text-[11px] font-mono text-slate-400">
+            {code.split("\n").length} lines • {cleanLang}
+          </span>
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 hover:text-white transition-colors duration-150 active:scale-95 text-[11px] font-medium cursor-pointer"
+            title="Copy code to clipboard"
+          >
+            {copied ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-emerald-400 font-medium">Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3.5 h-3.5" />
+                <span>Copy code</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
