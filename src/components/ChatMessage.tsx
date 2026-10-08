@@ -28,8 +28,14 @@ interface ChatMessageProps {
 function cleanDisplayContent(raw: string): string {
   if (!raw) return "";
   return raw
-    .replace(/<think>[\s\S]*?<\/think>/gi, "")
-    .replace(/<think>[\s\S]*$/gi, "")
+    .replace(/<think\b[^>]*>[\s\S]*?<\/think>/gi, "")
+    .replace(/<think\b[^>]*>[\s\S]*$/gi, "")
+    .replace(/<thought\b[^>]*>[\s\S]*?<\/thought>/gi, "")
+    .replace(/<thought\b[^>]*>[\s\S]*$/gi, "")
+    .replace(/<reasoning\b[^>]*>[\s\S]*?<\/reasoning>/gi, "")
+    .replace(/<reasoning\b[^>]*>[\s\S]*$/gi, "")
+    .replace(/<antThinking\b[^>]*>[\s\S]*?<\/antThinking>/gi, "")
+    .replace(/<antThinking\b[^>]*>[\s\S]*$/gi, "")
     .trim();
 }
 
@@ -38,16 +44,6 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, theme, inde
   const [copied, setCopied] = useState(false);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
 
-  const handleCopyMessage = async () => {
-    try {
-      await navigator.clipboard.writeText(message.content);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Fallback
-    }
-  };
-
   const formattedTime = new Date(message.timestamp).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
@@ -55,9 +51,47 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, theme, inde
 
   const entryNumber = String(index + 1).padStart(2, "0");
 
-  const thinkMatch = /<think>([\s\S]*?)(?:<\/think>|$)/i.exec(message.content);
+  const thinkMatch = /<(?:think|thought|reasoning|antThinking)\b[^>]*>([\s\S]*?)(?:<\/(?:think|thought|reasoning|antThinking)>|$)/i.exec(message.content);
   const thinkingContent = thinkMatch ? thinkMatch[1].trim() : "";
   const displayContent = isUser ? message.content : cleanDisplayContent(message.content);
+  const textToCopy = isUser ? message.content : displayContent;
+  const hasTextToCopy = Boolean(textToCopy && textToCopy.trim().length > 0);
+
+  const handleCopyMessage = async () => {
+    if (!textToCopy) return;
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(textToCopy);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+        return;
+      }
+    } catch {
+      // Fallback below
+    }
+
+    // Fallback for non-secure contexts or older browsers
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = textToCopy;
+      textArea.style.position = "fixed";
+      textArea.style.opacity = "0";
+      textArea.style.left = "-9999px";
+      textArea.style.top = "-9999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand("copy");
+      document.body.removeChild(textArea);
+      if (successful) {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch {
+      // Fallback
+    }
+  };
 
   return (
     <>
@@ -128,7 +162,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, theme, inde
               </div>
 
               {/* Copy button */}
-              {message.content && !message.isStreaming && (
+              {hasTextToCopy && !message.isStreaming && (
                 <button
                   onClick={handleCopyMessage}
                   className={theme.message.copyButton}
@@ -273,14 +307,14 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, theme, inde
             )}
 
             {/* Bottom Actions Bar (Quick Copy option at bottom of text) */}
-            {message.content && !message.isStreaming && (
+            {hasTextToCopy && !message.isStreaming && (
               <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-black/5 dark:border-white/10">
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={handleCopyMessage}
                     className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md transition-all active:scale-95 cursor-pointer ${theme.message.copyButton}`}
-                    title="Copy full message"
+                    title="Copy message"
                   >
                     {copied ? (
                       <>
