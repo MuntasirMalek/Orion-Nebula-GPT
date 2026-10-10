@@ -244,7 +244,10 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, theme, inde
                         {doc.name}
                       </span>
                       <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                        {doc.type === "pdf" ? "PDF Document" : "Attached File"}{doc.pageCount ? ` · ${doc.pageCount} ${doc.pageCount === 1 ? 'page' : 'pages'}` : ""}{doc.size ? ` · ${formatBytes(doc.size)}` : ""}
+                        {doc.type === "pdf" ? "PDF Document" : (doc.name.split(".").pop()?.toUpperCase() || "TXT") + " File"}
+                        {doc.pageCount ? ` · ${doc.pageCount} ${doc.pageCount === 1 ? 'page' : 'pages'}` : ""}
+                        {doc.lineCount ? ` · ${doc.lineCount} ${doc.lineCount === 1 ? 'line' : 'lines'}` : ""}
+                        {doc.size ? ` · ${formatBytes(doc.size)}` : ""}
                       </span>
                     </div>
                   </div>

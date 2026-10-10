@@ -4,6 +4,7 @@ export interface AttachedDocument {
   type: "pdf" | "text" | "code";
   size: number;
   pageCount?: number;
+  lineCount?: number;
   extractedText?: string;
 }
 
