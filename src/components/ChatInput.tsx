@@ -220,7 +220,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const hintClass = theme ? theme.input.keyboardHint : "text-xs text-slate-500";
 
   return (
-    <div className={`w-full mx-auto px-2.5 sm:px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:pb-6 pt-1 sm:pt-2 ${theme ? theme.input.container : "max-w-4xl"}`}>
+    <div className={`shrink-0 w-full mx-auto px-2.5 sm:px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:pb-6 pt-1 sm:pt-2 ${theme ? theme.input.container : "max-w-4xl"}`}>
       {/* Hidden File Input */}
       <input
         type="file"
