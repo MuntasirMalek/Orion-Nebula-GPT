@@ -3,11 +3,12 @@ import { extractTextFromPdf } from "./pdfParser";
 export interface ProcessedAttachment {
   id: string;
   name: string;
-  type: "image" | "pdf" | "text";
+  type: "image" | "pdf" | "text" | "code";
   size: number;
   dataUrl?: string; // For images
   extractedText?: string; // For PDF or text documents
   pageCount?: number; // For PDF
+  lineCount?: number; // For text and code files
   fallbackImages?: string[]; // Scanned PDF fallback images for vision
   isLoading?: boolean;
   error?: string;
@@ -25,19 +26,32 @@ export function generateAttachmentId(): string {
   return "att_" + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
 }
 
-// Common text-based file extensions
+// Common text-based and vibe-coding file extensions
 const TEXT_EXTENSIONS = new Set([
-  "txt", "md", "markdown", "json", "csv", "tsv", "xml", "yaml", "yml",
-  "html", "htm", "css", "scss", "js", "jsx", "ts", "tsx", "py", "c",
-  "cpp", "h", "hpp", "java", "go", "rs", "sql", "sh", "bash", "zsh",
-  "env", "log", "ini", "toml", "conf", "config", "tex", "bib"
+  "txt", "text", "md", "markdown", "json", "csv", "tsv", "xml", "yaml", "yml",
+  "html", "htm", "css", "scss", "sass", "less", "js", "jsx", "mjs", "cjs",
+  "ts", "tsx", "py", "pyw", "c", "cpp", "cc", "cxx", "h", "hpp", "java",
+  "go", "rs", "sql", "sh", "bash", "zsh", "env", "log", "ini", "toml",
+  "conf", "config", "tex", "bib", "diff", "patch", "svg", "graphql", "gql",
+  "prisma", "dockerfile", "makefile", "r", "swift", "kt", "kts", "rb", "php"
 ]);
 
 export function isTextFile(file: File): boolean {
-  if (file.type && (file.type.startsWith("text/") || file.type.includes("json") || file.type.includes("javascript"))) {
+  if (file.type && (
+    file.type === "text/plain" ||
+    file.type.startsWith("text/") ||
+    file.type.includes("json") ||
+    file.type.includes("javascript") ||
+    file.type.includes("typescript") ||
+    file.type.includes("xml") ||
+    file.type.includes("yaml") ||
+    file.type.includes("csv")
+  )) {
     return true;
   }
-  const ext = file.name.split(".").pop()?.toLowerCase();
+  const name = file.name.toLowerCase();
+  if (name.endsWith(".txt") || name.endsWith(".text")) return true;
+  const ext = name.split(".").pop();
   return ext ? TEXT_EXTENSIONS.has(ext) : false;
 }
 
@@ -157,17 +171,26 @@ export async function processFile(file: File): Promise<ProcessedAttachment> {
   }
 
   if (isTextFile(file) || file.size < 5 * 1024 * 1024) {
-    // Treat as text/code
+    // Treat as text or code document
     try {
       let text = await processTextFile(file);
       if (text.length > MAX_DOCUMENT_CHARS) {
         text = text.slice(0, MAX_DOCUMENT_CHARS) + `\n\n[Note: File truncated to first ${MAX_DOCUMENT_CHARS} characters]`;
       }
+      const lineCount = text.split("\n").length;
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      const isCode = [
+        "js", "jsx", "ts", "tsx", "py", "html", "css", "scss", "json", "sql",
+        "sh", "bash", "zsh", "rs", "go", "c", "cpp", "h", "hpp", "java", "php",
+        "rb", "swift", "kt", "diff", "patch", "xml", "yaml", "yml"
+      ].includes(ext || "");
+
       return {
         id,
         name: file.name,
-        type: "text",
+        type: isCode ? "code" : "text",
         size: file.size,
+        lineCount,
         extractedText: text,
       };
     } catch (err: any) {

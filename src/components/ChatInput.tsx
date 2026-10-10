@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { ArrowUp, Square, Sparkles, ChevronUp, Check, Paperclip, X, Lock, FileText, FileCode, Loader2 } from "lucide-react";
+import { ArrowUp, Square, Sparkles, ChevronUp, Check, Paperclip, X, Lock, FileText, FileCode, Loader2, Code2 } from "lucide-react";
 import { AVAILABLE_MODELS, ModelOption, isModelUnlocked } from "../config";
 import { ThemeConfig } from "../themes";
 import { AttachedDocument } from "../types";
@@ -36,6 +36,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const [images, setImages] = useState<string[]>([]);
   const [documents, setDocuments] = useState<AttachedDocument[]>([]);
   const [isParsingFiles, setIsParsingFiles] = useState(false);
+  const [showVibePrompts, setShowVibePrompts] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
   const [, setIsUnlocked] = useState<boolean>(
@@ -101,6 +102,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               type: res.type as "pdf" | "text" | "code",
               size: res.size,
               pageCount: res.pageCount,
+              lineCount: res.lineCount,
               extractedText: res.extractedText,
             };
             setDocuments((prev) => [...prev, docItem]);
@@ -236,7 +238,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        accept="image/*,application/pdf,.pdf,.txt,.md,.markdown,.json,.csv,.js,.jsx,.ts,.tsx,.py,.html,.css,.yaml,.yml,.xml,.sql,.sh,.log,.env"
+        accept="text/plain,.txt,application/pdf,.pdf,text/*,.md,.markdown,.json,.csv,.tsv,.xml,.yaml,.yml,.html,.css,.js,.jsx,.ts,.tsx,.py,.c,.cpp,.h,.java,.go,.rs,.sql,.sh,.bash,.zsh,.env,.log,image/*"
         multiple
         className="hidden"
       />
@@ -250,6 +252,32 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             isDragging ? "ring-2 ring-cyan-500 bg-cyan-50/20" : ""
           }`}
         >
+          {/* Quick Vibe Coding Prompt Shortcuts */}
+          {showVibePrompts && (
+            <div className="flex items-center gap-1.5 p-2.5 border-b border-slate-200/60 overflow-x-auto [scrollbar-width:none]">
+              {[
+                { label: "🚀 Full Component", prompt: "Build a complete, drop-in React + Tailwind component for " },
+                { label: "🐞 Fix Bug", prompt: "Analyze and fix the error in this code: " },
+                { label: "⚡ Refactor", prompt: "Refactor this code for cleaner architecture and maximum performance: " },
+                { label: "🧪 Write Tests", prompt: "Write comprehensive unit tests with edge cases for " },
+                { label: "📝 Explain Code", prompt: "Explain how this code works step-by-step: " },
+              ].map((item) => (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={() => {
+                    setText((prev) => (prev ? `${prev}\n${item.prompt}` : item.prompt));
+                    setShowVibePrompts(false);
+                    textareaRef.current?.focus();
+                  }}
+                  className="shrink-0 px-2.5 py-1 rounded-lg bg-cyan-50 hover:bg-cyan-100 border border-cyan-200/80 text-[11px] font-semibold text-cyan-800 transition-colors cursor-pointer"
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* File & Image Preview Chips (Shown above textarea if files or pictures are attached) */}
           {(images.length > 0 || documents.length > 0 || isParsingFiles) && (
             <div className="flex items-center gap-2 p-3 pb-0 overflow-x-auto [scrollbar-width:none]">
@@ -271,7 +299,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                       {doc.name}
                     </span>
                     <span className="text-[10px] text-slate-500">
-                      {doc.type.toUpperCase()}{doc.pageCount ? ` · ${doc.pageCount} ${doc.pageCount === 1 ? 'page' : 'pages'}` : ""}{doc.size ? ` · ${formatBytes(doc.size)}` : ""}
+                      {doc.type === "pdf" ? "PDF" : doc.name.split(".").pop()?.toUpperCase() || "TXT"}
+                      {doc.pageCount ? ` · ${doc.pageCount} ${doc.pageCount === 1 ? 'page' : 'pages'}` : ""}
+                      {doc.lineCount ? ` · ${doc.lineCount} ${doc.lineCount === 1 ? 'line' : 'lines'}` : ""}
+                      {doc.size ? ` · ${formatBytes(doc.size)}` : ""}
                     </span>
                   </div>
                   <button
@@ -334,7 +365,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
-            placeholder={`Message ${selectedModel.name} (paste, attach PDF, file or picture)...`}
+            placeholder={`Message ${selectedModel.name} (paste, attach .txt, PDF, code or picture)...`}
             rows={1}
             disabled={disabled}
             className={`w-full resize-none bg-transparent pt-3.5 pb-12 pl-3.5 pr-14 leading-relaxed focus:outline-none min-h-[54px] max-h-[220px] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${textareaClass}`}
@@ -463,13 +494,26 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               </span>
             </div>
 
-            {/* Controls: Attach File/Picture & Send / Stop Generation Button */}
+            {/* Controls: Attach File/Picture, Vibe Prompts & Send / Stop Generation Button */}
             <div className="pointer-events-auto flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setShowVibePrompts((prev) => !prev)}
+                className={`p-2 rounded-xl transition-all cursor-pointer ${
+                  showVibePrompts
+                    ? "text-cyan-700 bg-cyan-100/90 font-bold shadow-xs"
+                    : "text-slate-500 hover:text-cyan-700 hover:bg-slate-100/80 active:scale-95"
+                }`}
+                title="Vibe code prompt shortcuts"
+              >
+                <Code2 className="w-4 h-4" />
+              </button>
+
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="p-2 rounded-xl text-slate-500 hover:text-cyan-700 hover:bg-slate-100/80 active:scale-95 transition-all cursor-pointer"
-                title="Attach file (PDF, documents, code) or picture (Vision)"
+                title="Attach file (.txt, PDF, code) or picture (Vision)"
               >
                 <Paperclip className="w-4 h-4" />
               </button>

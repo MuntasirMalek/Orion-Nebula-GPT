@@ -24,6 +24,7 @@ import {
   Lightbulb,
   Zap,
   Keyboard,
+  Code2,
 } from "lucide-react";
 
 interface SettingsModalProps {
@@ -431,8 +432,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </button>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[
+                {
+                  id: "vibecoder",
+                  label: "Vibe Coder",
+                  icon: Code2,
+                  desc: "Complete & Drop-in",
+                  prompt:
+                    "You are an elite principal engineer and vibe coding partner. When writing code, ALWAYS provide 100% complete, production-ready, drop-in implementations without omitting sections, placeholders, or lazy comments like '// ... rest of code unchanged'. Include filepath comments at the top (e.g. `// filepath: src/components/Name.tsx`), strict TypeScript typing, clean modular design, and robust edge-case handling.",
+                },
                 {
                   id: "scholar",
                   label: "Cohort Scholar",
@@ -464,7 +473,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <button
                     key={mode.id}
                     type="button"
-                    onClick={() => setSystemPrompt(isActive ? "" : mode.prompt)}
+                    onClick={() => {
+                      if (isActive) {
+                        setSystemPrompt("");
+                      } else {
+                        setSystemPrompt(mode.prompt);
+                        if (mode.id === "vibecoder") {
+                          setTemperature(0.2);
+                          setSendKeyMode("cmd_enter");
+                        }
+                      }
+                    }}
                     className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
                       isActive
                         ? "bg-cyan-50 border-cyan-400 text-cyan-950 font-bold shadow-xs"
