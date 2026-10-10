@@ -1,9 +1,19 @@
+export interface AttachedDocument {
+  id: string;
+  name: string;
+  type: "pdf" | "text" | "code";
+  size: number;
+  pageCount?: number;
+  extractedText?: string;
+}
+
 export interface Message {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
   timestamp: number;
   images?: string[]; // Array of base64 data URLs for multimodal vision support
+  documents?: AttachedDocument[]; // Array of attached documents (PDFs, text/code files)
   isStreaming?: boolean;
   error?: string;
   model?: string;

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Message } from "../types";
+import { Message, AttachedDocument } from "../types";
 import { ThemeConfig } from "../themes";
 import { AstraLogo } from "./AstraLogo";
 import { ModelStatusBadge } from "./ModelStatusBadge";
@@ -19,7 +19,7 @@ interface ChatInterfaceProps {
   onSelectModel: (modelId: string) => void;
   reasoningEffort?: "low" | "medium" | "high";
   onSelectReasoningEffort?: (effort: "low" | "medium" | "high") => void;
-  onSendMessage: (text: string, images?: string[]) => void;
+  onSendMessage: (text: string, images?: string[], documents?: AttachedDocument[]) => void;
   onStopStreaming: () => void;
   onToggleSidebar: () => void;
   onOpenSettings: () => void;
