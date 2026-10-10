@@ -94,7 +94,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   return (
     <div className="relative flex flex-col flex-1 h-full min-w-0 bg-transparent overflow-hidden">
       {/* Top Bar Header */}
-      <header className={`sticky top-0 z-30 flex items-center justify-between px-2.5 sm:px-6 h-14 md:h-16 w-full max-w-full transition-colors duration-300 ${theme.header.container}`}>
+      <header className={`sticky top-0 z-30 shrink-0 flex items-center justify-between px-2.5 sm:px-6 h-14 md:h-16 w-full max-w-full transition-colors duration-300 ${theme.header.container}`}>
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 mr-1.5 sm:mr-2">
           <button
             onClick={onToggleSidebar}
@@ -151,7 +151,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto overflow-x-hidden relative flex flex-col"
+        className="flex-1 overflow-y-auto overflow-x-hidden relative flex flex-col overscroll-contain"
       >
         {messages.length === 0 ? (
           /* Empty State: Full unobstructed view of the wallpaper */

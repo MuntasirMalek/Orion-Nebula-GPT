@@ -93,11 +93,38 @@ export default function App() {
     checkWidth();
   }, []);
 
+  // Real-time mobile visual viewport synchronization (keeps input strictly above browser bars and keyboard)
+  useEffect(() => {
+    const updateViewportHeight = () => {
+      const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      document.documentElement.style.setProperty("--app-height", `${h}px`);
+    };
+
+    updateViewportHeight();
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", updateViewportHeight);
+      window.visualViewport.addEventListener("scroll", updateViewportHeight);
+    }
+    window.addEventListener("resize", updateViewportHeight);
+    window.addEventListener("orientationchange", updateViewportHeight);
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", updateViewportHeight);
+        window.visualViewport.removeEventListener("scroll", updateViewportHeight);
+      }
+      window.removeEventListener("resize", updateViewportHeight);
+      window.removeEventListener("orientationchange", updateViewportHeight);
+    };
+  }, []);
+
   const activeThemeConfig = THEMES[currentTheme] || THEMES.stripe_press;
 
   return (
     <div
-      className={`relative flex h-screen h-[100dvh] w-screen overflow-hidden ${activeThemeConfig.rootClass} selection:bg-lime-500/25 selection:text-lime-950 transition-colors duration-300`}
+      style={{ height: "var(--app-height, 100%)" }}
+      className={`fixed inset-0 flex h-full w-full max-w-full overflow-hidden ${activeThemeConfig.rootClass} selection:bg-lime-500/25 selection:text-lime-950 transition-colors duration-300`}
     >
       {/* Dynamic Background with Interactive Nebula Motion, Starfield & Supernova Explosions */}
       <WallpaperBackground
