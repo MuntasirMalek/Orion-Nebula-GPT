@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
-import { ArrowUp, Square, Sparkles, ChevronUp, Check, Image as ImageIcon, Paperclip, X, Lock } from "lucide-react";
+import { ArrowUp, Square, Sparkles, ChevronUp, Check, Paperclip, X, Lock, FileText, FileCode, Loader2 } from "lucide-react";
 import { AVAILABLE_MODELS, ModelOption, isModelUnlocked } from "../config";
 import { ThemeConfig } from "../themes";
+import { AttachedDocument } from "../types";
+import { processFile, isImageFile, isPdfFile, isTextFile, formatBytes } from "../utils/fileAttachment";
 import { PasscodeModal } from "./PasscodeModal";
 import { ModelNameLabel } from "./ModelNameLabel";
 
 interface ChatInputProps {
-  onSendMessage: (content: string, images?: string[]) => void;
+  onSendMessage: (content: string, images?: string[], documents?: AttachedDocument[]) => void;
   onStopStreaming: () => void;
   isStreaming: boolean;
   disabled?: boolean;
@@ -32,6 +34,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 }) => {
   const [text, setText] = useState("");
   const [images, setImages] = useState<string[]>([]);
+  const [documents, setDocuments] = useState<AttachedDocument[]>([]);
+  const [isParsingFiles, setIsParsingFiles] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
   const [, setIsUnlocked] = useState<boolean>(
@@ -68,57 +72,62 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Process image file to base64 with canvas downscaling for token & bandwidth optimization
-  const processImageFile = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        if (!result) return reject(new Error("Failed to read image file"));
+  const removeImage = (indexToRemove: number) => {
+    setImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+  };
 
-        // If file is > 1MB, downscale using canvas to preserve token quota and speed up upload
-        if (file.size > 1024 * 1024) {
-          const img = new Image();
-          img.onload = () => {
-            const maxDim = 1600;
-            let width = img.width;
-            let height = img.height;
-            if (width > maxDim || height > maxDim) {
-              if (width > height) {
-                height = Math.round((height * maxDim) / width);
-                width = maxDim;
-              } else {
-                width = Math.round((width * maxDim) / height);
-                height = maxDim;
-              }
-            }
-            const canvas = document.createElement("canvas");
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext("2d");
-            ctx?.drawImage(img, 0, 0, width, height);
-            resolve(canvas.toDataURL("image/jpeg", 0.85));
-          };
-          img.onerror = () => resolve(result);
-          img.src = result;
-        } else {
-          resolve(result);
-        }
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+  const removeDocument = (indexToRemove: number) => {
+    setDocuments((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
   const handleFiles = async (files: FileList | File[]) => {
-    const validFiles = Array.from(files).filter((file) => file.type.startsWith("image/"));
-    if (validFiles.length === 0) return;
+    const fileList = Array.from(files);
+    if (fileList.length === 0) return;
 
+    setIsParsingFiles(true);
     try {
-      const base64List = await Promise.all(validFiles.map(processImageFile));
-      setImages((prev) => [...prev, ...base64List]);
-    } catch {
-      // Ignore read errors
+      for (const file of fileList) {
+        if (isImageFile(file)) {
+          const res = await processFile(file);
+          if (res.dataUrl) {
+            setImages((prev) => [...prev, res.dataUrl!]);
+          }
+        } else if (isPdfFile(file) || isTextFile(file) || file.size < 10 * 1024 * 1024) {
+          const res = await processFile(file);
+          if (res.extractedText) {
+            const docItem: AttachedDocument = {
+              id: res.id,
+              name: res.name,
+              type: res.type as "pdf" | "text" | "code",
+              size: res.size,
+              pageCount: res.pageCount,
+              extractedText: res.extractedText,
+            };
+            setDocuments((prev) => [...prev, docItem]);
+
+            // If scanned PDF produced vision fallback images, attach them to images
+            if (res.fallbackImages && res.fallbackImages.length > 0) {
+              setImages((prev) => [...prev, ...res.fallbackImages!]);
+            }
+          } else if (res.fallbackImages && res.fallbackImages.length > 0) {
+            // Scanned PDF with fallback images for vision
+            const docItem: AttachedDocument = {
+              id: res.id,
+              name: res.name,
+              type: "pdf",
+              size: res.size,
+              pageCount: res.pageCount,
+              extractedText: "[Scanned PDF pages attached as visual document]",
+            };
+            setDocuments((prev) => [...prev, docItem]);
+            setImages((prev) => [...prev, ...res.fallbackImages!]);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error processing files:", err);
+    } finally {
+      setIsParsingFiles(false);
     }
   };
 
@@ -129,22 +138,22 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  // Clipboard Paste Support (Cmd+V of screenshots or copied images)
+  // Clipboard Paste Support (Cmd+V of screenshots, copied images or files)
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     const items = e.clipboardData?.items;
     if (!items) return;
 
-    const imageFiles: File[] = [];
+    const filesToProcess: File[] = [];
     for (let i = 0; i < items.length; i++) {
-      if (items[i].type.indexOf("image") !== -1) {
-        const file = items[i].getAsFile();
-        if (file) imageFiles.push(file);
+      const file = items[i].getAsFile();
+      if (file) {
+        filesToProcess.push(file);
       }
     }
 
-    if (imageFiles.length > 0) {
+    if (filesToProcess.length > 0) {
       e.preventDefault();
-      handleFiles(imageFiles);
+      handleFiles(filesToProcess);
     }
   };
 
@@ -167,10 +176,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  const removeImage = (indexToRemove: number) => {
-    setImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
-  };
-
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (isStreaming) {
@@ -178,7 +183,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       return;
     }
     const trimmed = text.trim();
-    if ((!trimmed && images.length === 0) || disabled) return;
+    if ((!trimmed && images.length === 0 && documents.length === 0) || isParsingFiles || disabled) return;
 
     // Check if model is locked before sending
     const isLocked = Boolean(
@@ -190,9 +195,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       return;
     }
 
-    onSendMessage(trimmed, images.length > 0 ? images : undefined);
+    onSendMessage(
+      trimmed,
+      images.length > 0 ? images : undefined,
+      documents.length > 0 ? documents : undefined
+    );
     setText("");
     setImages([]);
+    setDocuments([]);
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
@@ -226,7 +236,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        accept="image/*"
+        accept="image/*,application/pdf,.pdf,.txt,.md,.markdown,.json,.csv,.js,.jsx,.ts,.tsx,.py,.html,.css,.yaml,.yml,.xml,.sql,.sh,.log,.env"
         multiple
         className="hidden"
       />
@@ -240,9 +250,50 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             isDragging ? "ring-2 ring-cyan-500 bg-cyan-50/20" : ""
           }`}
         >
-          {/* Image Preview Chips (Shown above textarea if pictures are attached) */}
-          {images.length > 0 && (
+          {/* File & Image Preview Chips (Shown above textarea if files or pictures are attached) */}
+          {(images.length > 0 || documents.length > 0 || isParsingFiles) && (
             <div className="flex items-center gap-2 p-3 pb-0 overflow-x-auto [scrollbar-width:none]">
+              {/* Document Chips */}
+              {documents.map((doc, idx) => (
+                <div
+                  key={doc.id || idx}
+                  className="relative group shrink-0 inline-flex items-center gap-2.5 pl-2.5 pr-8 py-2 rounded-xl bg-slate-50/90 border border-slate-200/90 shadow-xs text-xs text-slate-800"
+                >
+                  <div className={`p-1.5 rounded-lg flex items-center justify-center ${doc.type === "pdf" ? "bg-rose-50 text-rose-600 border border-rose-100" : "bg-cyan-50 text-cyan-700 border border-cyan-100"}`}>
+                    {doc.type === "pdf" ? (
+                      <FileText className="w-4 h-4 text-rose-500" />
+                    ) : (
+                      <FileCode className="w-4 h-4 text-cyan-600" />
+                    )}
+                  </div>
+                  <div className="flex flex-col min-w-0 pr-1">
+                    <span className="font-semibold truncate max-w-[130px] sm:max-w-[180px] text-slate-800" title={doc.name}>
+                      {doc.name}
+                    </span>
+                    <span className="text-[10px] text-slate-500">
+                      {doc.type.toUpperCase()}{doc.pageCount ? ` · ${doc.pageCount} ${doc.pageCount === 1 ? 'page' : 'pages'}` : ""}{doc.size ? ` · ${formatBytes(doc.size)}` : ""}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeDocument(idx)}
+                    className="absolute top-1.5 right-1.5 p-1 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                    title="Remove file"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+
+              {/* Parsing Indicator */}
+              {isParsingFiles && (
+                <div className="shrink-0 inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-cyan-50/80 border border-cyan-200/80 text-xs text-cyan-800 font-medium animate-pulse">
+                  <Loader2 className="w-4 h-4 animate-spin text-cyan-600" />
+                  <span>Reading document...</span>
+                </div>
+              )}
+
+              {/* Image Chips */}
               {images.map((imgSrc, idx) => (
                 <div
                   key={idx}
@@ -263,13 +314,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   </button>
                 </div>
               ))}
+
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="shrink-0 w-16 h-16 rounded-xl border border-dashed border-slate-300 hover:border-cyan-500 hover:bg-cyan-50/50 flex flex-col items-center justify-center text-slate-400 hover:text-cyan-700 transition-colors gap-1"
-                title="Add more images"
+                title="Add more files or pictures"
               >
-                <ImageIcon className="w-4 h-4" />
+                <Paperclip className="w-4 h-4" />
                 <span className="text-[10px] font-medium">+Add</span>
               </button>
             </div>
@@ -282,7 +334,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
-            placeholder={`Message ${selectedModel.name} (paste or attach pictures)...`}
+            placeholder={`Message ${selectedModel.name} (paste, attach PDF, file or picture)...`}
             rows={1}
             disabled={disabled}
             className={`w-full resize-none bg-transparent pt-3.5 pb-12 pl-3.5 pr-14 leading-relaxed focus:outline-none min-h-[54px] max-h-[220px] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${textareaClass}`}
@@ -411,13 +463,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               </span>
             </div>
 
-            {/* Controls: Attach Picture & Send / Stop Generation Button */}
+            {/* Controls: Attach File/Picture & Send / Stop Generation Button */}
             <div className="pointer-events-auto flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="p-2 rounded-xl text-slate-500 hover:text-cyan-700 hover:bg-slate-100/80 active:scale-95 transition-all cursor-pointer"
-                title="Attach picture (Vision)"
+                title="Attach file (PDF, documents, code) or picture (Vision)"
               >
                 <Paperclip className="w-4 h-4" />
               </button>
@@ -434,7 +486,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               ) : (
                 <button
                   type="submit"
-                  disabled={(!text.trim() && images.length === 0) || disabled}
+                  disabled={(!text.trim() && images.length === 0 && documents.length === 0) || isParsingFiles || disabled}
                   className={`${sendBtnClass} disabled:opacity-30 disabled:pointer-events-none`}
                   title="Send message"
                 >
@@ -469,10 +521,15 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
           // Auto-send pending message seamlessly upon unlock
           const trimmed = text.trim();
-          if (trimmed || images.length > 0) {
-            onSendMessage(trimmed, images.length > 0 ? images : undefined);
+          if (trimmed || images.length > 0 || documents.length > 0) {
+            onSendMessage(
+              trimmed,
+              images.length > 0 ? images : undefined,
+              documents.length > 0 ? documents : undefined
+            );
             setText("");
             setImages([]);
+            setDocuments([]);
             if (textareaRef.current) {
               textareaRef.current.style.height = "auto";
             }

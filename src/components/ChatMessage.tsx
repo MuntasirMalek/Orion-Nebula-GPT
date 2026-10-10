@@ -15,7 +15,10 @@ import {
   Maximize2,
   X,
   Sparkles,
+  FileText,
+  FileCode,
 } from "lucide-react";
+import { formatBytes } from "../utils/fileAttachment";
 
 interface ChatMessageProps {
   message: Message;
@@ -221,6 +224,35 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, theme, inde
               </div>
             )}
 
+            {/* User Attached Documents (PDFs, text files, code) */}
+            {message.documents && message.documents.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {message.documents.map((doc, i) => (
+                  <div
+                    key={doc.id || i}
+                    className="inline-flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/90 dark:border-slate-700/80 shadow-xs text-xs text-slate-800 dark:text-slate-200"
+                  >
+                    <div className={`p-1.5 rounded-lg flex items-center justify-center ${doc.type === "pdf" ? "bg-rose-50 text-rose-600 border border-rose-100 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/50" : "bg-cyan-50 text-cyan-700 border border-cyan-100 dark:bg-cyan-950/40 dark:text-cyan-400 dark:border-cyan-900/50"}`}>
+                      {doc.type === "pdf" ? (
+                        <FileText className="w-4 h-4 text-rose-500" />
+                      ) : (
+                        <FileCode className="w-4 h-4 text-cyan-600" />
+                      )}
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-semibold truncate max-w-[200px]" title={doc.name}>
+                        {doc.name}
+                      </span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                        {doc.type === "pdf" ? "PDF Document" : "Attached File"}{doc.pageCount ? ` · ${doc.pageCount} ${doc.pageCount === 1 ? 'page' : 'pages'}` : ""}{doc.size ? ` · ${formatBytes(doc.size)}` : ""}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+
 
             {/* Main Message Body */}
             <div className={isUser ? theme.message.bodyTextUser : theme.message.bodyTextAssistant}>
@@ -402,6 +434,7 @@ export const ChatMessage = React.memo<ChatMessageProps>(
       prev.message.isStreaming === next.message.isStreaming &&
       prev.message.error === next.message.error &&
       (prev.message.images?.length || 0) === (next.message.images?.length || 0) &&
+      (prev.message.documents?.length || 0) === (next.message.documents?.length || 0) &&
       prev.theme.id === next.theme.id &&
       prev.index === next.index
     );

@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Message, ChatSession, AppSettings } from "../types";
+import { Message, ChatSession, AppSettings, AttachedDocument } from "../types";
 import { DEFAULT_BACKEND_URL, DEFAULT_SYSTEM_PROMPT, DEFAULT_MODEL_ID, AVAILABLE_MODELS } from "../config";
 import { useLocalStorage } from "./useLocalStorage";
 import { streamChatCompletion } from "../services/api";
@@ -173,10 +173,11 @@ export function useChat() {
   }, [currentSessionId, setSessions]);
 
   const sendMessage = useCallback(
-    async (text: string, images?: string[]) => {
+    async (text: string, images?: string[], documents?: AttachedDocument[]) => {
       const content = text.trim();
       const hasImages = Array.isArray(images) && images.length > 0;
-      if ((!content && !hasImages) || isStreaming) return;
+      const hasDocs = Array.isArray(documents) && documents.length > 0;
+      if ((!content && !hasImages && !hasDocs) || isStreaming) return;
 
       const userMsg: Message = {
         id: generateId(),
@@ -184,6 +185,7 @@ export function useChat() {
         content,
         timestamp: Date.now(),
         ...(hasImages ? { images } : {}),
+        ...(hasDocs ? { documents } : {}),
       };
 
       const assistantMsgId = generateId();
@@ -200,10 +202,12 @@ export function useChat() {
       let newTitle = currentSession.title;
       if (
         (currentSession.messages.length === 0 || currentSession.title === "New Conversation") &&
-        (content.length > 0 || hasImages)
+        (content.length > 0 || hasImages || hasDocs)
       ) {
         if (content.length > 0) {
           newTitle = content.slice(0, 32).trim() + (content.length > 32 ? "..." : "");
+        } else if (hasDocs && documents[0]) {
+          newTitle = documents[0].name.slice(0, 32).trim();
         } else {
           newTitle = "Vision Analysis";
         }

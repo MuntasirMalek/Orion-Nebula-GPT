@@ -92,11 +92,29 @@ export async function streamChatCompletion({
   }
 
   for (const msg of windowedMessages) {
+    let textContent = msg.content || "";
+    if (msg.documents && msg.documents.length > 0) {
+      const docHeaders = msg.documents
+        .filter((d) => d.extractedText && d.extractedText.trim().length > 0)
+        .map((d) => {
+          const typeLabel = d.type === "pdf" ? "PDF Document" : "Attached Document";
+          const pageInfo = d.pageCount ? ` (${d.pageCount} ${d.pageCount === 1 ? 'page' : 'pages'})` : "";
+          return `[Attached ${typeLabel}: ${d.name}${pageInfo}]\n${d.extractedText}\n[End of ${d.name}]`;
+        })
+        .join("\n\n");
+
+      if (docHeaders) {
+        textContent = textContent.trim()
+          ? `${docHeaders}\n\n${textContent.trim()}`
+          : `${docHeaders}\n\nPlease analyze, summarize, or explain the attached document.`;
+      }
+    }
+
     if (msg.images && msg.images.length > 0) {
       // Multimodal vision format
       const parts: any[] = [];
-      if (msg.content) {
-        parts.push({ type: "text", text: msg.content });
+      if (textContent) {
+        parts.push({ type: "text", text: textContent });
       }
       for (const imgUrl of msg.images) {
         parts.push({
@@ -111,7 +129,7 @@ export async function streamChatCompletion({
         content: parts,
       });
     } else {
-      let content = msg.content;
+      let content = textContent;
       if (typeof content === "string" && /[\u0980-\u09FF]/.test(content)) {
         if (!content.startsWith("[Instruction:")) {
           content = `[Instruction: Please process the following user query and respond in the user's requested language]:\n${content}`;
