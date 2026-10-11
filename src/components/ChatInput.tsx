@@ -81,50 +81,75 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     setDocuments((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
+  const clearAllAttachments = () => {
+    setImages([]);
+    setDocuments([]);
+  };
+
   const handleFiles = async (files: FileList | File[]) => {
     const fileList = Array.from(files);
     if (fileList.length === 0) return;
 
     setIsParsingFiles(true);
     try {
-      for (const file of fileList) {
-        if (isImageFile(file)) {
-          const res = await processFile(file);
-          if (res.dataUrl) {
-            setImages((prev) => [...prev, res.dataUrl!]);
-          }
-        } else if (isPdfFile(file) || isTextFile(file) || file.size < 10 * 1024 * 1024) {
-          const res = await processFile(file);
-          if (res.extractedText) {
-            const docItem: AttachedDocument = {
-              id: res.id,
-              name: res.name,
-              type: res.type as "pdf" | "text" | "code",
-              size: res.size,
-              pageCount: res.pageCount,
-              lineCount: res.lineCount,
-              extractedText: res.extractedText,
-            };
-            setDocuments((prev) => [...prev, docItem]);
-
-            // If scanned PDF produced vision fallback images, attach them to images
-            if (res.fallbackImages && res.fallbackImages.length > 0) {
-              setImages((prev) => [...prev, ...res.fallbackImages!]);
+      const results = await Promise.all(
+        fileList.map(async (file) => {
+          try {
+            if (isImageFile(file)) {
+              return await processFile(file);
             }
-          } else if (res.fallbackImages && res.fallbackImages.length > 0) {
-            // Scanned PDF with fallback images for vision
-            const docItem: AttachedDocument = {
-              id: res.id,
-              name: res.name,
-              type: "pdf",
-              size: res.size,
-              pageCount: res.pageCount,
-              extractedText: "[Scanned PDF pages attached as visual document]",
-            };
-            setDocuments((prev) => [...prev, docItem]);
-            setImages((prev) => [...prev, ...res.fallbackImages!]);
+            if (isPdfFile(file) || isTextFile(file) || file.size < 15 * 1024 * 1024) {
+              return await processFile(file);
+            }
+          } catch (err) {
+            console.error(`Error processing ${file.name}:`, err);
           }
+          return null;
+        })
+      );
+
+      const newImages: string[] = [];
+      const newDocs: AttachedDocument[] = [];
+
+      for (const res of results) {
+        if (!res) continue;
+        if (res.type === "image" && res.dataUrl) {
+          newImages.push(res.dataUrl);
+        } else if (res.extractedText !== undefined) {
+          newDocs.push({
+            id: res.id,
+            name: res.name,
+            type: res.type as "pdf" | "text" | "code",
+            size: res.size,
+            pageCount: res.pageCount,
+            lineCount: res.lineCount,
+            extractedText: res.extractedText,
+          });
+          if (res.fallbackImages && res.fallbackImages.length > 0) {
+            newImages.push(...res.fallbackImages);
+          }
+        } else if (res.fallbackImages && res.fallbackImages.length > 0) {
+          newDocs.push({
+            id: res.id,
+            name: res.name,
+            type: "pdf",
+            size: res.size,
+            pageCount: res.pageCount,
+            extractedText: "[Scanned PDF pages attached as visual document]",
+          });
+          newImages.push(...res.fallbackImages);
         }
+      }
+
+      if (newImages.length > 0) {
+        setImages((prev) => [...prev, ...newImages]);
+      }
+      if (newDocs.length > 0) {
+        setDocuments((prev) => {
+          const existingKeys = new Set(prev.map((d) => `${d.name}:${d.size}`));
+          const uniqueNew = newDocs.filter((d) => !existingKeys.has(`${d.name}:${d.size}`));
+          return [...prev, ...uniqueNew];
+        });
       }
     } catch (err) {
       console.error("Error processing files:", err);
@@ -135,8 +160,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      handleFiles(e.target.files);
+      const selectedFiles = Array.from(e.target.files);
       e.target.value = "";
+      handleFiles(selectedFiles);
     }
   };
 
@@ -233,12 +259,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   return (
     <div className={`shrink-0 w-full mx-auto px-2.5 sm:px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:pb-6 pt-1 sm:pt-2 ${theme ? theme.input.container : "max-w-4xl"}`}>
-      {/* Hidden File Input */}
+      {/* Hidden File Input — no restrictive accept filter so Android/iOS/desktop allow multi-selecting .py, .txt, .ts, .pdf, images, etc. together */}
       <input
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        accept="text/plain,.txt,application/pdf,.pdf,text/*,.md,.markdown,.json,.csv,.tsv,.xml,.yaml,.yml,.html,.css,.js,.jsx,.ts,.tsx,.py,.c,.cpp,.h,.java,.go,.rs,.sql,.sh,.bash,.zsh,.env,.log,image/*"
         multiple
         className="hidden"
       />
@@ -259,6 +284,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 { label: "🚀 Full Component", prompt: "Build a complete, drop-in React + Tailwind component for " },
                 { label: "🐞 Fix Bug", prompt: "Analyze and fix the error in this code: " },
                 { label: "⚡ Refactor", prompt: "Refactor this code for cleaner architecture and maximum performance: " },
+                { label: "📂 Multi-File Review", prompt: "Review all attached files together, explain how they interact, and provide any fixes or improvements across files: " },
                 { label: "🧪 Write Tests", prompt: "Write comprehensive unit tests with edge cases for " },
                 { label: "📝 Explain Code", prompt: "Explain how this code works step-by-step: " },
               ].map((item) => (
@@ -280,81 +306,98 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
           {/* File & Image Preview Chips (Shown above textarea if files or pictures are attached) */}
           {(images.length > 0 || documents.length > 0 || isParsingFiles) && (
-            <div className="flex items-center gap-2 p-3 pb-0 overflow-x-auto [scrollbar-width:none]">
-              {/* Document Chips */}
-              {documents.map((doc, idx) => (
-                <div
-                  key={doc.id || idx}
-                  className="relative group shrink-0 inline-flex items-center gap-2.5 pl-2.5 pr-8 py-2 rounded-xl bg-slate-50/90 border border-slate-200/90 shadow-xs text-xs text-slate-800"
-                >
-                  <div className={`p-1.5 rounded-lg flex items-center justify-center ${doc.type === "pdf" ? "bg-rose-50 text-rose-600 border border-rose-100" : "bg-cyan-50 text-cyan-700 border border-cyan-100"}`}>
-                    {doc.type === "pdf" ? (
-                      <FileText className="w-4 h-4 text-rose-500" />
-                    ) : (
-                      <FileCode className="w-4 h-4 text-cyan-600" />
-                    )}
-                  </div>
-                  <div className="flex flex-col min-w-0 pr-1">
-                    <span className="font-semibold truncate max-w-[130px] sm:max-w-[180px] text-slate-800" title={doc.name}>
-                      {doc.name}
-                    </span>
-                    <span className="text-[10px] text-slate-500">
-                      {doc.type === "pdf" ? "PDF" : doc.name.split(".").pop()?.toUpperCase() || "TXT"}
-                      {doc.pageCount ? ` · ${doc.pageCount} ${doc.pageCount === 1 ? 'page' : 'pages'}` : ""}
-                      {doc.lineCount ? ` · ${doc.lineCount} ${doc.lineCount === 1 ? 'line' : 'lines'}` : ""}
-                      {doc.size ? ` · ${formatBytes(doc.size)}` : ""}
-                    </span>
-                  </div>
+            <div className="flex flex-col gap-1.5 p-3 pb-0">
+              {documents.length + images.length > 1 && (
+                <div className="flex items-center justify-between px-0.5 text-[11px] text-slate-500">
+                  <span className="font-semibold text-cyan-700">
+                    {documents.length + images.length} files attached
+                  </span>
                   <button
                     type="button"
-                    onClick={() => removeDocument(idx)}
-                    className="absolute top-1.5 right-1.5 p-1 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                    title="Remove file"
+                    onClick={clearAllAttachments}
+                    className="text-slate-400 hover:text-rose-600 font-medium transition-colors cursor-pointer"
+                    title="Remove all attached files"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    Clear all
                   </button>
-                </div>
-              ))}
-
-              {/* Parsing Indicator */}
-              {isParsingFiles && (
-                <div className="shrink-0 inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-cyan-50/80 border border-cyan-200/80 text-xs text-cyan-800 font-medium animate-pulse">
-                  <Loader2 className="w-4 h-4 animate-spin text-cyan-600" />
-                  <span>Reading document...</span>
                 </div>
               )}
-
-              {/* Image Chips */}
-              {images.map((imgSrc, idx) => (
-                <div
-                  key={idx}
-                  className="relative group shrink-0 w-16 h-16 rounded-xl overflow-hidden border border-slate-200 shadow-xs bg-slate-100"
-                >
-                  <img
-                    src={imgSrc}
-                    alt={`Attachment preview ${idx + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(idx)}
-                    className="absolute top-1 right-1 p-0.5 rounded-full bg-slate-900/80 text-white hover:bg-rose-600 transition-colors shadow-xs"
-                    title="Remove image"
+              <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none]">
+                {/* Document Chips */}
+                {documents.map((doc, idx) => (
+                  <div
+                    key={doc.id || idx}
+                    className="relative group shrink-0 inline-flex items-center gap-2.5 pl-2.5 pr-8 py-2 rounded-xl bg-slate-50/90 border border-slate-200/90 shadow-xs text-xs text-slate-800"
                   >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
+                    <div className={`p-1.5 rounded-lg flex items-center justify-center ${doc.type === "pdf" ? "bg-rose-50 text-rose-600 border border-rose-100" : "bg-cyan-50 text-cyan-700 border border-cyan-100"}`}>
+                      {doc.type === "pdf" ? (
+                        <FileText className="w-4 h-4 text-rose-500" />
+                      ) : (
+                        <FileCode className="w-4 h-4 text-cyan-600" />
+                      )}
+                    </div>
+                    <div className="flex flex-col min-w-0 pr-1">
+                      <span className="font-semibold truncate max-w-[130px] sm:max-w-[180px] text-slate-800" title={doc.name}>
+                        {doc.name}
+                      </span>
+                      <span className="text-[10px] text-slate-500">
+                        {doc.type === "pdf" ? "PDF" : doc.name.split(".").pop()?.toUpperCase() || "TXT"}
+                        {doc.pageCount ? ` · ${doc.pageCount} ${doc.pageCount === 1 ? 'page' : 'pages'}` : ""}
+                        {doc.lineCount ? ` · ${doc.lineCount} ${doc.lineCount === 1 ? 'line' : 'lines'}` : ""}
+                        {doc.size ? ` · ${formatBytes(doc.size)}` : ""}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeDocument(idx)}
+                      className="absolute top-1.5 right-1.5 p-1 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                      title="Remove file"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
 
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="shrink-0 w-16 h-16 rounded-xl border border-dashed border-slate-300 hover:border-cyan-500 hover:bg-cyan-50/50 flex flex-col items-center justify-center text-slate-400 hover:text-cyan-700 transition-colors gap-1"
-                title="Add more files or pictures"
-              >
-                <Paperclip className="w-4 h-4" />
-                <span className="text-[10px] font-medium">+Add</span>
-              </button>
+                {/* Parsing Indicator */}
+                {isParsingFiles && (
+                  <div className="shrink-0 inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-cyan-50/80 border border-cyan-200/80 text-xs text-cyan-800 font-medium animate-pulse">
+                    <Loader2 className="w-4 h-4 animate-spin text-cyan-600" />
+                    <span>Reading files...</span>
+                  </div>
+                )}
+
+                {/* Image Chips */}
+                {images.map((imgSrc, idx) => (
+                  <div
+                    key={idx}
+                    className="relative group shrink-0 w-16 h-16 rounded-xl overflow-hidden border border-slate-200 shadow-xs bg-slate-100"
+                  >
+                    <img
+                      src={imgSrc}
+                      alt={`Attachment preview ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(idx)}
+                      className="absolute top-1 right-1 p-0.5 rounded-full bg-slate-900/80 text-white hover:bg-rose-600 transition-colors shadow-xs"
+                      title="Remove image"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="shrink-0 w-16 h-16 rounded-xl border border-dashed border-slate-300 hover:border-cyan-500 hover:bg-cyan-50/50 flex flex-col items-center justify-center text-slate-400 hover:text-cyan-700 transition-colors gap-1"
+                  title="Add more files (.py, .txt, .pdf, code, or pictures)"
+                >
+                  <Paperclip className="w-4 h-4" />
+                  <span className="text-[10px] font-medium">+Add</span>
+                </button>
+              </div>
             </div>
           )}
 
@@ -365,7 +408,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
-            placeholder={`Message ${selectedModel.name} (paste, attach .txt, PDF, code or picture)...`}
+            placeholder={`Message ${selectedModel.name} (attach multiple .py, .txt, PDF, code or pictures)...`}
             rows={1}
             disabled={disabled}
             className={`w-full resize-none bg-transparent pt-3.5 pb-12 pl-3.5 pr-14 leading-relaxed focus:outline-none min-h-[54px] max-h-[220px] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${textareaClass}`}

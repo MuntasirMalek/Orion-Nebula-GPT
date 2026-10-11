@@ -94,19 +94,38 @@ export async function streamChatCompletion({
   for (const msg of windowedMessages) {
     let textContent = msg.content || "";
     if (msg.documents && msg.documents.length > 0) {
-      const docHeaders = msg.documents
-        .filter((d) => d.extractedText && d.extractedText.trim().length > 0)
-        .map((d) => {
-          const typeLabel = d.type === "pdf" ? "PDF Document" : "Attached Document";
-          const pageInfo = d.pageCount ? ` (${d.pageCount} ${d.pageCount === 1 ? 'page' : 'pages'})` : "";
-          return `[Attached ${typeLabel}: ${d.name}${pageInfo}]\n${d.extractedText}\n[End of ${d.name}]`;
+      const validDocs = msg.documents.filter((d) => d.extractedText !== undefined);
+      const totalDocs = validDocs.length;
+      const docHeaders = validDocs
+        .map((d, index) => {
+          const ext = d.name.includes(".") ? d.name.split(".").pop()?.toLowerCase() || "" : "";
+          const typeLabel =
+            d.type === "pdf"
+              ? "PDF Document"
+              : ext
+              ? `File (.${ext})`
+              : "Text File";
+          const metaParts: string[] = [];
+          if (d.pageCount) metaParts.push(`${d.pageCount} ${d.pageCount === 1 ? "page" : "pages"}`);
+          if (d.lineCount) metaParts.push(`${d.lineCount} ${d.lineCount === 1 ? "line" : "lines"}`);
+          const metaInfo = metaParts.length > 0 ? ` (${metaParts.join(", ")})` : "";
+          const indexPrefix = totalDocs > 1 ? ` ${index + 1}/${totalDocs}` : "";
+          const body =
+            d.type === "pdf" || ext === "txt" || ext === ""
+              ? d.extractedText
+              : `\`\`\`${ext}\n${d.extractedText}\n\`\`\``;
+          return `[Attached ${typeLabel}${indexPrefix}: ${d.name}${metaInfo}]\n${body}\n[End of ${d.name}]`;
         })
         .join("\n\n");
 
       if (docHeaders) {
+        const defaultPrompt =
+          totalDocs > 1
+            ? `Please analyze and review these ${totalDocs} attached files (${validDocs.map((d) => d.name).join(", ")}).`
+            : "Please analyze, summarize, or explain the attached file.";
         textContent = textContent.trim()
           ? `${docHeaders}\n\n${textContent.trim()}`
-          : `${docHeaders}\n\nPlease analyze, summarize, or explain the attached document.`;
+          : `${docHeaders}\n\n${defaultPrompt}`;
       }
     }
 
