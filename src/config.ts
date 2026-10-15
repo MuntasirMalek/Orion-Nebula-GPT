@@ -1,7 +1,7 @@
 /**
  * Global configuration for Orion Nebula GPT.
  * Supports:
- * 1. DeepSeek V4 (Default, Unlocked, Free access)
+ * 1. DeepSeek V4 Flash (Default, Unlocked, Free access)
  * 2. Qwen 3.8 Omni Flash (xKiro, Unlocked)
  * 3. Qwen 3.8 Max (xKiro, Unlocked)
  * 4. Mistral Large 4 (xKiro, Unlocked)
@@ -27,10 +27,10 @@ export interface ModelOption {
 }
 
 export const AVAILABLE_MODELS: ModelOption[] = [
-  // 1. DeepSeek V4 (Default - Open & Unlocked)
+  // 1. DeepSeek V4 Flash (Default - Open & Unlocked)
   {
     id: "deepseek-v4-flash",
-    name: "DeepSeek V4",
+    name: "DeepSeek V4 Flash",
     tag: "DeepSeek Frontier Model",
     provider: "DeepSeek",
     description: "High-speed reasoning and code intelligence engine. Free and unlocked for everyone.",
