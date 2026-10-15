@@ -95,12 +95,35 @@ export default function App() {
 
   // Real-time mobile visual viewport synchronization (keeps input strictly above browser bars and keyboard)
   useEffect(() => {
+    // Disable browser automatic scroll restoration so refresh never offsets the fixed viewport
+    if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+
     const updateViewportHeight = () => {
-      const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      if (typeof window === "undefined") return;
+      window.scrollTo(0, 0);
+      if (document.body.scrollTop !== 0) document.body.scrollTop = 0;
+      if (document.documentElement.scrollTop !== 0) document.documentElement.scrollTop = 0;
+
+      const vv = window.visualViewport;
+      const h = vv ? Math.round(vv.height) : window.innerHeight;
       document.documentElement.style.setProperty("--app-height", `${h}px`);
     };
 
     updateViewportHeight();
+
+    // Multi-phase calibration on cold load & soft page reload:
+    // Guarantees correct measurement after mobile browser finishes attaching bottom toolbar & URL bar
+    const timers = [50, 150, 300, 600, 1200].map((delay) =>
+      setTimeout(updateViewportHeight, delay)
+    );
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        updateViewportHeight();
+      }
+    };
 
     if (window.visualViewport) {
       window.visualViewport.addEventListener("resize", updateViewportHeight);
@@ -108,14 +131,21 @@ export default function App() {
     }
     window.addEventListener("resize", updateViewportHeight);
     window.addEventListener("orientationchange", updateViewportHeight);
+    window.addEventListener("pageshow", updateViewportHeight);
+    window.addEventListener("load", updateViewportHeight);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
+      timers.forEach(clearTimeout);
       if (window.visualViewport) {
         window.visualViewport.removeEventListener("resize", updateViewportHeight);
         window.visualViewport.removeEventListener("scroll", updateViewportHeight);
       }
       window.removeEventListener("resize", updateViewportHeight);
       window.removeEventListener("orientationchange", updateViewportHeight);
+      window.removeEventListener("pageshow", updateViewportHeight);
+      window.removeEventListener("load", updateViewportHeight);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 
@@ -123,7 +153,10 @@ export default function App() {
 
   return (
     <div
-      style={{ height: "var(--app-height, 100%)" }}
+      style={{
+        height: "var(--app-height, 100dvh)",
+        maxHeight: "var(--app-height, 100dvh)",
+      }}
       className={`fixed inset-0 flex h-full w-full max-w-full overflow-hidden ${activeThemeConfig.rootClass} selection:bg-lime-500/25 selection:text-lime-950 transition-colors duration-300`}
     >
       {/* Dynamic Background with Interactive Nebula Motion, Starfield & Supernova Explosions */}

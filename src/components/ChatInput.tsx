@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { ArrowUp, Square, Sparkles, ChevronUp, Check, Paperclip, X, Lock, FileText, FileCode, Loader2, Code2 } from "lucide-react";
+import { ArrowUp, Square, ChevronUp, Check, Paperclip, X, Lock, FileText, FileCode, Loader2, Code2 } from "lucide-react";
 import { AVAILABLE_MODELS, ModelOption, isModelUnlocked } from "../config";
 import { ThemeConfig } from "../themes";
 import { AttachedDocument } from "../types";
 import { processFile, isImageFile, isPdfFile, isTextFile, formatBytes } from "../utils/fileAttachment";
 import { PasscodeModal } from "./PasscodeModal";
 import { ModelNameLabel } from "./ModelNameLabel";
+import { ModelLogo } from "./ModelLogo";
 
 interface ChatInputProps {
   onSendMessage: (content: string, images?: string[], documents?: AttachedDocument[]) => void;
@@ -25,7 +26,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   onStopStreaming,
   isStreaming,
   disabled = false,
-  currentModelId = "gpt-6-astra-low",
+  currentModelId = "deepseek-v4-flash",
   onSelectModel,
   reasoningEffort = "medium",
   onSelectReasoningEffort,
@@ -426,9 +427,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     setIsModelMenuOpen(!isModelMenuOpen);
                   }}
                   className={`group flex items-center gap-1.5 transition-all duration-150 cursor-pointer active:scale-95 max-w-[155px] xs:max-w-[210px] sm:max-w-none ${modelPillClass}`}
-                  title="Click to switch frontier model"
+                  title="Click to switch model"
                 >
-                  <Sparkles className="w-3.5 h-3.5 opacity-80 shrink-0" />
+                  <ModelLogo modelId={selectedModel.id} provider={selectedModel.provider} size={15} />
                   <ModelNameLabel name={selectedModel.name} shortOnMobile={true} />
                   <ChevronUp
                     className={`w-3.5 h-3.5 opacity-60 transition-transform duration-150 shrink-0 ${
@@ -456,11 +457,28 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     <div className="space-y-1 overflow-y-auto flex-1 pr-1 overscroll-contain">
                       {AVAILABLE_MODELS.map((model) => {
                         const isItemActive = model.id === selectedModel.id;
-                        const isItemClaude = model.id.includes("claude");
-                        const isItemDeepSeek = model.id.includes("deepseek");
                         const isLocked = Boolean(
                           model.requiresPasscode && !isModelUnlocked(model.id, model.defaultEffort || reasoningEffort)
                         );
+
+                        const getTagStyle = () => {
+                          if (model.provider === "Anthropic" || model.id.includes("claude")) {
+                            return "bg-rose-50 text-rose-800 border-rose-200";
+                          }
+                          if (model.provider === "DeepSeek" || model.id.includes("deepseek")) {
+                            return "bg-sky-50 text-sky-800 border-sky-200";
+                          }
+                          if (model.provider === "Mistral" || model.id.includes("mistral")) {
+                            return "bg-orange-50 text-orange-800 border-orange-200";
+                          }
+                          if (model.provider === "Qwen" || model.id.includes("qwen")) {
+                            return "bg-indigo-50 text-indigo-800 border-indigo-200";
+                          }
+                          if (model.provider === "Meta" || model.id.includes("meta") || model.id.includes("muse")) {
+                            return "bg-blue-50 text-blue-800 border-blue-200";
+                          }
+                          return "bg-emerald-50 text-emerald-800 border-emerald-200";
+                        };
 
                         return (
                           <button
@@ -481,46 +499,33 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                             className={`w-full text-left p-2.5 rounded-xl transition-all duration-150 border flex items-center justify-between gap-2 cursor-pointer ${
                               isItemActive
                                 ? isDark
-                                  ? isItemClaude
-                                    ? "bg-rose-950/60 border-rose-500/80"
-                                    : isItemDeepSeek
-                                    ? "bg-sky-950/60 border-sky-500/80"
-                                    : "bg-emerald-950/60 border-emerald-500/80"
-                                  : isItemClaude
-                                  ? "bg-rose-50 border-rose-300"
-                                  : isItemDeepSeek
-                                  ? "bg-sky-50 border-sky-300"
-                                  : "bg-emerald-50 border-emerald-300"
+                                  ? "bg-stone-900 border-cyan-500/80 text-stone-100"
+                                  : "bg-cyan-50/70 border-cyan-300 text-stone-950 font-medium"
                                 : isDark
                                 ? "bg-transparent hover:bg-stone-900 border-transparent text-stone-300"
                                 : "bg-transparent hover:bg-stone-100/70 border-transparent text-stone-700"
                             }`}
                           >
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-1.5 text-xs font-semibold">
-                                <ModelNameLabel name={model.name} />
+                            <div className="space-y-1 min-w-0 flex-1">
+                              <div className="flex items-center gap-2 text-xs font-semibold">
+                                <ModelLogo modelId={model.id} provider={model.provider} size={16} />
+                                <span className="truncate">
+                                  <ModelNameLabel name={model.name} />
+                                </span>
                                 {isLocked && (
-                                  <Lock className="w-3 h-3 text-stone-400" />
+                                  <Lock className="w-3 h-3 text-stone-400 shrink-0" />
                                 )}
                               </div>
                               <div className="pt-0.5">
                                 <span
-                                  className={`inline-block text-[10px] tracking-tight font-semibold px-2 py-0.5 rounded-full border ${
-                                    isItemClaude
-                                      ? "bg-rose-50 text-rose-800 border-rose-200"
-                                      : isItemDeepSeek
-                                      ? "bg-sky-50 text-sky-800 border-sky-200"
-                                      : "bg-emerald-50 text-emerald-800 border-emerald-200"
-                                  }`}
+                                  className={`inline-block text-[10px] tracking-tight font-semibold px-2 py-0.5 rounded-full border ${getTagStyle()}`}
                                 >
                                   {model.tag}
                                 </span>
                               </div>
                             </div>
                             {isItemActive && (
-                              <Check className={`w-3.5 h-3.5 shrink-0 ${
-                                isItemClaude ? "text-rose-600" : isItemDeepSeek ? "text-sky-600" : "text-emerald-600"
-                              }`} />
+                              <Check className="w-3.5 h-3.5 shrink-0 text-cyan-600" />
                             )}
                           </button>
                         );

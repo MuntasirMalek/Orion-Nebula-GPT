@@ -3,7 +3,7 @@ import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Message } from "../types";
 import { ThemeConfig } from "../themes";
-import { AstraLogo } from "./AstraLogo";
+import { ModelLogo } from "./ModelLogo";
 import { CodeBlock } from "./CodeBlock";
 import { AVAILABLE_MODELS } from "../config";
 import { ModelNameLabel } from "./ModelNameLabel";
@@ -164,7 +164,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, theme, inde
               </div>
             ) : (
               <div className={theme.message.assistantAvatar}>
-                <AstraLogo size={20} />
+                <ModelLogo modelId={message.model} size={19} />
               </div>
             )}
           </div>

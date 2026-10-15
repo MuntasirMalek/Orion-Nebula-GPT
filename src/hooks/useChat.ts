@@ -41,7 +41,7 @@ export function useChat() {
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Auto-migrate legacy cached prompt and model to GPT-6 Astra Low default
+  // Auto-migrate legacy cached prompt and model to DeepSeek V4 default
   useEffect(() => {
     if (
       settings.systemPrompt &&
@@ -59,6 +59,14 @@ export function useChat() {
       setSettings((prev) => ({
         ...prev,
         backendUrl: DEFAULT_BACKEND_URL,
+      }));
+    }
+    // Seamless default to DeepSeek V4
+    if (!localStorage.getItem("orion_default_deepseek_v4_applied") || settings.selectedModel === "gpt-6-astra-low") {
+      localStorage.setItem("orion_default_deepseek_v4_applied", "true");
+      setSettings((prev) => ({
+        ...prev,
+        selectedModel: "deepseek-v4-flash",
       }));
     }
   }, []);

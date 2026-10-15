@@ -1,18 +1,25 @@
 /**
  * Global configuration for Orion Nebula GPT.
- * Defines 6 versions for Astra & Claude (Low, Medium, High thinking) + DeepSeek V4.
+ * Supports:
+ * 1. DeepSeek V4 (Default, Unlocked, Free access)
+ * 2. OpenAI GPT-6 Astra (Low, Medium, High thinking - Frontier Cohort)
+ * 3. Anthropic Claude Opus 5.5 (Low, Medium, High thinking - Frontier Cohort)
+ * 4. Mistral Large 4 (xKiro, Unlocked)
+ * 5. Qwen 3.8 Max (xKiro, Unlocked)
+ * 6. Qwen 3.8 Omni Flash (xKiro, Unlocked)
+ * 7. Meta Muse Spark 1.3 (xKiro, Unlocked)
  * 
  * SECURITY NOTE:
- * Passcodes are verified 100% server-side on the Netlify Serverless Gateway.
+ * Passcodes are verified server-side on the Serverless Gateway / Cloudflare Worker.
  * No plaintext passcodes or secrets are stored in this frontend codebase,
- * keeping the open-source GitHub repository and GitHub Pages fully secure.
+ * keeping the open-source GitHub repository and GitHub Pages 100% clean and secure.
  */
 
 export interface ModelOption {
   id: string;
   name: string;
   tag: string;
-  provider: "OpenAI" | "Anthropic" | "DeepSeek";
+  provider: "OpenAI" | "Anthropic" | "DeepSeek" | "Mistral" | "Qwen" | "Meta";
   description: string;
   contextWindow: string;
   requiresPasscode: boolean;
@@ -20,15 +27,62 @@ export interface ModelOption {
 }
 
 export const AVAILABLE_MODELS: ModelOption[] = [
+  // 1. DeepSeek V4 (Default - Open & Unlocked)
   {
     id: "deepseek-v4-flash",
     name: "DeepSeek V4",
     tag: "DeepSeek Frontier Model",
     provider: "DeepSeek",
-    description: "High-speed reasoning and code intelligence engine. Requires student cohort passcode.",
+    description: "High-speed reasoning and code intelligence engine. Free and unlocked for everyone.",
     contextWindow: "128,000 Tokens",
-    requiresPasscode: true,
+    requiresPasscode: false,
   },
+
+  // 2. Mistral Large 4 (Unlocked)
+  {
+    id: "mistralai/mistral-large-4-0",
+    name: "Mistral Large 4",
+    tag: "Mistral AI",
+    provider: "Mistral",
+    description: "Mistral's flagship frontier reasoning model. Multilingual, vision-enabled, top-tier coding.",
+    contextWindow: "128,000 Tokens",
+    requiresPasscode: false,
+  },
+
+  // 3. Qwen 3.8 Max (Unlocked)
+  {
+    id: "qwen/qwen3.8-max:free",
+    name: "Qwen 3.8 Max",
+    tag: "Alibaba Qwen",
+    provider: "Qwen",
+    description: "Alibaba's premier flagship reasoning engine. Exceptional math, coding, and logical reasoning.",
+    contextWindow: "128,000 Tokens",
+    requiresPasscode: false,
+  },
+
+  // 4. Qwen 3.8 Omni Flash (Unlocked)
+  {
+    id: "qwen/qwen3.8-omni-flash:free",
+    name: "Qwen 3.8 Omni Flash",
+    tag: "Alibaba Qwen",
+    provider: "Qwen",
+    description: "Ultra-fast omni multimodal speed engine with instant response generation.",
+    contextWindow: "128,000 Tokens",
+    requiresPasscode: false,
+  },
+
+  // 5. Meta Muse Spark 1.3 (Unlocked)
+  {
+    id: "meta/muse-spark-1.3-contributor:free",
+    name: "Meta Muse Spark 1.3",
+    tag: "Meta AI",
+    provider: "Meta",
+    description: "Meta open-weights research reasoning model for scientific synthesis and deep generation.",
+    contextWindow: "128,000 Tokens",
+    requiresPasscode: false,
+  },
+
+  // 6. GPT-6 Astra - Frontier Cohort
   {
     id: "gpt-6-astra-low",
     name: "GPT-6 Astra (Low Thinking)",
@@ -59,6 +113,8 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     requiresPasscode: true,
     defaultEffort: "high",
   },
+
+  // 7. Claude Opus 5.5 - Frontier Cohort
   {
     id: "claude-opus-5.5-low",
     name: "Claude Opus 5.5 (Low Thinking)",
@@ -91,7 +147,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
   },
 ];
 
-export const DEFAULT_MODEL_ID = "gpt-6-astra-low";
+export const DEFAULT_MODEL_ID = "deepseek-v4-flash";
 
 // Self-healing cleanup for legacy keys and cross-contaminated storage
 if (typeof window !== "undefined") {
@@ -111,7 +167,7 @@ if (typeof window !== "undefined") {
       localStorage.removeItem("orion_code_frontier");
     }
 
-    // Auto-migrate valid lowCode (auth_key_a) to frontierCode if present
+    // Auto-migrate valid lowCode to frontierCode if present
     if (!localStorage.getItem("orion_code_frontier") && lowCode && lowCode !== dsCode && lowCode !== "auth_key_b") {
       localStorage.setItem("orion_unlocked_frontier", "true");
       localStorage.setItem("orion_code_frontier", lowCode);
@@ -124,14 +180,22 @@ if (typeof window !== "undefined") {
 export function isModelUnlocked(modelId: string, _effort?: string): boolean {
   if (typeof window === "undefined") return false;
 
-  if (modelId.includes("deepseek")) {
-    return (
-      localStorage.getItem("orion_unlocked_deepseek") === "true" &&
-      Boolean(localStorage.getItem("orion_code_deepseek"))
-    );
+  const target = AVAILABLE_MODELS.find((m) => m.id === modelId);
+  // Any model with requiresPasscode = false is always unlocked (DeepSeek, Mistral, Qwen, Meta)
+  if (target && !target.requiresPasscode) {
+    return true;
   }
 
-  // All GPT Astra and Claude models (Low, Medium, High)
+  if (
+    modelId.includes("deepseek") ||
+    modelId.includes("mistral") ||
+    modelId.includes("qwen") ||
+    modelId.includes("meta")
+  ) {
+    return true;
+  }
+
+  // All GPT Astra and Claude models (Low, Medium, High) require frontier cohort code
   return (
     localStorage.getItem("orion_unlocked_frontier") === "true" &&
     Boolean(localStorage.getItem("orion_code_frontier"))
