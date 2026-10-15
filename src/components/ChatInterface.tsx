@@ -151,7 +151,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto overflow-x-hidden relative flex flex-col overscroll-contain"
+        className="flex-1 overflow-y-auto overflow-x-hidden relative flex flex-col overscroll-contain transform-gpu [contain:content] [will-change:scroll-position]"
       >
         {messages.length === 0 ? (
           /* Empty State: Full unobstructed view of the wallpaper */

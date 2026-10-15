@@ -375,12 +375,24 @@ export const CosmicMotionCanvas: React.FC<CosmicMotionCanvasProps> = ({
       triggerSupernova(e.clientX, e.clientY);
     };
 
+    // User scroll detection: Temporarily throttle canvas FPS during active scrolling
+    let isScrolling = false;
+    let scrollTimeout: any = null;
+    const handleScrollActivity = () => {
+      isScrolling = true;
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        isScrolling = false;
+      }, 150);
+    };
+
     window.addEventListener("resize", handleResize);
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
     window.addEventListener("touchstart", handleTouchStart, { passive: true });
     window.addEventListener("touchmove", handleTouchMove, { passive: true });
     window.addEventListener("touchend", handleTouchEnd, { passive: true });
     window.addEventListener("click", handleWindowClick);
+    window.addEventListener("scroll", handleScrollActivity, { passive: true, capture: true });
 
     // Visibility change: Pause loop when tab is hidden to save 100% mobile battery
     let isHidden = document.hidden;
@@ -393,10 +405,9 @@ export const CosmicMotionCanvas: React.FC<CosmicMotionCanvasProps> = ({
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     // =========================================================================
-    // High-Performance 30 FPS Optimized Optical Animation Loop (Cuts 75% GPU/CPU)
+    // Adaptive Dynamic FPS Engine: 60 FPS for explosions, 20 FPS for idle twinkle
     // =========================================================================
     let lastRenderTime = 0;
-    const TARGET_FPS_INTERVAL = 1000 / 30;
 
     const render = (now: number = performance.now()) => {
       if (isHidden) {
@@ -412,11 +423,16 @@ export const CosmicMotionCanvas: React.FC<CosmicMotionCanvasProps> = ({
 
       animFrameRef.current = requestAnimationFrame(render);
 
+      const hasActiveParticles = explosionsRef.current.length > 0 || stardustRef.current.length > 0;
+      // 12 FPS during scroll, 60 FPS during explosions/wakes, 20 FPS during idle star twinkling
+      const targetFps = isScrolling ? 12 : hasActiveParticles ? 60 : 20;
+      const targetInterval = 1000 / targetFps;
+
       const elapsed = now - lastRenderTime;
-      if (elapsed < TARGET_FPS_INTERVAL) {
+      if (elapsed < targetInterval) {
         return;
       }
-      lastRenderTime = now - (elapsed % TARGET_FPS_INTERVAL);
+      lastRenderTime = now - (elapsed % targetInterval);
 
       drawFrame();
     };
@@ -608,6 +624,8 @@ export const CosmicMotionCanvas: React.FC<CosmicMotionCanvasProps> = ({
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", handleTouchEnd);
       window.removeEventListener("click", handleWindowClick);
+      window.removeEventListener("scroll", handleScrollActivity, { capture: true });
+      if (scrollTimeout) clearTimeout(scrollTimeout);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };

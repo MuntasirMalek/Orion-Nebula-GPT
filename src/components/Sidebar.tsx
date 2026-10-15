@@ -88,7 +88,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed md:relative inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 ease-in-out shadow-2xl md:shadow-none overflow-hidden ${containerClass} ${
+        className={`fixed md:relative inset-y-0 left-0 z-50 flex flex-col transition-all duration-200 ease-out transform-gpu shadow-2xl md:shadow-none overflow-hidden ${containerClass} ${
           isOpen
             ? "w-72 lg:w-80 translate-x-0 opacity-100"
             : "w-0 -translate-x-full md:translate-x-0 border-r-0 pointer-events-none opacity-0"

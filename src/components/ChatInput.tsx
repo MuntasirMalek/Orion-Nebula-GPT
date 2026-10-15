@@ -52,16 +52,16 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     AVAILABLE_MODELS.find((m) => m.id === currentModelId) || AVAILABLE_MODELS[0];
   const isDark = false;
 
-  // Auto-resize textarea based on input content
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(
-        textareaRef.current.scrollHeight,
-        220
-      )}px`;
-    }
-  }, [text]);
+  // Synchronous zero-overhead auto-resize without React layout thrashing
+  const adjustHeight = (el: HTMLTextAreaElement) => {
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 220)}px`;
+  };
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setText(e.target.value);
+    adjustHeight(e.target);
+  };
 
   // Close model menu when clicking outside
   useEffect(() => {
@@ -406,7 +406,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           <textarea
             ref={textareaRef}
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={handleTextChange}
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
             placeholder={`Message ${selectedModel.name} (attach multiple .py, .txt, PDF, code or pictures)...`}
