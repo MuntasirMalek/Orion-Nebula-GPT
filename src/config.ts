@@ -2,13 +2,12 @@
  * Global configuration for Orion Nebula GPT.
  * Supports:
  * 1. DeepSeek V4 (Default, Unlocked, Free access)
- * 2. OpenAI GPT-6 Astra (Low, Medium, High thinking - Frontier Cohort)
- * 3. OpenAI GPT-6.1 Sol (Low, Medium, High thinking - Frontier Cohort)
- * 4. Anthropic Claude Opus 5.5 (Low, Medium, High thinking - Frontier Cohort)
- * 5. Mistral Large 4 (xKiro, Unlocked)
- * 6. Qwen 3.8 Max (xKiro, Unlocked)
- * 7. Qwen 3.8 Omni Flash (xKiro, Unlocked)
- * 8. Meta Muse Spark 1.3 (xKiro, Unlocked)
+ * 2. Qwen 3.8 Omni Flash (xKiro, Unlocked)
+ * 3. Qwen 3.8 Max (xKiro, Unlocked)
+ * 4. Mistral Large 4 (xKiro, Unlocked)
+ * 5. OpenAI GPT-6 Astra (Low, Medium, High thinking - Frontier Cohort)
+ * 6. OpenAI GPT-6.1 Sol (Low, Medium, High thinking - Frontier Cohort)
+ * 7. Anthropic Claude Opus 5.5 (Low, Medium, High thinking - Frontier Cohort)
  * 
  * SECURITY NOTE:
  * Passcodes are verified server-side on the Serverless Gateway / Cloudflare Worker.
@@ -39,13 +38,13 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     requiresPasscode: false,
   },
 
-  // 2. Mistral Large 4 (Unlocked)
+  // 2. Qwen 3.8 Omni Flash (Unlocked)
   {
-    id: "mistralai/mistral-large-4-0",
-    name: "Mistral Large 4",
-    tag: "Mistral AI",
-    provider: "Mistral",
-    description: "Mistral's flagship frontier reasoning model. Multilingual, vision-enabled, top-tier coding.",
+    id: "qwen/qwen3.8-omni-flash:free",
+    name: "Qwen 3.8 Omni Flash",
+    tag: "Alibaba Qwen",
+    provider: "Qwen",
+    description: "Ultra-fast omni multimodal speed engine with instant response generation.",
     contextWindow: "128,000 Tokens",
     requiresPasscode: false,
   },
@@ -61,29 +60,18 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     requiresPasscode: false,
   },
 
-  // 4. Qwen 3.8 Omni Flash (Unlocked)
+  // 4. Mistral Large 4 (Unlocked)
   {
-    id: "qwen/qwen3.8-omni-flash:free",
-    name: "Qwen 3.8 Omni Flash",
-    tag: "Alibaba Qwen",
-    provider: "Qwen",
-    description: "Ultra-fast omni multimodal speed engine with instant response generation.",
+    id: "mistralai/mistral-large-4-0",
+    name: "Mistral Large 4",
+    tag: "Mistral AI",
+    provider: "Mistral",
+    description: "Mistral's flagship frontier reasoning model. Multilingual, vision-enabled, top-tier coding.",
     contextWindow: "128,000 Tokens",
     requiresPasscode: false,
   },
 
-  // 5. Meta Muse Spark 1.3 (Unlocked)
-  {
-    id: "meta/muse-spark-1.3-contributor:free",
-    name: "Meta Muse Spark 1.3",
-    tag: "Meta AI",
-    provider: "Meta",
-    description: "Meta open-weights research reasoning model for scientific synthesis and deep generation.",
-    contextWindow: "128,000 Tokens",
-    requiresPasscode: false,
-  },
-
-  // 6. GPT-6 Astra - Frontier Cohort
+  // 5. GPT-6 Astra - Frontier Cohort
   {
     id: "gpt-6-astra-low",
     name: "GPT-6 Astra (Low Thinking)",
@@ -115,7 +103,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     defaultEffort: "high",
   },
 
-  // 7. GPT-6.1 Sol - Frontier Cohort
+  // 6. GPT-6.1 Sol - Frontier Cohort
   {
     id: "gpt-6.1-sol-low",
     name: "GPT-6.1 Sol (Low Thinking)",
@@ -147,7 +135,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     defaultEffort: "high",
   },
 
-  // 8. Claude Opus 5.5 - Frontier Cohort
+  // 7. Claude Opus 5.5 - Frontier Cohort
   {
     id: "claude-opus-5.5-low",
     name: "Claude Opus 5.5 (Low Thinking)",
