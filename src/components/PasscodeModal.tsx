@@ -56,12 +56,11 @@ export const PasscodeModal: React.FC<PasscodeModalProps> = ({
     // Determine target tier
     const isDeepSeekTarget = modelId.includes("deepseek");
 
-    // Salted cryptographic hashes of authorized cohort passcodes
-    // Prevents plaintext passcodes from being exposed in public repositories
-    // Salt: "orion_frontier_salt_2026_"
-    const DEEPSEEK_HASH = "922d49186cfbe2d73264530da0850e2bfebd5ff5f1dbbca3887cdd5c2c111f0b";
-    const FRONTIER_HASH_auth_key_a = "a373b6750a7851b7e0f56fca634c454569a86a22b2f762017600bea041420074";
-    const FRONTIER_HASH_MASTER = "814f76ba52f531349ec55800af3850e356bbda4352d32a057533b47b1f3eee80";
+    // Salted cryptographic hashes for authorized access tiers
+    // Prevents credentials from being exposed in source code
+    const HASH_AUTH_DEEPSEEK = "922d49186cfbe2d73264530da0850e2bfebd5ff5f1dbbca3887cdd5c2c111f0b";
+    const HASH_AUTH_TIER_A = "a373b6750a7851b7e0f56fca634c454569a86a22b2f762017600bea041420074";
+    const HASH_AUTH_TIER_B = "814f76ba52f531349ec55800af3850e356bbda4352d32a057533b47b1f3eee80";
 
     let isValid = false;
 
@@ -73,14 +72,13 @@ export const PasscodeModal: React.FC<PasscodeModalProps> = ({
         .join("");
 
       if (isDeepSeekTarget) {
-        if (enteredHash === DEEPSEEK_HASH) {
+        if (enteredHash === HASH_AUTH_DEEPSEEK) {
           isValid = true;
           localStorage.setItem("orion_unlocked_deepseek", "true");
           localStorage.setItem("orion_code_deepseek", entered);
         }
       } else {
-        // All Astra & Claude models accept either auth_key_a or auth_key_b
-        if (enteredHash === FRONTIER_HASH_auth_key_a || enteredHash === FRONTIER_HASH_MASTER) {
+        if (enteredHash === HASH_AUTH_TIER_A || enteredHash === HASH_AUTH_TIER_B) {
           isValid = true;
           localStorage.setItem("orion_unlocked_frontier", "true");
           localStorage.setItem("astra_frontier_unlocked", "true");

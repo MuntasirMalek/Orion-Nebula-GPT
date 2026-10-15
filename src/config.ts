@@ -195,7 +195,7 @@ export function isModelUnlocked(modelId: string, _effort?: string): boolean {
     return true;
   }
 
-  // All GPT Astra and Claude models (Low, Medium, High) require authorized frontier code (auth_key_a or auth_key_b)
+  // All GPT Astra and Claude models (Low, Medium, High) require verified cohort authorization
   const hasCode =
     Boolean(localStorage.getItem("orion_code_frontier")) ||
     Boolean(localStorage.getItem("astra_frontier_unlocked_code")) ||
