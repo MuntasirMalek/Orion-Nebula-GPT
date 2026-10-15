@@ -3,11 +3,12 @@
  * Supports:
  * 1. DeepSeek V4 (Default, Unlocked, Free access)
  * 2. OpenAI GPT-6 Astra (Low, Medium, High thinking - Frontier Cohort)
- * 3. Anthropic Claude Opus 5.5 (Low, Medium, High thinking - Frontier Cohort)
- * 4. Mistral Large 4 (xKiro, Unlocked)
- * 5. Qwen 3.8 Max (xKiro, Unlocked)
- * 6. Qwen 3.8 Omni Flash (xKiro, Unlocked)
- * 7. Meta Muse Spark 1.3 (xKiro, Unlocked)
+ * 3. OpenAI GPT-6.1 Sol (Low, Medium, High thinking - Frontier Cohort)
+ * 4. Anthropic Claude Opus 5.5 (Low, Medium, High thinking - Frontier Cohort)
+ * 5. Mistral Large 4 (xKiro, Unlocked)
+ * 6. Qwen 3.8 Max (xKiro, Unlocked)
+ * 7. Qwen 3.8 Omni Flash (xKiro, Unlocked)
+ * 8. Meta Muse Spark 1.3 (xKiro, Unlocked)
  * 
  * SECURITY NOTE:
  * Passcodes are verified server-side on the Serverless Gateway / Cloudflare Worker.
@@ -114,7 +115,39 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     defaultEffort: "high",
   },
 
-  // 7. Claude Opus 5.5 - Frontier Cohort
+  // 7. GPT-6.1 Sol - Frontier Cohort
+  {
+    id: "gpt-6.1-sol-low",
+    name: "GPT-6.1 Sol (Low Thinking)",
+    tag: "OpenAI Frontier Model",
+    provider: "OpenAI",
+    description: "Next-gen GPT-6.1 Sol with Low reasoning effort. Ultra-responsive frontier intelligence.",
+    contextWindow: "128,000 Tokens",
+    requiresPasscode: true,
+    defaultEffort: "low",
+  },
+  {
+    id: "gpt-6.1-sol-medium",
+    name: "GPT-6.1 Sol (Medium Thinking)",
+    tag: "OpenAI Frontier Model",
+    provider: "OpenAI",
+    description: "Next-gen GPT-6.1 Sol premier reasoning model with Medium depth. High-accuracy cognitive synthesis.",
+    contextWindow: "128,000 Tokens",
+    requiresPasscode: true,
+    defaultEffort: "medium",
+  },
+  {
+    id: "gpt-6.1-sol-high",
+    name: "GPT-6.1 Sol (High Thinking)",
+    tag: "OpenAI Frontier Model",
+    provider: "OpenAI",
+    description: "Next-gen GPT-6.1 Sol premier reasoning model with High depth. Deep multi-step verification.",
+    contextWindow: "128,000 Tokens",
+    requiresPasscode: true,
+    defaultEffort: "high",
+  },
+
+  // 8. Claude Opus 5.5 - Frontier Cohort
   {
     id: "claude-opus-5.5-low",
     name: "Claude Opus 5.5 (Low Thinking)",
