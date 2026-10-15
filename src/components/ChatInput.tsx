@@ -52,10 +52,22 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     AVAILABLE_MODELS.find((m) => m.id === currentModelId) || AVAILABLE_MODELS[0];
   const isDark = false;
 
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < 640 : false
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   // Synchronous zero-overhead auto-resize without React layout thrashing
   const adjustHeight = (el: HTMLTextAreaElement) => {
     el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 220)}px`;
+    el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
   };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -409,16 +421,20 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             onChange={handleTextChange}
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
-            placeholder={`Message ${selectedModel.name} (attach multiple .py, .txt, PDF, code or pictures)...`}
+            placeholder={
+              isMobile
+                ? `Message ${selectedModel.name}...`
+                : `Message ${selectedModel.name} (attach multiple .py, .txt, PDF, code or pictures)...`
+            }
             rows={1}
             disabled={disabled}
-            className={`w-full resize-none bg-transparent pt-3.5 pb-12 pl-3.5 pr-14 leading-relaxed focus:outline-none min-h-[54px] max-h-[220px] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${textareaClass}`}
+            className={`w-full resize-none bg-transparent pt-3 pb-1 px-3.5 leading-relaxed focus:outline-none min-h-[44px] max-h-[200px] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${textareaClass}`}
           />
 
           {/* Action Row */}
-          <div className="absolute bottom-2 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
+          <div className="flex items-center justify-between px-2.5 pb-2 pt-0.5">
             {/* Interactive Model & Thinking Level Selector Pills */}
-            <div className="relative pointer-events-auto flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <div className="relative flex items-center gap-1.5 sm:gap-2 min-w-0">
               {/* Model Selector Pill */}
               <div ref={modelMenuRef} className="relative">
                 <button
@@ -543,7 +559,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             </div>
 
             {/* Controls: Attach File/Picture, Vibe Prompts & Send / Stop Generation Button */}
-            <div className="pointer-events-auto flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
                 type="button"
                 onClick={() => setShowVibePrompts((prev) => !prev)}

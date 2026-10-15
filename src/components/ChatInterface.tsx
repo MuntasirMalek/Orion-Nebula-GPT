@@ -109,8 +109,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               <AstraLogo size={22} />
             </div>
             <div className="flex items-center gap-2 min-w-0">
-              <span className={`truncate text-xs sm:text-sm font-bold sm:font-semibold ${theme.header.brandText}`}>
-                Orion Nebula GPT
+              <span className={`whitespace-nowrap text-xs sm:text-sm font-bold sm:font-semibold shrink-0 ${theme.header.brandText}`}>
+                <span>Orion Nebula</span>
+                <span className="hidden xs:inline"> GPT</span>
               </span>
               <span className="hidden sm:inline-block w-1 h-1 rounded-full opacity-40 bg-current shrink-0" />
               <div className="hidden sm:flex items-center">

@@ -118,7 +118,7 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
           </div>
 
           {/* Current Model Name */}
-          <span className="text-[11px] sm:text-xs font-bold tracking-wide truncate max-w-[95px] xs:max-w-[140px] sm:max-w-none">
+          <span className="text-[11px] sm:text-xs font-bold tracking-wide truncate max-w-[110px] xs:max-w-[145px] sm:max-w-none">
             <ModelNameLabel name={selectedModel.name} shortOnMobile={true} />
           </span>
 

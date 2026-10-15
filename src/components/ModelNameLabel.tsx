@@ -7,6 +7,24 @@ interface ModelNameLabelProps {
   shortOnMobile?: boolean;
 }
 
+export function getShortModelName(name: string): string {
+  // 1. If has parentheses like "Claude Opus 5.5 (Low Thinking)", extract base name
+  const match = name.match(/^(.*?)\s*\((.*?)\)$/);
+  if (match) {
+    return match[1];
+  }
+
+  // 2. Models without parentheses: compact labels for mobile pills
+  if (name.includes("DeepSeek V4 Flash")) return "DeepSeek V4";
+  if (name.includes("Qwen 3.8 Omni Flash")) return "Qwen Omni";
+  if (name.includes("Qwen 3.8 Max")) return "Qwen Max";
+  if (name.includes("Mistral Large 4")) return "Mistral 4";
+  if (name.includes("Claude 4.5 Sonnet")) return "Claude 4.5";
+  if (name.includes("GPT-6.1 Sol")) return "GPT-6.1";
+  if (name.includes("Claude Opus 5.5")) return "Opus 5.5";
+  return name;
+}
+
 export const ModelNameLabel: React.FC<ModelNameLabelProps> = ({
   name,
   className = "",
@@ -30,5 +48,18 @@ export const ModelNameLabel: React.FC<ModelNameLabelProps> = ({
       </span>
     );
   }
+
+  if (shortOnMobile) {
+    const shortName = getShortModelName(name);
+    if (shortName !== name) {
+      return (
+        <span className={className}>
+          <span className="sm:hidden">{shortName}</span>
+          <span className="hidden sm:inline">{name}</span>
+        </span>
+      );
+    }
+  }
+
   return <span className={className}>{name}</span>;
 };
