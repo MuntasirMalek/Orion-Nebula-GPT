@@ -387,12 +387,21 @@ export async function fetchBalanceInfo(backendUrl: string): Promise<BalanceInfo 
 
     if (res.ok) {
       const data = await res.json();
-      if (data && typeof data.consumption === "number") {
-        return {
-          consumption: data.consumption,
-          currency: data.currency || "USD",
-          timestamp: data.timestamp,
-        };
+      if (data) {
+        if (typeof data.consumption === "number") {
+          return {
+            consumption: data.consumption,
+            currency: data.currency || "USD",
+            timestamp: data.timestamp,
+          };
+        }
+        if (typeof data.total_usage === "number") {
+          return {
+            consumption: Number((data.total_usage / 100).toFixed(2)),
+            currency: "USD",
+            timestamp: data.timestamp,
+          };
+        }
       }
     }
   } catch {

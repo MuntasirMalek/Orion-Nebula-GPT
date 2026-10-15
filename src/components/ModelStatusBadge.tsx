@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { AVAILABLE_MODELS, ModelOption, isModelUnlocked } from "../config";
 import { ThemeConfig } from "../themes";
-import { ChevronDown, Check, Sparkles, Lock, Unlock } from "lucide-react";
+import { ChevronDown, Check, Lock } from "lucide-react";
 import { PasscodeModal } from "./PasscodeModal";
 import { ModelNameLabel } from "./ModelNameLabel";
 import { ModelLogo } from "./ModelLogo";
@@ -178,10 +178,8 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
                           <span className="text-xs font-bold text-stone-900 truncate">
                             <ModelNameLabel name={model.name} />
                           </span>
-                          {isLocked ? (
+                          {isLocked && (
                             <Lock className="w-3 h-3 text-stone-400 shrink-0" />
-                          ) : (
-                            <Unlock className="w-3 h-3 text-emerald-600 shrink-0 opacity-80" />
                           )}
                         </div>
                         {isSelected && (
@@ -197,10 +195,6 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
                         >
                           {model.tag}
                         </span>
-                        <div className="flex items-center gap-1 text-[10px] font-mono text-stone-500">
-                          <Sparkles className="w-3 h-3 text-stone-400" />
-                          <span>{model.contextWindow}</span>
-                        </div>
                       </div>
 
                       <p className="text-[11px] leading-snug text-stone-600 line-clamp-1">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { AppSettings, HealthCheckResult, BalanceInfo } from "../types";
+import { AppSettings, HealthCheckResult } from "../types";
 import { DEFAULT_BACKEND_URL, DEFAULT_SYSTEM_PROMPT, AVAILABLE_MODELS, DEFAULT_MODEL_ID, ModelOption, isModelUnlocked } from "../config";
-import { testBackendHealth, fetchBalanceInfo } from "../services/api";
+import { testBackendHealth } from "../services/api";
 import { PasscodeModal } from "./PasscodeModal";
 import { ModelNameLabel } from "./ModelNameLabel";
 import {
@@ -13,11 +13,8 @@ import {
   XCircle,
   Loader2,
   RotateCcw,
-  Shield,
   Check,
   Cpu,
-  Wallet,
-  RefreshCw,
   Lock,
   ShieldCheck,
   GraduationCap,
@@ -54,8 +51,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   );
   const [healthStatus, setHealthStatus] = useState<HealthCheckResult | null>(null);
   const [isTesting, setIsTesting] = useState(false);
-  const [balanceInfo, setBalanceInfo] = useState<BalanceInfo | null>(null);
-  const [isFetchingBalance, setIsFetchingBalance] = useState(false);
   const [, setIsUnlocked] = useState<boolean>(
     () => typeof window !== "undefined" && localStorage.getItem("astra_frontier_unlocked") === "true"
   );
@@ -63,21 +58,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      loadBalance();
+      const activeUrl = settings.backendUrl || DEFAULT_BACKEND_URL;
+      setBackendUrl(activeUrl);
     }
-  }, [isOpen, backendUrl]);
-
-  const loadBalance = async () => {
-    setIsFetchingBalance(true);
-    try {
-      const info = await fetchBalanceInfo(backendUrl);
-      setBalanceInfo(info);
-    } catch {
-      // Fallback
-    } finally {
-      setIsFetchingBalance(false);
-    }
-  };
+  }, [isOpen, settings.backendUrl]);
 
   if (!isOpen) return null;
 
@@ -87,7 +71,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     try {
       const res = await testBackendHealth(backendUrl);
       setHealthStatus(res);
-      loadBalance();
     } catch {
       setHealthStatus({ status: "offline", message: "Failed to reach proxy endpoint." });
     } finally {
@@ -137,7 +120,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
             <div>
               <h2 className="text-sm font-semibold text-slate-900">System Settings</h2>
-              <p className="text-[11px] text-slate-500">Proxy routing, token pruning, and stealth balance monitor</p>
+              <p className="text-[11px] text-slate-500">Proxy routing, cohort token protection, and model preferences</p>
             </div>
           </div>
 
@@ -151,52 +134,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Form Body */}
         <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
-          {/* API Usage Spent (Pure spent amount only - zero quota or numbers shown) */}
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 shadow-xs space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
-                <Wallet className="w-4 h-4 text-cyan-600" />
-                <span>API Usage Spent</span>
-              </div>
-              <button
-                type="button"
-                onClick={loadBalance}
-                disabled={isFetchingBalance}
-                className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer"
-                title="Refresh usage statistics"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isFetchingBalance ? "animate-spin text-cyan-600" : ""}`} />
-              </button>
-            </div>
-
-            {balanceInfo ? (
-              <div className="p-3.5 rounded-lg bg-white border border-slate-200/90 shadow-2xs">
-                <div className="text-[10px] uppercase tracking-wider font-semibold text-slate-500">Total Spent</div>
-                <div className="text-xl font-black text-slate-900 mt-0.5">
-                  ${balanceInfo.consumption.toFixed(2)} <span className="text-xs font-normal text-slate-500">USD</span>
-                </div>
-              </div>
-            ) : (
-              <div className="py-2 text-[11px] text-slate-500 flex items-center justify-between">
-                <span>{isFetchingBalance ? "Fetching usage from serverless proxy..." : "Usage data available via live proxy endpoint."}</span>
-                {!isFetchingBalance && (
-                  <button
-                    type="button"
-                    onClick={loadBalance}
-                    className="text-cyan-700 font-semibold hover:underline cursor-pointer"
-                  >
-                    Check
-                  </button>
-                )}
-              </div>
-            )}
-
-            <div className="text-[10px] text-slate-400 flex items-center gap-1.5 pt-0.5">
-              <Shield className="w-3 h-3 text-cyan-600 shrink-0" />
-              <span>Direct Serverless Proxy: Provider credentials and wallet details remain hidden.</span>
-            </div>
-          </div>
-
           {/* Backend Proxy URL Input */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
@@ -299,7 +236,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       )}
                     </div>
                     <span
-                      className={`inline-block text-[9px] font-bold px-1.5 py-0.5 rounded-full border mb-1 ${
+                      className={`inline-block text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${
                         isClaude
                           ? "bg-rose-50 text-rose-900 border-rose-200"
                           : isDeepSeek
@@ -309,9 +246,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     >
                       {model.tag}
                     </span>
-                    <p className="text-[10px] text-slate-500 leading-tight">
-                      {model.contextWindow}
-                    </p>
                   </button>
                 );
               })}

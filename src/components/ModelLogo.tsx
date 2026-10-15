@@ -8,23 +8,23 @@ export interface ModelLogoProps {
 }
 
 /**
- * High-fidelity, crisp SVG logos for all frontier AI models & providers:
- * - DeepSeek (Iconic whale / star in oceanic cyan & deep blue)
- * - OpenAI / GPT-6 Astra (Official OpenAI vortex spiral in emerald/cyan)
- * - Anthropic / Claude (Official sunburst asterisk in warm terracotta)
- * - Mistral AI (Official pixelated interlocking M blocks in vibrant orange)
- * - Alibaba Qwen (Official geometric loop / isometric hexagon in indigo/violet)
- * - Meta AI (Official infinity loop in electric blue)
+ * High-fidelity, 100% authentic official branded badge tiles matching official platforms (OpenRouter, OpenAI, Anthropic, DeepSeek):
+ * 1. DeepSeek V4 / V4.1 Flash: Official cobalt blue circular badge with white leaping whale inside
+ * 2. Opus 5.5 / Claude: Official terracotta/clay rounded square badge with white Claude sunburst inside
+ * 3. Mistral AI: Official warm orange rounded square tile with white cascading Mistral blocks
+ * 4. Alibaba Qwen: Official royal violet rounded squircle tile with white Qwen Mobius loop (centered)
+ * 5. Meta AI: Official electric blue rounded squircle tile with white Meta infinity ribbon
+ * 6. GPT-6 Astra / OpenAI: Official emerald green & white badge with white OpenAI vortex knot centered
  */
 export const ModelLogo: React.FC<ModelLogoProps> = ({
   modelId = "",
   provider = "",
-  size = 18,
+  size = 20,
   className = "",
 }) => {
   const normalized = `${modelId} ${provider}`.toLowerCase();
 
-  // 1. DeepSeek
+  // 1. DeepSeek (Official DeepSeek circular blue badge matching screenshot)
   if (normalized.includes("deepseek")) {
     return (
       <svg
@@ -33,30 +33,54 @@ export const ModelLogo: React.FC<ModelLogoProps> = ({
         viewBox="0 0 32 32"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className={`shrink-0 drop-shadow-[0_1px_4px_rgba(2,132,199,0.3)] ${className}`}
-        aria-label="DeepSeek Logo"
+        className={`shrink-0 drop-shadow-[0_1px_3px_rgba(29,78,216,0.35)] ${className}`}
+        aria-label="DeepSeek Official Badge"
       >
         <defs>
-          <linearGradient id="deepseekGrad" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#38bdf8" />
-            <stop offset="100%" stopColor="#0284c7" />
+          <linearGradient id="deepseekBg" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#2563eb" />
+            <stop offset="100%" stopColor="#1d4ed8" />
           </linearGradient>
         </defs>
-        {/* DeepSeek Whale Silhouette & Breaching Spout */}
-        <path
-          d="M6 19C6 14 10 9 18 8C23 7.3 26 9.5 27 12C28 14.5 26.5 17 24 18.5C21.5 20 18.5 20.2 16 21C13 22 10.5 23.5 8 26C8.5 23.5 8.2 21.5 6 19Z"
-          fill="url(#deepseekGrad)"
-        />
-        <path
-          d="M17 8C17 5 19 3 21 2C20.5 4 21.5 5.5 23 6C20.5 6.5 18.5 7 17 8Z"
-          fill="#38bdf8"
-        />
-        <circle cx="23" cy="12" r="1.5" fill="#ffffff" />
+        {/* Blue Circular Badge Background */}
+        <circle cx="16" cy="16" r="14.5" fill="url(#deepseekBg)" />
+        {/* Official Crisp White DeepSeek Leaping Whale */}
+        <g transform="translate(6, 6) scale(0.833)" fill="#ffffff">
+          <path d="M23.748 4.651c-.254-.124-.364.113-.512.233-.051.04-.094.09-.137.137-.372.397-.806.657-1.373.626-.829-.046-1.537.214-2.163.848-.133-.782-.575-1.248-1.247-1.548-.352-.155-.708-.311-.955-.65-.172-.24-.219-.509-.305-.774-.055-.16-.11-.323-.293-.35-.2-.031-.278.136-.356.276-.313.572-.434 1.202-.422 1.84.027 1.436.633 2.58 1.838 3.393.137.094.172.187.129.323-.082.28-.18.553-.266.833-.055.179-.137.218-.328.14a5.5 5.5 0 0 1-1.737-1.179c-.857-.828-1.631-1.743-2.597-2.46a12 12 0 0 0-.689-.47c-.985-.957.13-1.743.387-1.836.27-.098.094-.433-.778-.428-.872.003-1.67.295-2.687.685a3 3 0 0 1-.465.136 9.6 9.6 0 0 0-2.883-.101c-1.885.21-3.39 1.1-4.497 2.622C.082 8.776-.231 10.854.152 13.02c.403 2.284 1.568 4.175 3.36 5.653 1.857 1.533 3.997 2.284 6.438 2.14 1.482-.085 3.132-.284 4.994-1.86.47.234.962.328 1.78.398.629.058 1.235-.031 1.705-.129.735-.155.684-.836.418-.961-2.155-1.004-1.682-.595-2.112-.926 1.095-1.295 2.768-3.598 3.284-6.733.05-.346.115-.834.108-1.114-.004-.171.035-.238.23-.257a4.2 4.2 0 0 0 1.545-.475c1.397-.763 1.96-2.016 2.093-3.517.02-.23-.004-.467-.247-.588M11.58 18.168c-2.088-1.642-3.101-2.183-3.52-2.16-.39.024-.32.472-.234.763.09.288.207.487.371.74.114.167.192.416-.113.603-.673.416-1.842-.14-1.897-.168-1.361-.801-2.5-1.86-3.301-3.306-.775-1.393-1.225-2.888-1.299-4.482-.02-.385.094-.522.477-.592a4.7 4.7 0 0 1 1.53-.038c2.131.311 3.946 1.264 5.467 2.774.868.86 1.525 1.887 2.202 2.89.72 1.066 1.494 2.082 2.48 2.915.348.291.626.513.892.677-.802.09-2.14.109-3.055-.615zm1.001-6.44a.306.306 0 0 1 .415-.287.3.3 0 0 1 .113.074.3.3 0 0 1 .086.214c0 .17-.136.307-.308.307a.303.303 0 0 1-.306-.307m3.11 1.596c-.2.081-.4.151-.591.16a1.25 1.25 0 0 1-.798-.254c-.274-.23-.47-.358-.551-.758a1.7 1.7 0 0 1 .015-.588c.07-.327-.007-.537-.238-.727-.188-.156-.426-.199-.689-.199a.6.6 0 0 1-.254-.078.253.253 0 0 1-.114-.358 1 1 0 0 1 .192-.21c.356-.202.767-.136 1.146.016.352.144.618.408 1.001.782.392.451.462.576.685.915.176.264.336.536.446.848.066.194-.02.353-.25.45" />
+        </g>
       </svg>
     );
   }
 
-  // 2. Mistral AI
+  // 2. Anthropic Claude / Opus 5.5 (Official terracotta rounded square badge matching screenshot)
+  if (normalized.includes("claude") || normalized.includes("anthropic") || normalized.includes("opus")) {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 32 32"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={`shrink-0 drop-shadow-[0_1px_3px_rgba(194,97,61,0.35)] ${className}`}
+        aria-label="Claude Opus Official Badge"
+      >
+        <defs>
+          <linearGradient id="claudeBg" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#d97706" />
+            <stop offset="100%" stopColor="#b45309" />
+          </linearGradient>
+        </defs>
+        {/* Warm Terracotta Rounded Square Badge */}
+        <rect x="2" y="2" width="28" height="28" rx="7" fill="url(#claudeBg)" />
+        {/* Official Crisp White Claude Sunburst Asterisk */}
+        <g transform="translate(6.5, 6.5) scale(0.79)" fill="#ffffff">
+          <path d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z" />
+        </g>
+      </svg>
+    );
+  }
+
+  // 3. Mistral AI (Official orange rounded square badge)
   if (normalized.includes("mistral")) {
     return (
       <svg
@@ -65,30 +89,27 @@ export const ModelLogo: React.FC<ModelLogoProps> = ({
         viewBox="0 0 32 32"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className={`shrink-0 drop-shadow-[0_1px_4px_rgba(249,115,22,0.35)] ${className}`}
-        aria-label="Mistral AI Logo"
+        className={`shrink-0 drop-shadow-[0_1px_3px_rgba(234,88,12,0.35)] ${className}`}
+        aria-label="Mistral AI Official Badge"
       >
-        <rect x="3" y="5" width="5.2" height="5.2" rx="0.8" fill="#f97316" />
-        <rect x="23.8" y="5" width="5.2" height="5.2" rx="0.8" fill="#f97316" />
-        <rect x="3" y="10.2" width="5.2" height="5.2" rx="0.8" fill="#f97316" />
-        <rect x="8.2" y="10.2" width="5.2" height="5.2" rx="0.8" fill="#ea580c" />
-        <rect x="18.6" y="10.2" width="5.2" height="5.2" rx="0.8" fill="#ea580c" />
-        <rect x="23.8" y="10.2" width="5.2" height="5.2" rx="0.8" fill="#f97316" />
-        <rect x="3" y="15.4" width="5.2" height="5.2" rx="0.8" fill="#f97316" />
-        <rect x="8.2" y="15.4" width="5.2" height="5.2" rx="0.8" fill="#ea580c" />
-        <rect x="13.4" y="15.4" width="5.2" height="5.2" rx="0.8" fill="#c2410c" />
-        <rect x="18.6" y="15.4" width="5.2" height="5.2" rx="0.8" fill="#ea580c" />
-        <rect x="23.8" y="15.4" width="5.2" height="5.2" rx="0.8" fill="#f97316" />
-        <rect x="3" y="20.6" width="5.2" height="5.2" rx="0.8" fill="#ea580c" />
-        <rect x="13.4" y="20.6" width="5.2" height="5.2" rx="0.8" fill="#c2410c" />
-        <rect x="23.8" y="20.6" width="5.2" height="5.2" rx="0.8" fill="#ea580c" />
-        <rect x="3" y="25.8" width="5.2" height="5.2" rx="0.8" fill="#c2410c" />
-        <rect x="23.8" y="25.8" width="5.2" height="5.2" rx="0.8" fill="#c2410c" />
+        <rect x="2" y="2" width="28" height="28" rx="7" fill="#ea580c" />
+        <g transform="translate(6, 9) scale(0.155)">
+          <rect x="18.292" y="0" width="18.293" height="18.123" fill="#ffd800" />
+          <rect x="91.473" y="0" width="18.293" height="18.123" fill="#ffd800" />
+          <rect x="18.292" y="18.121" width="36.586" height="18.123" fill="#ffaf00" />
+          <rect x="73.181" y="18.121" width="36.586" height="18.123" fill="#ffaf00" />
+          <rect x="18.292" y="36.243" width="91.476" height="18.122" fill="#ffffff" />
+          <rect x="18.292" y="54.37" width="18.293" height="18.123" fill="#ffffff" />
+          <rect x="54.883" y="54.37" width="18.293" height="18.123" fill="#ffffff" />
+          <rect x="91.473" y="54.37" width="18.293" height="18.123" fill="#ffffff" />
+          <rect x="0" y="72.504" width="54.89" height="18.123" fill="#ffffff" />
+          <rect x="73.181" y="72.504" width="54.89" height="18.123" fill="#ffffff" />
+        </g>
       </svg>
     );
   }
 
-  // 3. Alibaba Qwen
+  // 4. Alibaba Qwen (Official royal violet rounded squircle badge, centered)
   if (normalized.includes("qwen") || normalized.includes("alibaba")) {
     return (
       <svg
@@ -97,32 +118,18 @@ export const ModelLogo: React.FC<ModelLogoProps> = ({
         viewBox="0 0 32 32"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className={`shrink-0 drop-shadow-[0_1px_4px_rgba(99,102,241,0.35)] ${className}`}
-        aria-label="Qwen Logo"
+        className={`shrink-0 drop-shadow-[0_1px_3px_rgba(99,102,241,0.35)] ${className}`}
+        aria-label="Qwen Official Badge"
       >
-        <defs>
-          <linearGradient id="qwenGrad" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#818cf8" />
-            <stop offset="50%" stopColor="#6366f1" />
-            <stop offset="100%" stopColor="#4f46e5" />
-          </linearGradient>
-        </defs>
-        {/* Interlocking Hexagonal Prism Loop */}
-        <path
-          d="M16 3L27 9.5V22.5L16 29L5 22.5V9.5L16 3Z"
-          stroke="url(#qwenGrad)"
-          strokeWidth="2.5"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M16 11L21.5 14.2V20.8L16 24L10.5 20.8V14.2L16 11Z"
-          fill="url(#qwenGrad)"
-        />
+        <rect x="2" y="2" width="28" height="28" rx="7" fill="#615ced" />
+        <g transform="translate(16, 16) scale(0.098) translate(-206.0, -298.15)" fill="#ffffff">
+          <path d="m 233.8,279.6 c 0.4,0 0.5,0.2 0.3,0.5 l -6.8,11.9 -21.2,37.3 c 0,0.2 -0.2,0.2 -0.4,0.2 -0.2,0 -0.3,0 -0.4,-0.2 l -28.1,-49 c -0.2,-0.3 0,-0.4 0.2,-0.4 h 1.8 c 0,0 54.7,-0.2 54.7,-0.2 v 0 z m -51.1,-65.2 c -0.2,0 -0.3,0 -0.4,0.2 L 159,255.4 c -0.2,0.4 -0.6,0.6 -1.1,0.6 h -23.3 c -0.5,0 -0.6,0.2 -0.3,0.6 l 47.2,82.6 c 0.2,0.3 0.1,0.5 -0.3,0.5 h -22.7 c -0.7,0 -1.3,0.4 -1.6,1.1 l -10.7,18.8 c -0.4,0.6 -0.2,1 0.6,1 h 46.5 c 0.4,0 0.7,0.2 0.8,0.6 l 11.4,20 c 0.4,0.7 0.7,0.7 1.1,0 l 40.7,-71.2 6.4,-11.2 c 0,-0.2 0.2,-0.2 0.4,-0.2 0.2,0 0.3,0 0.4,0.2 l 11.6,20.6 c 0.2,0.3 0.5,0.5 0.9,0.5 l 22.5,-0.2 c 0.1,0 0.2,0 0.3,-0.2 0,-0.1 0,-0.2 0,-0.3 l -23.6,-41.4 c -0.2,-0.3 -0.2,-0.6 0,-0.9 l 2.4,-4.1 9.1,-16.1 c 0.2,-0.3 0,-0.5 -0.3,-0.5 h -94.3 c -0.5,0 -0.6,-0.2 -0.3,-0.6 l 11.7,-20.4 c 0.2,-0.3 0.2,-0.6 0,-0.9 l -11.1,-19.5 c 0,-0.2 -0.2,-0.3 -0.4,-0.3 v 0 z m 27.9,-3.2 c 3.2,5.6 6.4,11.2 9.5,16.9 0.3,0.5 0.7,0.7 1.3,0.7 h 45.1 c 1.4,0 2.6,0.9 3.6,2.7 l 11.8,20.9 c 1.5,2.7 2,3.9 0.2,6.8 -2.1,3.5 -4.2,7 -6.2,10.6 l -3,5.4 c -0.9,1.6 -1.8,2.3 -0.3,4.2 l 21.6,37.7 c 1.4,2.4 0.9,4 -0.3,6.3 -3.6,6.4 -7.2,12.7 -10.9,19 -1.3,2.2 -2.9,3 -5.5,3 -6.3,-0.1 -12.6,0 -18.9,0.1 -0.3,0 -0.5,0.2 -0.7,0.4 -7.3,12.9 -14.6,25.7 -22,38.5 -1.4,2.4 -3.1,3 -5.9,3 -8.1,0 -16.3,0 -24.5,0 -1.7,0 -2.9,-0.7 -3.8,-2.2 l -10.9,-18.9 c -0.1,-0.3 -0.4,-0.4 -0.7,-0.4 h -41.6 c -2.3,0.2 -4.5,0 -6.5,-0.7 l -13,-22.5 c -0.8,-1.5 -0.8,-2.9 0,-4.4 l 9.8,-17.2 c 0.3,-0.5 0.3,-1.1 0,-1.6 -5.1,-8.9 -10.2,-17.7 -15.2,-26.6 l -6.4,-11.3 c -1.3,-2.5 -1.4,-4 0.8,-7.8 3.8,-6.6 7.5,-13.2 11.3,-19.8 1.1,-1.9 2.5,-2.7 4.7,-2.7 7,0 14,0 21.1,0 0.4,0 0.7,-0.2 0.9,-0.5 L 178.8,211 c 0.8,-1.3 1.9,-2 3.4,-2 4.3,0 8.6,0 12.9,0 l 8.3,-0.2 c 2.8,0 5.9,0.3 7.3,2.8 z" />
+        </g>
       </svg>
     );
   }
 
-  // 4. Meta AI (Muse Spark)
+  // 5. Meta AI (Official Meta electric blue rounded squircle badge)
   if (normalized.includes("meta") || normalized.includes("muse")) {
     return (
       <svg
@@ -131,57 +138,18 @@ export const ModelLogo: React.FC<ModelLogoProps> = ({
         viewBox="0 0 32 32"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className={`shrink-0 drop-shadow-[0_1px_4px_rgba(0,129,251,0.35)] ${className}`}
-        aria-label="Meta Logo"
+        className={`shrink-0 drop-shadow-[0_1px_3px_rgba(0,129,251,0.35)] ${className}`}
+        aria-label="Meta Official Badge"
       >
-        <defs>
-          <linearGradient id="metaGrad" x1="2" y1="16" x2="30" y2="16" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#0064e0" />
-            <stop offset="40%" stopColor="#0081fb" />
-            <stop offset="80%" stopColor="#00b2ff" />
-          </linearGradient>
-        </defs>
-        {/* Meta Official Infinity Ribbon */}
-        <path
-          d="M8.8 8C5.2 8 2.5 11 2.5 15.5C2.5 20 5.4 23 9 23C12.3 23 14.6 20.5 16 18.2C17.4 20.5 19.7 23 23 23C26.6 23 29.5 20 29.5 15.5C29.5 11 26.8 8 23.2 8C19.9 8 17.6 10.5 16 12.8C14.4 10.5 12.1 8 8.8 8ZM9 11.5C11.2 11.5 12.8 13.4 14.2 15.5C12.8 17.6 11.2 19.5 9 19.5C6.9 19.5 5.5 17.8 5.5 15.5C5.5 13.2 6.9 11.5 9 11.5ZM23 11.5C25.1 11.5 26.5 13.2 26.5 15.5C26.5 17.8 25.1 19.5 23 19.5C20.8 19.5 19.2 17.6 17.8 15.5C19.2 13.4 20.8 11.5 23 11.5Z"
-          fill="url(#metaGrad)"
-        />
+        <rect x="2" y="2" width="28" height="28" rx="7" fill="#0081fb" />
+        <g transform="translate(6, 6) scale(0.833)" fill="#ffffff">
+          <path d="M6.915 4.03c-1.968 0-3.683 1.28-4.871 3.113C.704 9.208 0 11.883 0 14.449c0 .706.07 1.369.21 1.973a6.624 6.624 0 0 0 .265.86 5.297 5.297 0 0 0 .371.761c.696 1.159 1.818 1.927 3.593 1.927 1.497 0 2.633-.671 3.965-2.444.76-1.012 1.144-1.626 2.663-4.32l.756-1.339.186-.325c.061.1.121.196.183.3l2.152 3.595c.724 1.21 1.665 2.556 2.47 3.314 1.046.987 1.992 1.22 3.06 1.22 1.075 0 1.876-.355 2.455-.843a3.743 3.743 0 0 0 .81-.973c.542-.939.861-2.127.861-3.745 0-2.72-.681-5.357-2.084-7.45-1.282-1.912-2.957-2.93-4.716-2.93-1.047 0-2.088.467-3.053 1.308-.652.57-1.257 1.29-1.82 2.05-.69-.875-1.335-1.547-1.958-2.056-1.182-.966-2.315-1.303-3.454-1.303zm10.16 2.053c1.147 0 2.188.758 2.992 1.999 1.132 1.748 1.647 4.195 1.647 6.4 0 1.548-.368 2.9-1.839 2.9-.58 0-1.027-.23-1.664-1.004-.496-.601-1.343-1.878-2.832-4.358l-.617-1.028a44.908 44.908 0 0 0-1.255-1.98c.07-.109.141-.224.211-.327 1.12-1.667 2.118-2.602 3.358-2.602zm-10.201.553c1.265 0 2.058.791 2.675 1.446.307.327.737.871 1.234 1.579l-1.02 1.566c-.757 1.163-1.882 3.017-2.837 4.338-1.191 1.649-1.81 1.817-2.486 1.817-.524 0-1.038-.237-1.383-.794-.263-.426-.464-1.13-.464-2.046 0-2.221.63-4.535 1.66-6.088.454-.687.964-1.226 1.533-1.533a2.264 2.264 0 0 1 1.088-.285z" />
+        </g>
       </svg>
     );
   }
 
-  // 5. Anthropic / Claude
-  if (normalized.includes("claude") || normalized.includes("anthropic")) {
-    return (
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 32 32"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className={`shrink-0 drop-shadow-[0_1px_4px_rgba(217,119,6,0.35)] ${className}`}
-        aria-label="Claude Logo"
-      >
-        <defs>
-          <linearGradient id="claudeGrad" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#f59e0b" />
-            <stop offset="50%" stopColor="#d97706" />
-            <stop offset="100%" stopColor="#b45309" />
-          </linearGradient>
-        </defs>
-        {/* Anthropic Sunburst Asterisk */}
-        <path
-          d="M16 2.5V29.5M2.5 16H29.5M6.5 6.5L25.5 25.5M6.5 25.5L25.5 6.5"
-          stroke="url(#claudeGrad)"
-          strokeWidth="3.2"
-          strokeLinecap="round"
-        />
-        <circle cx="16" cy="16" r="3.2" fill="#d97706" />
-      </svg>
-    );
-  }
-
-  // 6. OpenAI / GPT-6 Astra (Default)
+  // 6. GPT-6 Astra / OpenAI / ChatGPT (Official green and white OpenAI badge matching user screenshot)
   return (
     <svg
       width={size}
@@ -189,22 +157,21 @@ export const ModelLogo: React.FC<ModelLogoProps> = ({
       viewBox="0 0 32 32"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={`shrink-0 drop-shadow-[0_1px_4px_rgba(16,185,129,0.35)] ${className}`}
-      aria-label="OpenAI Logo"
+      className={`shrink-0 drop-shadow-[0_1px_3px_rgba(16,163,127,0.35)] ${className}`}
+      aria-label="OpenAI Astra Official Badge"
     >
       <defs>
-        <linearGradient id="openAIGrad" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#10b981" />
-          <stop offset="50%" stopColor="#059669" />
-          <stop offset="100%" stopColor="#047857" />
+        <linearGradient id="astraGreenBg" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#10a37f" />
+          <stop offset="100%" stopColor="#0d8a6b" />
         </linearGradient>
       </defs>
-      {/* OpenAI Vortex Knot */}
-      <path
-        d="M26.8 13.8C26.3 10.9 24.3 8.6 21.6 7.8V10.8C22.8 11.3 23.8 12.5 24.1 14.1L26.8 13.8ZM18.2 5.2C15.6 4.3 12.6 4.9 10.5 6.8L12.5 9.1C13.8 7.9 15.8 7.6 17.4 8.2L18.2 5.2ZM7.8 10.4C6 12.6 5.6 15.7 6.7 18.3L9.5 17.3C8.8 15.6 9.1 13.5 10.2 12.1L7.8 10.4ZM8.2 21.6C9.5 24.1 12.1 25.8 15.1 25.9V22.9C13.3 22.8 11.6 21.7 10.8 20.1L8.2 21.6ZM19.5 25.3C22.2 24.5 24.3 22.3 25.1 19.5L22.2 18.6C21.7 20.4 20.3 21.8 18.5 22.3L19.5 25.3Z"
-        fill="url(#openAIGrad)"
-      />
-      <circle cx="16" cy="16" r="3" fill="#10b981" />
+      {/* Official Emerald Green Squircle Tile */}
+      <rect x="2" y="2" width="28" height="28" rx="7" fill="url(#astraGreenBg)" />
+      {/* Official Crisp White OpenAI Vortex Knot Centered */}
+      <g transform="translate(16, 16) scale(0.76) translate(-11.79, -10.42)" fill="#ffffff">
+        <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z" />
+      </g>
     </svg>
   );
 };
