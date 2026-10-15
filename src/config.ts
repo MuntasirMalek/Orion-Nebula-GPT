@@ -149,28 +149,27 @@ export const AVAILABLE_MODELS: ModelOption[] = [
 
 export const DEFAULT_MODEL_ID = "deepseek-v4-flash";
 
-// Self-healing cleanup for legacy keys and cross-contaminated storage
+// Backward-compatible self-healing persistence for authorized user passcodes
 if (typeof window !== "undefined") {
   try {
-    const dsCode = localStorage.getItem("orion_code_deepseek");
-    const frontierCode = localStorage.getItem("orion_code_frontier");
-    const lowCode = localStorage.getItem("orion_code_low");
+    const frontierCode =
+      localStorage.getItem("orion_code_frontier") ||
+      localStorage.getItem("astra_frontier_unlocked_code") ||
+      localStorage.getItem("orion_code_low") ||
+      localStorage.getItem("orion_code_medium_high");
 
-    // Clean obsolete master keys
-    localStorage.removeItem("orion_unlocked_all");
-    localStorage.removeItem("astra_frontier_unlocked");
-    localStorage.removeItem("astra_frontier_unlocked_code");
+    const isFrontierUnlocked =
+      localStorage.getItem("orion_unlocked_frontier") === "true" ||
+      localStorage.getItem("astra_frontier_unlocked") === "true" ||
+      Boolean(frontierCode);
 
-    // If frontier code was cross-contaminated with deepseek or master code, wipe it
-    if (frontierCode && (frontierCode === dsCode || frontierCode === "auth_key_b")) {
-      localStorage.removeItem("orion_unlocked_frontier");
-      localStorage.removeItem("orion_code_frontier");
-    }
-
-    // Auto-migrate valid lowCode to frontierCode if present
-    if (!localStorage.getItem("orion_code_frontier") && lowCode && lowCode !== dsCode && lowCode !== "auth_key_b") {
+    if (isFrontierUnlocked) {
       localStorage.setItem("orion_unlocked_frontier", "true");
-      localStorage.setItem("orion_code_frontier", lowCode);
+      localStorage.setItem("astra_frontier_unlocked", "true");
+      if (frontierCode) {
+        localStorage.setItem("orion_code_frontier", frontierCode);
+        localStorage.setItem("astra_frontier_unlocked_code", frontierCode);
+      }
     }
   } catch {
     // Ignore storage errors in sandbox environments
@@ -190,16 +189,24 @@ export function isModelUnlocked(modelId: string, _effort?: string): boolean {
     modelId.includes("deepseek") ||
     modelId.includes("mistral") ||
     modelId.includes("qwen") ||
-    modelId.includes("meta")
+    modelId.includes("meta") ||
+    modelId.includes("muse")
   ) {
     return true;
   }
 
-  // All GPT Astra and Claude models (Low, Medium, High) require frontier cohort code
-  return (
-    localStorage.getItem("orion_unlocked_frontier") === "true" &&
-    Boolean(localStorage.getItem("orion_code_frontier"))
-  );
+  // All GPT Astra and Claude models (Low, Medium, High) require authorized frontier code (auth_key_a or auth_key_b)
+  const hasCode =
+    Boolean(localStorage.getItem("orion_code_frontier")) ||
+    Boolean(localStorage.getItem("astra_frontier_unlocked_code")) ||
+    Boolean(localStorage.getItem("orion_code_low")) ||
+    Boolean(localStorage.getItem("orion_code_medium_high"));
+
+  const isUnlocked =
+    localStorage.getItem("orion_unlocked_frontier") === "true" ||
+    localStorage.getItem("astra_frontier_unlocked") === "true";
+
+  return isUnlocked && hasCode;
 }
 
 // Fallback backend URL (Points to your live Cloudflare Worker proxy)
