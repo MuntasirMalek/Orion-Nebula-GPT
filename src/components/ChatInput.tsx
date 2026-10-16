@@ -271,7 +271,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const hintClass = theme ? theme.input.keyboardHint : "text-xs text-slate-500";
 
   return (
-    <div className={`shrink-0 w-full mx-auto px-2.5 sm:px-4 pb-[max(3.5rem,calc(env(safe-area-inset-bottom)+2.5rem))] sm:pb-4 md:pb-6 pt-1 sm:pt-2 ${theme ? theme.input.container : "max-w-4xl"}`}>
+    <div className={`shrink-0 w-full mx-auto px-2.5 sm:px-4 pb-[max(0.625rem,env(safe-area-inset-bottom))] sm:pb-3 md:pb-6 pt-1 sm:pt-2 ${theme ? theme.input.container : "max-w-4xl"}`}>
       {/* Hidden File Input — no restrictive accept filter so Android/iOS/desktop allow multi-selecting .py, .txt, .ts, .pdf, images, etc. together */}
       <input
         type="file"
