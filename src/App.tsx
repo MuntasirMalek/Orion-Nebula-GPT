@@ -107,7 +107,13 @@ export default function App() {
       if (document.documentElement.scrollTop !== 0) document.documentElement.scrollTop = 0;
 
       const vv = window.visualViewport;
-      const h = vv ? Math.round(vv.height) : window.innerHeight;
+      let h = vv ? Math.round(vv.height) : window.innerHeight;
+      if (window.innerHeight > 0 && h > window.innerHeight) {
+        h = window.innerHeight;
+      }
+      if (document.documentElement.clientHeight > 0 && h > document.documentElement.clientHeight) {
+        h = document.documentElement.clientHeight;
+      }
       document.documentElement.style.setProperty("--app-height", `${h}px`);
     };
 
@@ -154,8 +160,8 @@ export default function App() {
   return (
     <div
       style={{
-        height: "var(--app-height, 100dvh)",
-        maxHeight: "var(--app-height, 100dvh)",
+        height: "var(--app-height, 100svh)",
+        maxHeight: "var(--app-height, 100svh)",
       }}
       className={`fixed inset-0 flex h-full w-full max-w-full overflow-hidden ${activeThemeConfig.rootClass} selection:bg-lime-500/25 selection:text-lime-950 transition-colors duration-300`}
     >
