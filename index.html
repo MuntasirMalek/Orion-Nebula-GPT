@@ -4,9 +4,33 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
     <script>
-      if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
-        window.history.scrollRestoration = "manual";
-      }
+      (function() {
+        if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
+          window.history.scrollRestoration = "manual";
+        }
+        function syncViewport() {
+          var vv = window.visualViewport;
+          var h = vv ? Math.round(vv.height) : window.innerHeight;
+          if (h > 0) {
+            document.documentElement.style.setProperty('--app-height', h + 'px');
+          }
+          if (window.scrollY !== 0 || document.documentElement.scrollTop !== 0) {
+            window.scrollTo(0, 0);
+          }
+        }
+        syncViewport();
+        if (window.visualViewport) {
+          window.visualViewport.addEventListener('resize', syncViewport);
+          window.visualViewport.addEventListener('scroll', syncViewport);
+        }
+        window.addEventListener('resize', syncViewport);
+        window.addEventListener('orientationchange', syncViewport);
+        window.addEventListener('pageshow', syncViewport);
+        setTimeout(syncViewport, 50);
+        setTimeout(syncViewport, 150);
+        setTimeout(syncViewport, 350);
+        setTimeout(syncViewport, 800);
+      })();
     </script>
     <meta name="theme-color" content="#f8fafc" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />

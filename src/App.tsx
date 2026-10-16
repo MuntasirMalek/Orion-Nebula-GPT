@@ -94,33 +94,72 @@ export default function App() {
   }, []);
 
   // Dynamic mobile keyboard & visual viewport height handling
-  const [keyboardHeight, setKeyboardHeight] = useState<number | null>(null);
+  const [appHeight, setAppHeight] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      if (window.visualViewport) {
+        return Math.round(window.visualViewport.height);
+      }
+      return window.innerHeight;
+    }
+    return 0;
+  });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const handleViewportChange = () => {
+    const updateHeight = () => {
       const vv = window.visualViewport;
-      // When software keyboard is open on mobile, visualViewport height is significantly smaller than window.innerHeight
-      if (vv && vv.height < window.innerHeight - 80) {
-        setKeyboardHeight(Math.round(vv.height));
-      } else {
-        setKeyboardHeight(null);
+      const h = vv ? Math.round(vv.height) : window.innerHeight;
+
+      if (h > 0) {
+        setAppHeight(h);
+        document.documentElement.style.setProperty("--app-height", `${h}px`);
+      }
+
+      // Reset phantom scroll offsets pushed by URL bar omnibox focus or keyboard dismiss
+      if (
+        (vv && (vv.offsetTop !== 0 || vv.pageTop !== 0)) ||
+        window.scrollY !== 0 ||
+        document.documentElement.scrollTop !== 0 ||
+        document.body.scrollTop !== 0
+      ) {
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
       }
     };
 
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", handleViewportChange);
+    updateHeight();
+
+    // Staggered settling checks to catch Chromium/WebKit URL bar & toolbar transitions
+    const t1 = setTimeout(updateHeight, 50);
+    const t2 = setTimeout(updateHeight, 150);
+    const t3 = setTimeout(updateHeight, 350);
+    const t4 = setTimeout(updateHeight, 800);
+    const t5 = setTimeout(updateHeight, 1500);
+
+    const vv = window.visualViewport;
+    if (vv) {
+      vv.addEventListener("resize", updateHeight);
+      vv.addEventListener("scroll", updateHeight);
     }
-    window.addEventListener("resize", handleViewportChange);
-    window.addEventListener("orientationchange", handleViewportChange);
+    window.addEventListener("resize", updateHeight);
+    window.addEventListener("orientationchange", updateHeight);
+    window.addEventListener("pageshow", updateHeight);
 
     return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener("resize", handleViewportChange);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+      clearTimeout(t5);
+      if (vv) {
+        vv.removeEventListener("resize", updateHeight);
+        vv.removeEventListener("scroll", updateHeight);
       }
-      window.removeEventListener("resize", handleViewportChange);
-      window.removeEventListener("orientationchange", handleViewportChange);
+      window.removeEventListener("resize", updateHeight);
+      window.removeEventListener("orientationchange", updateHeight);
+      window.removeEventListener("pageshow", updateHeight);
     };
   }, []);
 
@@ -128,7 +167,7 @@ export default function App() {
 
   return (
     <div
-      style={keyboardHeight ? { height: `${keyboardHeight}px`, maxHeight: `${keyboardHeight}px` } : undefined}
+      style={appHeight > 0 ? { height: `${appHeight}px`, maxHeight: `${appHeight}px` } : undefined}
       className={`relative flex h-full w-full max-w-full overflow-hidden ${activeThemeConfig.rootClass} selection:bg-lime-500/25 selection:text-lime-950 transition-colors duration-300`}
     >
       {/* Dynamic Background with Interactive Nebula Motion, Starfield & Supernova Explosions */}
