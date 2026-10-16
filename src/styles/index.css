@@ -4,7 +4,6 @@
 
 :root {
   color-scheme: light;
-  --app-height: 100svh;
 }
 
 html {
@@ -12,10 +11,6 @@ html {
   padding: 0;
   width: 100%;
   height: 100%;
-  height: 100svh;
-  height: var(--app-height, 100svh);
-  max-height: 100svh;
-  max-height: var(--app-height, 100svh);
   overflow: hidden;
   overscroll-behavior: none;
   -webkit-text-size-adjust: 100%;
@@ -26,17 +21,8 @@ body {
   padding: 0;
   width: 100%;
   height: 100%;
-  height: 100svh;
-  height: var(--app-height, 100svh);
-  max-height: 100svh;
-  max-height: var(--app-height, 100svh);
   overflow: hidden;
   overscroll-behavior: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
   background-color: transparent;
   color: #0f172a;
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -48,10 +34,6 @@ body {
   padding: 0;
   width: 100%;
   height: 100%;
-  height: 100svh;
-  height: var(--app-height, 100svh);
-  max-height: 100svh;
-  max-height: var(--app-height, 100svh);
   overflow: hidden;
   display: flex;
   flex-direction: column;
