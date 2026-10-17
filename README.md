@@ -1,5 +1,7 @@
 # Orion Nebula GPT — Frontend Client
 
+🌐 **Live Website:** [https://muntasirmalek.github.io/Orion-Nebula-GPT/](https://muntasirmalek.github.io/Orion-Nebula-GPT/)
+
 A high-performance, responsive web application engineered for academic study, research, and frontier AI reasoning. Built with **React**, **Vite**, **TypeScript**, and **Tailwind CSS**, optimized for zero-configuration deployment to **GitHub Pages**.
 
 ---
