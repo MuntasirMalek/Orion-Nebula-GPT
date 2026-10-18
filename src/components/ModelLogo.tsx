@@ -129,7 +129,55 @@ export const ModelLogo: React.FC<ModelLogoProps> = ({
     );
   }
 
-  // 5. Meta AI (Official Meta electric blue rounded squircle badge)
+  // 5. Zhipu AI GLM (Official cyan/teal rounded squircle badge)
+  if (normalized.includes("glm") || normalized.includes("zhipu")) {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 32 32"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={`shrink-0 drop-shadow-[0_1px_3px_rgba(14,165,233,0.35)] ${className}`}
+        aria-label="GLM Zhipu AI Official Badge"
+      >
+        <defs>
+          <linearGradient id="glmBg" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#0ea5e9" />
+            <stop offset="100%" stopColor="#0284c7" />
+          </linearGradient>
+        </defs>
+        <rect x="2" y="2" width="28" height="28" rx="7" fill="url(#glmBg)" />
+        <g transform="translate(7, 7) scale(0.9)" fill="#ffffff">
+          <path d="M10 0L12.5 7.5L20 10L12.5 12.5L10 20L7.5 12.5L0 10L7.5 7.5L10 0Z" />
+          <circle cx="16" cy="4" r="1.5" />
+          <circle cx="4" cy="16" r="1.5" />
+        </g>
+      </svg>
+    );
+  }
+
+  // 6. NVIDIA Nemotron (Official NVIDIA signature lime green badge)
+  if (normalized.includes("nemotron") || normalized.includes("nvidia")) {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 32 32"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={`shrink-0 drop-shadow-[0_1px_3px_rgba(118,185,0,0.35)] ${className}`}
+        aria-label="NVIDIA Nemotron Official Badge"
+      >
+        <rect x="2" y="2" width="28" height="28" rx="7" fill="#76b900" />
+        <g transform="translate(6, 7.5) scale(0.85)" fill="#ffffff">
+          <path d="M11.76 2.05C6.46 2.05 2.14 6.32 2.14 11.58c0 4.19 2.76 7.74 6.6 8.97v-2.31c-2.65-.99-4.54-3.5-4.54-6.66 0-3.87 3.16-7.01 7.06-7.01 2.87 0 5.34 1.71 6.44 4.17h2.37c-1.25-3.66-4.75-6.69-8.31-6.69zm0 4.2c-2.95 0-5.34 2.37-5.34 5.33 0 2.45 1.63 4.51 3.87 5.12v-2.18c-1.04-.47-1.78-1.54-1.78-2.94 0-1.76 1.43-3.19 3.25-3.19 1.4 0 2.59.88 3.03 2.13h2.36c-.55-2.48-2.73-4.27-5.39-4.27zm0 4.19c-.64 0-1.16.51-1.16 1.14 0 .63.52 1.14 1.16 1.14.64 0 1.16-.51 1.16-1.14 0-.63-.52-1.14-1.16-1.14z" />
+        </g>
+      </svg>
+    );
+  }
+
+  // 7. Meta AI (Official Meta electric blue rounded squircle badge)
   if (normalized.includes("meta") || normalized.includes("muse")) {
     return (
       <svg

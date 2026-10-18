@@ -19,7 +19,7 @@ export interface ModelOption {
   id: string;
   name: string;
   tag: string;
-  provider: "OpenAI" | "Anthropic" | "DeepSeek" | "Mistral" | "Qwen" | "Meta";
+  provider: "OpenAI" | "Anthropic" | "DeepSeek" | "Mistral" | "Qwen" | "Meta" | "Zhipu" | "NVIDIA";
   description: string;
   contextWindow: string;
   requiresPasscode: boolean;
@@ -38,7 +38,18 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     requiresPasscode: false,
   },
 
-  // 2. Qwen 3.8 Omni Flash (Unlocked)
+  // 2. DeepSeek V4.1 Flash (OpenCode Free - Added after DeepSeek 4.0 Flash)
+  {
+    id: "deepseek-v4.1-flash-free",
+    name: "DeepSeek V4.1 Flash",
+    tag: "DeepSeek / OpenCode",
+    provider: "DeepSeek",
+    description: "Next-gen DeepSeek V4.1 Flash with enhanced chain-of-thought reasoning intelligence. Free and unlocked via OpenCode.",
+    contextWindow: "128,000 Tokens",
+    requiresPasscode: false,
+  },
+
+  // 3. Qwen 3.8 Omni Flash (Unlocked)
   {
     id: "qwen/qwen3.8-omni-flash:free",
     name: "Qwen 3.8 Omni Flash",
@@ -49,7 +60,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     requiresPasscode: false,
   },
 
-  // 3. Qwen 3.8 Max (Unlocked)
+  // 4. Qwen 3.8 Max (Unlocked)
   {
     id: "qwen/qwen3.8-max:free",
     name: "Qwen 3.8 Max",
@@ -60,13 +71,35 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     requiresPasscode: false,
   },
 
-  // 4. Mistral Large 4 (Unlocked)
+  // 5. GLM-5.3 Flash (OpenCode Free - Added after Qwen)
+  {
+    id: "glm-5.3-flash-free",
+    name: "GLM-5.3 Flash",
+    tag: "Zhipu AI / OpenCode",
+    provider: "Zhipu",
+    description: "Zhipu AI's flagship GLM-5.3 high-speed reasoning model. Free and unlocked via OpenCode.",
+    contextWindow: "128,000 Tokens",
+    requiresPasscode: false,
+  },
+
+  // 6. Mistral Large 4 (Unlocked)
   {
     id: "mistralai/mistral-large-4-0",
     name: "Mistral Large 4",
     tag: "Mistral AI",
     provider: "Mistral",
     description: "Mistral's flagship frontier reasoning model. Multilingual, vision-enabled, top-tier coding.",
+    contextWindow: "128,000 Tokens",
+    requiresPasscode: false,
+  },
+
+  // 7. Nemotron 3.5 Super VL (OpenCode Free - Added after Mistral)
+  {
+    id: "nemotron-3.5-super-vl-free",
+    name: "Nemotron 3.5 Super VL",
+    tag: "NVIDIA / OpenCode",
+    provider: "NVIDIA",
+    description: "NVIDIA's premier 120B Super Vision-Language reasoning powerhouse. Free and unlocked via OpenCode.",
     contextWindow: "128,000 Tokens",
     requiresPasscode: false,
   },
@@ -210,6 +243,9 @@ export function isModelUnlocked(modelId: string, _effort?: string): boolean {
     modelId.includes("deepseek") ||
     modelId.includes("mistral") ||
     modelId.includes("qwen") ||
+    modelId.includes("glm") ||
+    modelId.includes("nemotron") ||
+    modelId.includes("free") ||
     modelId.includes("meta") ||
     modelId.includes("muse")
   ) {

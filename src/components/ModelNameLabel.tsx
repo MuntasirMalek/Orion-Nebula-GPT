@@ -15,7 +15,10 @@ export function getShortModelName(name: string): string {
   }
 
   // 2. Models without parentheses: compact labels for mobile pills
-  if (name.includes("DeepSeek V4 Flash")) return "DeepSeek V4";
+  if (name.includes("DeepSeek V4.1 Flash") || name.includes("DeepSeek 4.1")) return "DeepSeek 4.1";
+  if (name.includes("DeepSeek V4 Flash") || name.includes("DeepSeek 4.0")) return "DeepSeek V4";
+  if (name.includes("GLM-5.3 Flash") || name.includes("GLM 5.3")) return "GLM 5.3";
+  if (name.includes("Nemotron 3.5 Super VL") || name.includes("Nemotron 3.5")) return "Nemotron 3.5";
   if (name.includes("Qwen 3.8 Omni Flash")) return "Qwen Omni";
   if (name.includes("Qwen 3.8 Max")) return "Qwen Max";
   if (name.includes("Mistral Large 4")) return "Mistral 4";

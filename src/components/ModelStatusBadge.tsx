@@ -80,6 +80,12 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
     if (model.provider === "Qwen" || model.id.includes("qwen")) {
       return "bg-indigo-50 text-indigo-800 border-indigo-200";
     }
+    if (model.provider === "Zhipu" || model.id.includes("glm")) {
+      return "bg-cyan-50 text-cyan-800 border-cyan-200";
+    }
+    if (model.provider === "NVIDIA" || model.id.includes("nemotron")) {
+      return "bg-lime-50 text-lime-800 border-lime-200";
+    }
     if (model.provider === "Meta" || model.id.includes("meta") || model.id.includes("muse")) {
       return "bg-blue-50 text-blue-800 border-blue-200";
     }
