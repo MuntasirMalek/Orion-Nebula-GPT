@@ -129,7 +129,7 @@ export const ModelLogo: React.FC<ModelLogoProps> = ({
     );
   }
 
-  // 5. Zhipu AI GLM (Official cyan/teal rounded squircle badge)
+  // 5. Zhipu AI GLM (Official dark squircle badge with white stylized Z)
   if (normalized.includes("glm") || normalized.includes("zhipu")) {
     return (
       <svg
@@ -138,20 +138,19 @@ export const ModelLogo: React.FC<ModelLogoProps> = ({
         viewBox="0 0 32 32"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className={`shrink-0 drop-shadow-[0_1px_3px_rgba(14,165,233,0.35)] ${className}`}
+        className={`shrink-0 drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)] ${className}`}
         aria-label="GLM Zhipu AI Official Badge"
       >
-        <defs>
-          <linearGradient id="glmBg" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#0ea5e9" />
-            <stop offset="100%" stopColor="#0284c7" />
-          </linearGradient>
-        </defs>
-        <rect x="2" y="2" width="28" height="28" rx="7" fill="url(#glmBg)" />
-        <g transform="translate(7, 7) scale(0.9)" fill="#ffffff">
-          <path d="M10 0L12.5 7.5L20 10L12.5 12.5L10 20L7.5 12.5L0 10L7.5 7.5L10 0Z" />
-          <circle cx="16" cy="4" r="1.5" />
-          <circle cx="4" cy="16" r="1.5" />
+        {/* Dark graphite squircle tile */}
+        <rect x="2" y="2" width="28" height="28" rx="7" fill="#262626" />
+        {/* Official crisp white stylized Z */}
+        <g fill="#ffffff">
+          {/* Top-left horizontal bar */}
+          <path d="M6.5 7.7H16.3L14.5 9.9H6.5V7.7Z" />
+          {/* Central diagonal slash */}
+          <path d="M17.8 7.7H25.7L14.0 24.3H6.1L17.8 7.7Z" />
+          {/* Bottom-right horizontal bar */}
+          <path d="M17.3 22.1H25.3V24.3H15.5L17.3 22.1Z" />
         </g>
       </svg>
     );
