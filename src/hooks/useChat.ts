@@ -61,21 +61,24 @@ export function useChat() {
         backendUrl: DEFAULT_BACKEND_URL,
       }));
     }
-    // Seamless default to DeepSeek V4.1 Flash
+    // Seamless default to Qwen 3.8 Max
     if (
-      !localStorage.getItem("orion_default_deepseek_v41_applied") ||
+      !localStorage.getItem("orion_default_qwen38_max_v3_applied") ||
+      settings.selectedModel === "deepseek-v4.1-flash-free" ||
       settings.selectedModel === "deepseek-v4-flash" ||
-      settings.selectedModel === "qwen/qwen3.8-max:free" ||
       settings.selectedModel === "gpt-6-astra-low"
     ) {
-      localStorage.setItem("orion_default_deepseek_v41_applied", "true");
+      localStorage.setItem("orion_default_qwen38_max_v3_applied", "true");
       setSettings((prev) => ({
         ...prev,
         selectedModel: DEFAULT_MODEL_ID,
       }));
       setSessions((prev) =>
         prev.map((s) =>
-          !s.model || s.model === "deepseek-v4-flash" || s.model === "qwen/qwen3.8-max:free" || s.model === "gpt-6-astra-low"
+          !s.model ||
+          s.model === "deepseek-v4.1-flash-free" ||
+          s.model === "deepseek-v4-flash" ||
+          s.model === "gpt-6-astra-low"
             ? { ...s, model: DEFAULT_MODEL_ID }
             : s
         )

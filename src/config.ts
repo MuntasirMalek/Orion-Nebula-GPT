@@ -27,18 +27,7 @@ export interface ModelOption {
 }
 
 export const AVAILABLE_MODELS: ModelOption[] = [
-  // 1. DeepSeek V4.1 Flash (Default - Open & Unlocked)
-  {
-    id: "deepseek-v4.1-flash-free",
-    name: "DeepSeek V4.1 Flash",
-    tag: "DeepSeek",
-    provider: "DeepSeek",
-    description: "Next-gen DeepSeek V4.1 Flash with enhanced chain-of-thought reasoning intelligence. Free and unlocked for everyone.",
-    contextWindow: "128,000 Tokens",
-    requiresPasscode: false,
-  },
-
-  // 2. DeepSeek V4 Flash (Unlocked)
+  // 1. DeepSeek V4 Flash (Unlocked)
   {
     id: "deepseek-v4-flash",
     name: "DeepSeek V4 Flash",
@@ -201,7 +190,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
   },
 ];
 
-export const DEFAULT_MODEL_ID = "deepseek-v4.1-flash-free";
+export const DEFAULT_MODEL_ID = "qwen/qwen3.8-max:free";
 
 // Backward-compatible self-healing persistence for authorized user passcodes
 if (typeof window !== "undefined") {
