@@ -38,13 +38,13 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     requiresPasscode: false,
   },
 
-  // 2. DeepSeek V4.1 Flash (OpenCode Free - Added after DeepSeek 4.0 Flash)
+  // 2. DeepSeek V4.1 Flash (Added after DeepSeek 4.0 Flash)
   {
     id: "deepseek-v4.1-flash-free",
     name: "DeepSeek V4.1 Flash",
-    tag: "DeepSeek / OpenCode",
+    tag: "DeepSeek",
     provider: "DeepSeek",
-    description: "Next-gen DeepSeek V4.1 Flash with enhanced chain-of-thought reasoning intelligence. Free and unlocked via OpenCode.",
+    description: "Next-gen DeepSeek V4.1 Flash with enhanced chain-of-thought reasoning intelligence. Free and unlocked for everyone.",
     contextWindow: "128,000 Tokens",
     requiresPasscode: false,
   },
@@ -71,13 +71,13 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     requiresPasscode: false,
   },
 
-  // 5. GLM-5.3 Flash (OpenCode Free - Added after Qwen)
+  // 5. GLM-5.3 Flash (Added after Qwen)
   {
     id: "glm-5.3-flash-free",
     name: "GLM-5.3 Flash",
-    tag: "Zhipu AI / OpenCode",
+    tag: "Zhipu AI",
     provider: "Zhipu",
-    description: "Zhipu AI's flagship GLM-5.3 high-speed reasoning model. Free and unlocked via OpenCode.",
+    description: "Zhipu AI's flagship GLM-5.3 high-speed reasoning model. Free and unlocked for everyone.",
     contextWindow: "128,000 Tokens",
     requiresPasscode: false,
   },
@@ -93,13 +93,13 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     requiresPasscode: false,
   },
 
-  // 7. Nemotron 3.5 Super VL (OpenCode Free - Added after Mistral)
+  // 7. Nemotron 3.5 Super VL (Added after Mistral)
   {
     id: "nemotron-3.5-super-vl-free",
     name: "Nemotron 3.5 Super VL",
-    tag: "NVIDIA / OpenCode",
+    tag: "NVIDIA",
     provider: "NVIDIA",
-    description: "NVIDIA's premier 120B Super Vision-Language reasoning powerhouse. Free and unlocked via OpenCode.",
+    description: "NVIDIA's premier 120B Super Vision-Language reasoning powerhouse. Free and unlocked for everyone.",
     contextWindow: "128,000 Tokens",
     requiresPasscode: false,
   },
