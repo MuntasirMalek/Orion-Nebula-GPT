@@ -61,13 +61,24 @@ export function useChat() {
         backendUrl: DEFAULT_BACKEND_URL,
       }));
     }
-    // Seamless default to DeepSeek V4
-    if (!localStorage.getItem("orion_default_deepseek_v4_applied") || settings.selectedModel === "gpt-6-astra-low") {
-      localStorage.setItem("orion_default_deepseek_v4_applied", "true");
+    // Seamless default to Qwen 3.8 Max
+    if (
+      !localStorage.getItem("orion_default_qwen38_max_applied") ||
+      settings.selectedModel === "deepseek-v4-flash" ||
+      settings.selectedModel === "gpt-6-astra-low"
+    ) {
+      localStorage.setItem("orion_default_qwen38_max_applied", "true");
       setSettings((prev) => ({
         ...prev,
-        selectedModel: "deepseek-v4-flash",
+        selectedModel: DEFAULT_MODEL_ID,
       }));
+      setSessions((prev) =>
+        prev.map((s) =>
+          !s.model || s.model === "deepseek-v4-flash" || s.model === "gpt-6-astra-low"
+            ? { ...s, model: DEFAULT_MODEL_ID }
+            : s
+        )
+      );
     }
   }, []);
 

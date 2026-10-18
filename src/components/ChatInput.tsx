@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ArrowUp, Square, ChevronUp, Check, Paperclip, X, Lock, FileText, FileCode, Loader2, Code2 } from "lucide-react";
-import { AVAILABLE_MODELS, ModelOption, isModelUnlocked } from "../config";
+import { AVAILABLE_MODELS, DEFAULT_MODEL_ID, ModelOption, isModelUnlocked } from "../config";
 import { ThemeConfig } from "../themes";
 import { AttachedDocument } from "../types";
 import { processFile, isImageFile, isPdfFile, isTextFile, formatBytes } from "../utils/fileAttachment";
@@ -26,7 +26,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   onStopStreaming,
   isStreaming,
   disabled = false,
-  currentModelId = "deepseek-v4-flash",
+  currentModelId = DEFAULT_MODEL_ID,
   onSelectModel,
   reasoningEffort = "medium",
   onSelectReasoningEffort,

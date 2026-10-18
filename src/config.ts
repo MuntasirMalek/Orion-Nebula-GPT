@@ -201,7 +201,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
   },
 ];
 
-export const DEFAULT_MODEL_ID = "deepseek-v4-flash";
+export const DEFAULT_MODEL_ID = "qwen/qwen3.8-max:free";
 
 // Backward-compatible self-healing persistence for authorized user passcodes
 if (typeof window !== "undefined") {

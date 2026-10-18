@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { AVAILABLE_MODELS, ModelOption, isModelUnlocked } from "../config";
+import { AVAILABLE_MODELS, DEFAULT_MODEL_ID, ModelOption, isModelUnlocked } from "../config";
 import { ThemeConfig } from "../themes";
 import { ChevronDown, Check, Lock } from "lucide-react";
 import { PasscodeModal } from "./PasscodeModal";
@@ -14,7 +14,7 @@ interface ModelStatusBadgeProps {
 }
 
 export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
-  currentModelId = "deepseek-v4-flash",
+  currentModelId = DEFAULT_MODEL_ID,
   onSelectModel,
   isStreaming = false,
   theme,
