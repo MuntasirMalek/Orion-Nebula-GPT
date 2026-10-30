@@ -1,17 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { AppSettings, HealthCheckResult } from "../types";
+import React, { useState } from "react";
+import { AppSettings } from "../types";
 import { DEFAULT_BACKEND_URL, DEFAULT_SYSTEM_PROMPT, AVAILABLE_MODELS, DEFAULT_MODEL_ID, ModelOption, isModelUnlocked } from "../config";
-import { testBackendHealth } from "../services/api";
 import { PasscodeModal } from "./PasscodeModal";
 import { ModelNameLabel } from "./ModelNameLabel";
 import {
   X,
-  Server,
-  Activity,
   Sliders,
-  CheckCircle2,
-  XCircle,
-  Loader2,
   RotateCcw,
   Check,
   Cpu,
@@ -37,7 +31,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   settings,
   onSave,
 }) => {
-  const [backendUrl, setBackendUrl] = useState(settings.backendUrl);
   const [temperature, setTemperature] = useState(settings.temperature);
   const [systemPrompt, setSystemPrompt] = useState(
     settings.systemPrompt?.includes("You are a premier frontier intelligence model")
@@ -49,49 +42,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [reasoningEffort, setReasoningEffort] = useState<"low" | "medium" | "high">(
     settings.reasoningEffort || "medium"
   );
-  const [healthStatus, setHealthStatus] = useState<HealthCheckResult | null>(null);
-  const [isTesting, setIsTesting] = useState(false);
   const [, setIsUnlocked] = useState<boolean>(
     () => typeof window !== "undefined" && localStorage.getItem("astra_frontier_unlocked") === "true"
   );
   const [passcodeTarget, setPasscodeTarget] = useState<ModelOption | null>(null);
 
-  useEffect(() => {
-    if (isOpen) {
-      const activeUrl = settings.backendUrl || DEFAULT_BACKEND_URL;
-      setBackendUrl(activeUrl);
-    }
-  }, [isOpen, settings.backendUrl]);
-
   if (!isOpen) return null;
 
-  const handleTestConnection = async () => {
-    setIsTesting(true);
-    setHealthStatus(null);
-    try {
-      const res = await testBackendHealth(backendUrl);
-      setHealthStatus(res);
-    } catch {
-      setHealthStatus({ status: "offline", message: "Failed to reach proxy endpoint." });
-    } finally {
-      setIsTesting(false);
-    }
-  };
-
   const handleResetDefaults = () => {
-    setBackendUrl(DEFAULT_BACKEND_URL);
     setTemperature(0.7);
     setSystemPrompt(DEFAULT_SYSTEM_PROMPT);
     setSelectedModel(DEFAULT_MODEL_ID);
     setReasoningEffort("low");
     setSendKeyMode("enter");
-    setHealthStatus(null);
   };
 
   const handleSave = () => {
     onSave({
       ...settings,
-      backendUrl: backendUrl.trim(),
+      backendUrl: DEFAULT_BACKEND_URL,
       temperature,
       systemPrompt,
       selectedModel,
@@ -116,11 +85,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 rounded-lg bg-cyan-50 border border-cyan-200 text-cyan-700">
-              <Server className="w-4 h-4" />
+              <Sliders className="w-4 h-4" />
             </div>
             <div>
               <h2 className="text-sm font-semibold text-slate-900">System Settings</h2>
-              <p className="text-[11px] text-slate-500">Proxy routing, cohort token protection, and model preferences</p>
+              <p className="text-[11px] text-slate-500">Model selection and cognitive parameters</p>
             </div>
           </div>
 
@@ -134,51 +103,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Form Body */}
         <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
-          {/* Backend Proxy URL Input */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
-                <span>Backend Proxy URL</span>
-              </label>
-              <button
-                type="button"
-                onClick={handleTestConnection}
-                disabled={isTesting}
-                className="text-[11px] font-medium text-cyan-700 hover:text-cyan-800 flex items-center gap-1 cursor-pointer"
-              >
-                {isTesting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Activity className="w-3 h-3" />}
-                <span>{isTesting ? "Testing..." : "Test Connection"}</span>
-              </button>
-            </div>
-            <input
-              type="text"
-              value={backendUrl}
-              onChange={(e) => setBackendUrl(e.target.value)}
-              placeholder="https://your-site.netlify.app/api/chat"
-              className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-cyan-600 font-mono"
-            />
-            {healthStatus && (
-              <div
-                className={`p-2 rounded-lg text-xs flex items-center gap-2 border ${
-                  healthStatus.status === "online"
-                    ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                    : healthStatus.status === "offline"
-                    ? "bg-rose-50 text-rose-800 border-rose-200"
-                    : "bg-amber-50 text-amber-800 border-amber-200"
-                }`}
-              >
-                {healthStatus.status === "online" ? (
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                ) : (
-                  <XCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-                )}
-                <span>
-                  {healthStatus.message}{" "}
-                  {healthStatus.latencyMs ? `(${healthStatus.latencyMs}ms)` : ""}
-                </span>
-              </div>
-            )}
-          </div>
 
           {/* Frontier Model Selection */}
           <div className="space-y-2">

@@ -231,8 +231,7 @@ export function isModelUnlocked(modelId: string, _effort?: string): boolean {
   return isUnlocked && hasCode;
 }
 
-// Fallback backend URL (Points to your live Cloudflare Worker proxy)
-export const DEFAULT_BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL || "https://lucky-mud-5827.mohammedabdulmalek197811.workers.dev";
+// Permanent hardcoded Cloudflare Worker proxy gateway
+export const DEFAULT_BACKEND_URL = "https://orion-nebula-gateway.alanturing197811.workers.dev";
 
 export const DEFAULT_SYSTEM_PROMPT = "";

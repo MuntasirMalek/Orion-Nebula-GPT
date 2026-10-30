@@ -49,13 +49,7 @@ export function useChat() {
     ) {
       setSettings((prev) => ({ ...prev, systemPrompt: "" }));
     }
-    if (
-      !settings.backendUrl ||
-      settings.backendUrl.includes("papaya-trifle") ||
-      settings.backendUrl.includes("ornate-eclair") ||
-      settings.backendUrl.includes("symphonious-lamington") ||
-      settings.backendUrl.includes("netlify.app")
-    ) {
+    if (settings.backendUrl !== DEFAULT_BACKEND_URL) {
       setSettings((prev) => ({
         ...prev,
         backendUrl: DEFAULT_BACKEND_URL,
@@ -293,7 +287,7 @@ export function useChat() {
         };
 
         await streamChatCompletion({
-          backendUrl: settings.backendUrl,
+          backendUrl: DEFAULT_BACKEND_URL,
           messages: historyWithUser,
           model: currentSession.model || settings.selectedModel || DEFAULT_MODEL_ID,
           systemPrompt: settings.systemPrompt,
