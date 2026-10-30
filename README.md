@@ -12,7 +12,7 @@
 </p>
 
 <h2 align="center">
-  <a href="https://muntasirmalek.github.io/Orion-Nebula-GPT/">🔗 https://muntasirmalek.github.io/Orion-Nebula-GPT/ ↗</a>
+  Try it live: <a href="https://muntasirmalek.github.io/Orion-Nebula-GPT">🔗 https://muntasirmalek.github.io/Orion-Nebula-GPT</a>
 </h2>
 
 <p align="center">
