@@ -2,9 +2,9 @@
  * Global configuration for Orion Nebula GPT.
  * Supports:
  * 1. DeepSeek V4 Flash (Default, Unlocked, Free access)
- * 2. Qwen 3.8 Omni Flash (xKiro, Unlocked)
- * 3. Qwen 3.8 Max (xKiro, Unlocked)
- * 4. Mistral Large 4 (xKiro, Unlocked)
+ * 2. Qwen 3.8 Omni Flash (Free, Unlocked)
+ * 3. Qwen 3.8 Max (Free, Unlocked)
+ * 4. Mistral Large 4 (Free, Unlocked)
  * 5. OpenAI GPT-6 Astra (Low, Medium, High thinking - Frontier Cohort)
  * 6. OpenAI GPT-6.1 Sol (Low, Medium, High thinking - Frontier Cohort)
  * 7. Anthropic Claude Opus 5.5 (Low, Medium, High thinking - Frontier Cohort)

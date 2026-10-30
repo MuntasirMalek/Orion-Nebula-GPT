@@ -168,14 +168,14 @@ export async function streamChatCompletion({
 
   // Attach user's authorized access code and gateway routing based on target model
   const isDeepSeek = model?.includes("deepseek");
-  const isXkiro =
+  const isFreeModel =
     model?.includes("mistral") ||
     model?.includes("qwen") ||
     model?.includes("meta") ||
     model?.includes("muse");
 
   let userAccessCode = "";
-  if (isDeepSeek || isXkiro) {
+  if (isDeepSeek || isFreeModel) {
     // Unlocked models: Supply default gateway handshake token transparently in background
     userAccessCode = localStorage.getItem("orion_code_deepseek") || atob("MTk0Nw==");
   } else {
@@ -192,11 +192,6 @@ export async function streamChatCompletion({
     requestHeaders["x-access-code"] = userAccessCode;
   }
 
-  if (isXkiro) {
-    requestHeaders["x-gateway-url"] = "https://api.xkiro.com/v1";
-    requestHeaders["x-gateway-key"] = "sk-xt-b5ba0165bfc69daeee67e2fcdd14b78a9b4c8a3195c752ce";
-  }
-
   try {
     response = await fetch(url, {
       method: "POST",
@@ -207,8 +202,6 @@ export async function streamChatCompletion({
         stream: true,
         temperature,
         reasoning_effort: reasoningEffort,
-        gatewayUrl: isXkiro ? "https://api.xkiro.com/v1" : undefined,
-        apiKey: isXkiro ? "sk-xt-b5ba0165bfc69daeee67e2fcdd14b78a9b4c8a3195c752ce" : undefined,
       }),
       signal,
     });
@@ -255,7 +248,7 @@ export async function streamChatCompletion({
     }
 
     // Transparent Auto-Retry for Gateway Language/Anti-Abuse Filter:
-    // If the proxy (Netlify, Cloudflare Worker, etc.) returns content-blocked due to AgentRouter's language filter,
+    // If the proxy returns content-blocked due to upstream language filter,
     // wrap user queries with an English instruction and retry immediately.
     if (errorMessage.toLowerCase().includes("content-blocked")) {
       const retryMessages = formattedMessages.map((m) => {
