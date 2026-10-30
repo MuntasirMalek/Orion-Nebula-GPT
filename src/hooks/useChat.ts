@@ -61,14 +61,22 @@ export function useChat() {
         backendUrl: DEFAULT_BACKEND_URL,
       }));
     }
-    // Seamless default to Qwen 3.8 Max
+    // Seamless default to Qwen 3.8 Max and prune any deprecated or removed OpenCode/unsupported models
+    const isModelValid = AVAILABLE_MODELS.some((m) => m.id === settings.selectedModel);
+    const isModelUnsupported =
+      !isModelValid ||
+      settings.selectedModel.includes("glm") ||
+      settings.selectedModel.includes("nemotron") ||
+      settings.selectedModel.includes("deepseek") ||
+      settings.selectedModel.includes("astra") ||
+      settings.selectedModel.includes("sol") ||
+      settings.selectedModel === "mistralai/mistral-large-4-0";
+
     if (
-      !localStorage.getItem("orion_default_qwen38_max_v3_applied") ||
-      settings.selectedModel === "deepseek-v4.1-flash-free" ||
-      settings.selectedModel === "deepseek-v4-flash" ||
-      settings.selectedModel === "gpt-6-astra-low"
+      !localStorage.getItem("orion_default_qwen38_max_v4_applied") ||
+      isModelUnsupported
     ) {
-      localStorage.setItem("orion_default_qwen38_max_v3_applied", "true");
+      localStorage.setItem("orion_default_qwen38_max_v4_applied", "true");
       setSettings((prev) => ({
         ...prev,
         selectedModel: DEFAULT_MODEL_ID,
@@ -76,9 +84,13 @@ export function useChat() {
       setSessions((prev) =>
         prev.map((s) =>
           !s.model ||
-          s.model === "deepseek-v4.1-flash-free" ||
-          s.model === "deepseek-v4-flash" ||
-          s.model === "gpt-6-astra-low"
+          !AVAILABLE_MODELS.some((m) => m.id === s.model) ||
+          s.model.includes("glm") ||
+          s.model.includes("nemotron") ||
+          s.model.includes("deepseek") ||
+          s.model.includes("astra") ||
+          s.model.includes("sol") ||
+          s.model === "mistralai/mistral-large-4-0"
             ? { ...s, model: DEFAULT_MODEL_ID }
             : s
         )

@@ -167,23 +167,15 @@ export async function streamChatCompletion({
   };
 
   // Attach user's authorized access code and gateway routing based on target model
-  const isOpenCode =
-    model?.includes("glm") ||
-    model?.includes("nemotron") ||
-    model?.includes("4.1") ||
-    model?.includes("-free");
-
-  const isDeepSeek = model?.includes("deepseek") && !isOpenCode;
+  const isDeepSeek = model?.includes("deepseek");
   const isXkiro =
-    !isOpenCode && (
-      model?.includes("mistral") ||
-      model?.includes("qwen") ||
-      model?.includes("meta") ||
-      model?.includes("muse")
-    );
+    model?.includes("mistral") ||
+    model?.includes("qwen") ||
+    model?.includes("meta") ||
+    model?.includes("muse");
 
   let userAccessCode = "";
-  if (isDeepSeek || isXkiro || isOpenCode) {
+  if (isDeepSeek || isXkiro) {
     // Unlocked models: Supply default gateway handshake token transparently in background
     userAccessCode = localStorage.getItem("orion_code_deepseek") || atob("MTk0Nw==");
   } else {
@@ -203,9 +195,6 @@ export async function streamChatCompletion({
   if (isXkiro) {
     requestHeaders["x-gateway-url"] = "https://api.xkiro.com/v1";
     requestHeaders["x-gateway-key"] = "sk-xt-b5ba0165bfc69daeee67e2fcdd14b78a9b4c8a3195c752ce";
-  } else if (isOpenCode) {
-    requestHeaders["x-gateway-url"] = "https://opencode.ai/inference/openai/v1";
-    requestHeaders["x-gateway-key"] = "oc_sk_26330f41560f_i59l3o6jH8zBcsZQhJtT0UY91cLbP2yY";
   }
 
   try {
@@ -218,16 +207,8 @@ export async function streamChatCompletion({
         stream: true,
         temperature,
         reasoning_effort: reasoningEffort,
-        gatewayUrl: isOpenCode
-          ? "https://opencode.ai/inference/openai/v1"
-          : isXkiro
-          ? "https://api.xkiro.com/v1"
-          : undefined,
-        apiKey: isOpenCode
-          ? "oc_sk_26330f41560f_i59l3o6jH8zBcsZQhJtT0UY91cLbP2yY"
-          : isXkiro
-          ? "sk-xt-b5ba0165bfc69daeee67e2fcdd14b78a9b4c8a3195c752ce"
-          : undefined,
+        gatewayUrl: isXkiro ? "https://api.xkiro.com/v1" : undefined,
+        apiKey: isXkiro ? "sk-xt-b5ba0165bfc69daeee67e2fcdd14b78a9b4c8a3195c752ce" : undefined,
       }),
       signal,
     });
@@ -264,6 +245,13 @@ export async function streamChatCompletion({
       } catch {
         // Fallback to HTTP status
       }
+    }
+
+    // Friendly resolution for upstream API mismatches / unavailable channels
+    if (errorMessage.includes("/v1/responses") || errorMessage.includes("responses instead")) {
+      errorMessage = "This model now requires the OpenAI Responses API (/v1/responses). Please switch to Qwen 3.8 Max or another active model.";
+    } else if (errorMessage.includes("无可用渠道")) {
+      errorMessage = "This model is currently unavailable on upstream servers. Please switch to Qwen 3.8 Max or another active model.";
     }
 
     // Transparent Auto-Retry for Gateway Language/Anti-Abuse Filter:
