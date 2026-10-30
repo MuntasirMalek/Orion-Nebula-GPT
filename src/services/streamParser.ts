@@ -76,7 +76,13 @@ export async function* parseEventStream(
           try {
             const parsed = JSON.parse(data);
             const delta = parsed.choices?.[0]?.delta;
-            const deltaContent = delta?.content ?? parsed.choices?.[0]?.text ?? "";
+            const deltaContent =
+              delta?.content ??
+              parsed.choices?.[0]?.text ??
+              (parsed.type === "response.output_text.delta" && typeof parsed.delta === "string"
+                ? parsed.delta
+                : "") ??
+              "";
             const reasoningContent =
               delta?.reasoning_content ??
               delta?.thinking ??
@@ -115,7 +121,13 @@ export async function* parseEventStream(
           try {
             const parsed = JSON.parse(data);
             const delta = parsed.choices?.[0]?.delta;
-            const deltaContent = delta?.content ?? parsed.choices?.[0]?.text ?? "";
+            const deltaContent =
+              delta?.content ??
+              parsed.choices?.[0]?.text ??
+              (parsed.type === "response.output_text.delta" && typeof parsed.delta === "string"
+                ? parsed.delta
+                : "") ??
+              "";
             const reasoningContent =
               delta?.reasoning_content ??
               delta?.thinking ??
