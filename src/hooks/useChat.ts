@@ -45,7 +45,8 @@ export function useChat() {
   useEffect(() => {
     if (
       settings.systemPrompt &&
-      settings.systemPrompt.includes("You are a premier frontier intelligence model")
+      settings.systemPrompt.includes("You are a premier") &&
+      settings.systemPrompt.includes("intelligence model")
     ) {
       setSettings((prev) => ({ ...prev, systemPrompt: "" }));
     }

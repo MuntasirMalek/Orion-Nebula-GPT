@@ -19,8 +19,8 @@ interface SendChatParams {
  * Implements:
  * 1. Multimodal Vision payloads (OpenAI standard image_url).
  * 2. Sliding window token pruning:
- *    - For expensive frontier models (GPT-6 Astra & Claude Opus 5.5), kicks in strictly after the 3rd question (keeps latest 6 messages).
- *    - For DeepSeek V4, maintains generous context window (16 messages) since tokens are extremely cheap.
+ *    - For flagship reasoning models (GPT-6 Astra & Claude Opus 5.5), kicks in strictly after the 3rd question (keeps latest 6 messages).
+ *    - For other models, maintains generous context window (8 messages).
  * 3. Thinking depth control (reasoning_effort) for GPT-6 Astra.
  */
 export async function streamChatCompletion({
@@ -61,16 +61,16 @@ export async function streamChatCompletion({
   }
 
   // Model-specific Context Window Optimization:
-  // Expensive frontier models (Astra / Claude): Pruning kicks in directly at Question 3 (max 3 messages = 1 prior Q&A turn + current question) to maximize token savings.
+  // High-cost reasoning models (Astra / Claude): Pruning kicks in directly at Question 3 (max 3 messages = 1 prior Q&A turn + current question) to maximize token savings.
   // - Question 1: Sends [System, Q1]
   // - Question 2: Sends [System, Q1, A1, Q2]
   // - Question 3: Pruning kicks in! Drops Q1 & A1 -> Sends [System, Q2, A2, Q3]
   // - Question 4: Drops Q2 & A2 -> Sends [System, Q3, A3, Q4]
   // Cohort Quota Shield:
-  // - Expensive frontier models (Astra / Claude): Pruning kicks in directly at Question 3 (max 3 messages = 1 prior Q&A turn + current question) to maximize token savings.
-  // - DeepSeek: Capped at 8 messages to maintain token safety while allowing fluid context.
-  const isFrontierExpensive = Boolean(model?.includes("astra") || model?.includes("claude"));
-  const effectiveWindow = isFrontierExpensive ? 3 : 8;
+  // - High-cost reasoning models (Astra / Claude): Pruning kicks in directly at Question 3 (max 3 messages = 1 prior Q&A turn + current question) to maximize token savings.
+  // - Standard models: Capped at 8 messages to maintain token safety while allowing fluid context.
+  const isHighCostModel = Boolean(model?.includes("astra") || model?.includes("claude"));
+  const effectiveWindow = isHighCostModel ? 3 : 8;
 
   let windowedMessages =
     effectiveWindow > 0 && validMessages.length > effectiveWindow

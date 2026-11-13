@@ -244,8 +244,8 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, theme, inde
                     <ModelNameLabel
                       name={
                         message.model
-                          ? AVAILABLE_MODELS.find((m) => m.id === message.model)?.name || "Frontier"
-                          : "Frontier"
+                          ? AVAILABLE_MODELS.find((m) => m.id === message.model)?.name || "Assistant"
+                          : "Assistant"
                       }
                       shortOnMobile={true}
                     />

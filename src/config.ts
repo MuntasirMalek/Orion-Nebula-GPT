@@ -194,18 +194,18 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     name: "Mistral Large 3",
     tag: "Mistral AI",
     provider: "Mistral",
-    description: "Mistral's flagship frontier reasoning model. Multilingual, vision-enabled, top-tier coding.",
+    description: "Mistral's flagship reasoning model. Multilingual, vision-enabled, top-tier coding.",
     contextWindow: "128,000 Tokens",
     requiresPasscode: true,
   },
 
-  // 5. GPT-6 Astra - GPT Tier
+  // 8. GPT-6 Astra - GPT Tier
   {
     id: "gpt-6-astra-low",
     name: "GPT-6 Astra (Low Thinking)",
-    tag: "OpenAI Frontier Model",
+    tag: "OpenAI",
     provider: "OpenAI",
-    description: "OpenAI frontier model with Low reasoning effort. Fast, token-efficient.",
+    description: "OpenAI reasoning model with Low effort. Fast, token-efficient.",
     contextWindow: "128,000 Tokens",
     requiresPasscode: true,
     defaultEffort: "low",
@@ -213,9 +213,9 @@ export const AVAILABLE_MODELS: ModelOption[] = [
   {
     id: "gpt-6-astra-medium",
     name: "GPT-6 Astra (Medium Thinking)",
-    tag: "OpenAI Frontier Model",
+    tag: "OpenAI",
     provider: "OpenAI",
-    description: "OpenAI premier frontier reasoning model with Medium depth. Balanced synthesis.",
+    description: "OpenAI premier reasoning model with Medium depth. Balanced synthesis.",
     contextWindow: "128,000 Tokens",
     requiresPasscode: true,
     defaultEffort: "medium",
@@ -223,21 +223,21 @@ export const AVAILABLE_MODELS: ModelOption[] = [
   {
     id: "gpt-6-astra-high",
     name: "GPT-6 Astra (High Thinking)",
-    tag: "OpenAI Frontier Model",
+    tag: "OpenAI",
     provider: "OpenAI",
-    description: "OpenAI premier frontier reasoning model with High depth. Deep multi-step verification.",
+    description: "OpenAI premier reasoning model with High depth. Deep multi-step verification.",
     contextWindow: "128,000 Tokens",
     requiresPasscode: true,
     defaultEffort: "high",
   },
 
-  // 6. GPT-6.1 Sol - GPT Tier
+  // 9. GPT-6.1 Sol - GPT Tier
   {
     id: "gpt-6.1-sol-low",
     name: "GPT-6.1 Sol (Low Thinking)",
-    tag: "OpenAI Frontier Model",
+    tag: "OpenAI",
     provider: "OpenAI",
-    description: "Next-gen GPT-6.1 Sol with Low reasoning effort. Ultra-responsive frontier intelligence.",
+    description: "Next-gen GPT-6.1 Sol with Low reasoning effort. Ultra-responsive intelligence.",
     contextWindow: "128,000 Tokens",
     requiresPasscode: true,
     defaultEffort: "low",
@@ -245,7 +245,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
   {
     id: "gpt-6.1-sol-medium",
     name: "GPT-6.1 Sol (Medium Thinking)",
-    tag: "OpenAI Frontier Model",
+    tag: "OpenAI",
     provider: "OpenAI",
     description: "Next-gen GPT-6.1 Sol premier reasoning model with Medium depth. High-accuracy cognitive synthesis.",
     contextWindow: "128,000 Tokens",
@@ -255,7 +255,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
   {
     id: "gpt-6.1-sol-high",
     name: "GPT-6.1 Sol (High Thinking)",
-    tag: "OpenAI Frontier Model",
+    tag: "OpenAI",
     provider: "OpenAI",
     description: "Next-gen GPT-6.1 Sol premier reasoning model with High depth. Deep multi-step verification.",
     contextWindow: "128,000 Tokens",
@@ -263,11 +263,11 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     defaultEffort: "high",
   },
 
-  // 7. Claude Opus 5.5 - Claude Tier
+  // 10. Claude Opus 5.5 - Claude Tier
   {
     id: "claude-opus-5.5-low",
     name: "Claude Opus 5.5 (Low Thinking)",
-    tag: "Claude Frontier Model",
+    tag: "Anthropic",
     provider: "Anthropic",
     description: "Anthropic flagship cognitive model with Low reasoning effort. Agile and direct.",
     contextWindow: "200,000 Tokens",
@@ -277,7 +277,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
   {
     id: "claude-opus-5.5-medium",
     name: "Claude Opus 5.5 (Medium Thinking)",
-    tag: "Claude Frontier Model",
+    tag: "Anthropic",
     provider: "Anthropic",
     description: "Anthropic flagship cognitive model with Medium depth. Nuanced reasoning.",
     contextWindow: "200,000 Tokens",
@@ -287,7 +287,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
   {
     id: "claude-opus-5.5-high",
     name: "Claude Opus 5.5 (High Thinking)",
-    tag: "Claude Frontier Model",
+    tag: "Anthropic",
     provider: "Anthropic",
     description: "Anthropic flagship cognitive model with High depth. Maximum architectural rigor.",
     contextWindow: "200,000 Tokens",

@@ -33,7 +33,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
   const [temperature, setTemperature] = useState(settings.temperature);
   const [systemPrompt, setSystemPrompt] = useState(
-    settings.systemPrompt?.includes("You are a premier frontier intelligence model")
+    settings.systemPrompt?.includes("You are a premier") &&
+      settings.systemPrompt?.includes("intelligence model")
       ? ""
       : settings.systemPrompt || ""
   );
@@ -112,12 +113,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         {/* Form Body */}
         <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
 
-          {/* Frontier Model Selection */}
+          {/* Model Selection */}
           <div className="space-y-2">
             <div className="flex justify-between items-center text-xs">
               <span className="font-semibold text-slate-800 flex items-center gap-1.5">
                 <Cpu className="w-3.5 h-3.5 text-cyan-700" />
-                <span>Frontier Model Selection</span>
+                <span>Model Selection</span>
               </span>
             </div>
 
@@ -301,7 +302,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   icon: GraduationCap,
                   desc: "Rigorous & Code",
                   prompt:
-                    "You are Orion Nebula GPT, a premier frontier AI study companion for the student cohort. You provide rigorous, deeply structured, and clear analyses with precision engineering and high-order cognitive synthesis.",
+                    "You are Orion Nebula GPT, a premier AI study companion for the student cohort. You provide rigorous, deeply structured, and clear analyses with precision engineering and high-order cognitive synthesis.",
                 },
                 {
                   id: "socratic",
@@ -357,7 +358,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               value={systemPrompt}
               onChange={(e) => setSystemPrompt(e.target.value)}
               rows={3}
-              placeholder="Blank by default (pure native frontier model). You can optionally enter custom instructions, style constraints, or pick a study persona above..."
+              placeholder="Blank by default (pure native model). You can optionally enter custom instructions, style constraints, or pick a study persona above..."
               className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-cyan-600 resize-none font-sans leading-relaxed"
             />
           </div>

@@ -35,7 +35,7 @@ export const PasscodeModal: React.FC<PasscodeModalProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const modelId = targetModel?.id || "gpt-6-astra-medium";
-  const modelName = targetModel?.name || targetModelName || "Frontier Model";
+  const modelName = targetModel?.name || targetModelName || "Protected Model";
 
   useEffect(() => {
     if (isOpen) {
@@ -65,17 +65,17 @@ export const PasscodeModal: React.FC<PasscodeModalProps> = ({
     // Salted cryptographic hashes for authorized access tiers
     // Prevents credentials from being exposed in source code
     const TIER_HASHES: Record<PasscodeTier, string> = {
-      claude: "070456b7f99ff5b6cc610f38720b5af0a666c9ef6b25ac5fe9e258cb3ab4cff0",
-      gpt: "a373b6750a7851b7e0f56fca634c454569a86a22b2f762017600bea041420074",
-      other: "922d49186cfbe2d73264530da0850e2bfebd5ff5f1dbbca3887cdd5c2c111f0b",
+      claude: "f044f74f264504e327091d03f4f3f9c8cd3fffd218423189aae9851f0fcd1dfe",
+      gpt: "58d0cc2626ab59ff50fc53a416340add5cebad8ffdcec5f07f8355d0e165b231",
+      other: "ceaa7fee4092b9a4b9ed3ad280a61b4856de58f8d5fb2a05e15abd6cba8fd16c",
     };
-    const HASH_AUTH_MASTER = "814f76ba52f531349ec55800af3850e356bbda4352d32a057533b47b1f3eee80";
+    const HASH_AUTH_MASTER = "64438f4991e3b0243aefdb16d5958187303c35f08af6672b7d6f39eb4d4a96e1";
 
     let isValid = false;
 
     if (typeof crypto !== "undefined" && crypto.subtle) {
       try {
-        const enc = new TextEncoder().encode(`orion_frontier_salt_2026_${entered}`);
+        const enc = new TextEncoder().encode(`orion_access_salt_2026_${entered}`);
         const buf = await crypto.subtle.digest("SHA-256", enc);
         const enteredHash = Array.from(new Uint8Array(buf))
           .map((b) => b.toString(16).padStart(2, "0"))

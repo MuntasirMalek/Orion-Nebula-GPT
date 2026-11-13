@@ -1,7 +1,7 @@
 <div align="center">
 
 # Orion Nebula GPT
-**Frontier AI Workspace with Real-Time Edge Inference**
+**AI Workspace with Real-Time Edge Inference**
 
 <br />
 
@@ -45,7 +45,7 @@
 
 ## Overview
 
-**Orion Nebula GPT** is a high-performance web interface engineered for researchers, engineers, and AI practitioners. Designed around a decoupled, privacy-first edge architecture, it connects users with flagship frontier models (**OpenAI GPT-6 Astra**, **Anthropic Claude Opus 5.5**, and **Qwen 3.8 Max**) through a low-latency **Cloudflare Workers** edge gateway.
+**Orion Nebula GPT** is a high-performance web interface engineered for researchers, engineers, and AI practitioners. Designed around a decoupled, privacy-first edge architecture, it connects users with flagship AI models (**OpenAI GPT-6 Astra**, **Anthropic Claude Opus 5.5**, and **Qwen 3.8 Max**) through a low-latency **Cloudflare Workers** edge gateway.
 
 The interface pairs cutting-edge AI inference capabilities with a **Raycast Pearl**-inspired aesthetic: native 4K Hubble Orion Nebula optical imagery, translucent frosted-glass panels, and responsive typography.
 
@@ -53,12 +53,12 @@ The interface pairs cutting-edge AI inference capabilities with a **Raycast Pear
 
 ## Key Highlights & Capabilities
 
-### 1. Frontier Multi-Model Suite & Tiered Access Control
+### 1. Multi-Model Suite & Tiered Access Control
 - **OpenAI GPT-6 Astra & GPT-6.1 Sol**: Next-generation reasoning and multi-step cognitive planning with granular thinking depth calibration (**Low**, **Medium**, **High**).
 - **Anthropic Claude Opus 5.5**: Flagship cognitive synthesis, code architecture analysis, and nuanced natural language comprehension.
 - **DeepSeek-V4.1-Flash-1017 & GLM-5.3-Flash**: High-speed reasoning and coding intelligence engines.
 - **Kimi K3.1 Pro & NVIDIA Nemotron 3.5 Super VL**: Long-context synthesis and multimodal vision-language reasoning engines.
-- **Qwen 3.8 Max, Omni-Flash & Mistral Large 2512**: High-throughput frontier reasoning, multilingual depth, and deterministic code generation.
+- **Qwen 3.8 Max, Omni-Flash & Mistral Large 2512**: High-throughput reasoning, multilingual depth, and deterministic code generation.
 
 ### 2. Cloudflare Workers Edge Gateway
 - **Zero Client Credential Exposure**: API keys and upstream tokens are securely retained in serverless edge environment variables; no secrets are ever bundled or transmitted to the client.
@@ -66,7 +66,7 @@ The interface pairs cutting-edge AI inference capabilities with a **Raycast Pear
 - **Global Low Latency**: Runs on Cloudflare's edge network across 300+ cities worldwide, achieving near-zero Time-to-First-Token (TTFT).
 
 ### 3. Token-Saving Sliding Context Pruning
-- Frontier models with deep reasoning chains consume thousands of tokens per request.
+- Reasoning models with deep thinking chains consume thousands of tokens per request.
 - Orion Nebula GPT automatically activates a **Sliding Context Window** starting on turn 3, pruning older historical turns while intelligently preserving core system prompts and recent context.
 - **Result:** Decreases token consumption by **50%–60%** without losing continuity or reasoning depth.
 
@@ -98,7 +98,7 @@ flowchart LR
         CF --> Bridge
     end
 
-    subgraph Upstream ["Frontier AI Engines"]
+    subgraph Upstream ["AI Model Engines"]
         OAI["OpenAI GPT-6 Astra / Sol\n(/v1/responses)"]
         QWEN["Qwen 3.8 Max / Omni\n(/v1/chat/completions)"]
         ANTH["Claude Opus 5.5\n(Anthropic API)"]
@@ -175,5 +175,5 @@ Distributed under the **MIT License**. See [`LICENSE`](./LICENSE) for full detai
 
 <div align="center">
   <p>Engineered with precision by <strong><a href="https://github.com/MuntasirMalek">Muntasir Malek</a></strong></p>
-  <p><em>Orion Nebula GPT — Bridging frontier reasoning models with seamless edge delivery.</em></p>
+  <p><em>Orion Nebula GPT — Bridging reasoning models with seamless edge delivery.</em></p>
 </div>

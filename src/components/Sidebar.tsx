@@ -101,7 +101,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <AstraLogo size={24} />
               <div>
                 <span className={brandClass}>Orion Nebula GPT</span>
-                <span className={`block ${subClass}`}>Frontier Intelligence</span>
+                <span className={`block ${subClass}`}>AI Workspace</span>
               </div>
             </div>
 
