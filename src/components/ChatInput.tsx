@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ArrowUp, Square, ChevronUp, Check, Paperclip, FolderPlus, FolderCode, X, Lock, FileText, FileCode, Loader2, Code2 } from "lucide-react";
-import { AVAILABLE_MODELS, DEFAULT_MODEL_ID, ModelOption, isModelUnlocked, getModelProviderUiStyle } from "../config";
+import { AVAILABLE_MODELS, DEFAULT_MODEL_ID, ModelOption, isModelUnlocked, getModelProviderUiStyle, getModelById } from "../config";
 import { ThemeConfig } from "../themes";
 import { AttachedDocument } from "../types";
 import { processFile, isImageFile, isPdfFile, isTextFile, formatBytes } from "../utils/fileAttachment";
@@ -60,8 +60,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
 
-  const selectedModel =
-    AVAILABLE_MODELS.find((m) => m.id === currentModelId) || AVAILABLE_MODELS[0];
+  const selectedModel = getModelById(currentModelId);
   const isSelectedModelLocked = Boolean(
     selectedModel.requiresPasscode &&
       !isModelUnlocked(selectedModel.id, selectedModel.defaultEffort || reasoningEffort)

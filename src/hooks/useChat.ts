@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Message, ChatSession, AppSettings, AttachedDocument } from "../types";
-import { DEFAULT_BACKEND_URL, DEFAULT_SYSTEM_PROMPT, DEFAULT_MODEL_ID, AVAILABLE_MODELS } from "../config";
+import { DEFAULT_BACKEND_URL, DEFAULT_SYSTEM_PROMPT, DEFAULT_MODEL_ID, AVAILABLE_MODELS, clearStoredPasscodes } from "../config";
 import { useLocalStorage } from "./useLocalStorage";
 import { streamChatCompletion } from "../services/api";
 
@@ -56,14 +56,31 @@ export function useChat() {
         backendUrl: DEFAULT_BACKEND_URL,
       }));
     }
-    // Seamless default to Qwen 3.8 Max and prune any deprecated or removed unsupported models
+    // Sync active default model whenever DEFAULT_MODEL_ID changes and ensure only that model stays unlocked by default
     const isModelValid = AVAILABLE_MODELS.some((m) => m.id === settings.selectedModel);
+    const migrationKey = `orion_default_model_applied_${DEFAULT_MODEL_ID}`;
+    const lastDefaultModel = localStorage.getItem("orion_last_default_model_id");
 
-    if (
-      !localStorage.getItem("orion_default_qwen38_max_v4_applied") ||
-      !isModelValid
-    ) {
-      localStorage.setItem("orion_default_qwen38_max_v4_applied", "true");
+    if (!localStorage.getItem(migrationKey)) {
+      localStorage.setItem(migrationKey, "true");
+      localStorage.setItem("orion_last_default_model_id", DEFAULT_MODEL_ID);
+      clearStoredPasscodes();
+      setSettings((prev) => ({
+        ...prev,
+        selectedModel: DEFAULT_MODEL_ID,
+      }));
+      setSessions((prev) =>
+        prev.map((s) =>
+          !s.model ||
+          !AVAILABLE_MODELS.some((m) => m.id === s.model) ||
+          s.messages.length === 0 ||
+          s.model === "qwen/qwen3.8-max:free" ||
+          (lastDefaultModel && s.model === lastDefaultModel)
+            ? { ...s, model: DEFAULT_MODEL_ID }
+            : s
+        )
+      );
+    } else if (!isModelValid) {
       setSettings((prev) => ({
         ...prev,
         selectedModel: DEFAULT_MODEL_ID,

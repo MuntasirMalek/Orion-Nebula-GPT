@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { AVAILABLE_MODELS, DEFAULT_MODEL_ID, ModelOption, isModelUnlocked, getModelProviderUiStyle } from "../config";
+import { AVAILABLE_MODELS, DEFAULT_MODEL_ID, ModelOption, isModelUnlocked, getModelProviderUiStyle, getModelById } from "../config";
 import { ThemeConfig } from "../themes";
 import { ChevronDown, Check, Lock } from "lucide-react";
 import { PasscodeModal } from "./PasscodeModal";
@@ -24,8 +24,7 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
   const [passcodeTarget, setPasscodeTarget] = useState<ModelOption | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const selectedModel =
-    AVAILABLE_MODELS.find((m) => m.id === currentModelId) || AVAILABLE_MODELS[0];
+  const selectedModel = getModelById(currentModelId);
   const isSelectedLocked = Boolean(
     selectedModel.requiresPasscode && !isModelUnlocked(selectedModel.id, selectedModel.defaultEffort)
   );

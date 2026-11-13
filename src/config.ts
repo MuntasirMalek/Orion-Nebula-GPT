@@ -1,13 +1,15 @@
 /**
  * Global configuration for Orion Nebula GPT.
+ * Only DEFAULT_MODEL_ID is unlocked by default without a passcode.
+ * Changing DEFAULT_MODEL_ID automatically unlocks only that model and keeps all others locked.
  * Supports:
- * 1. DeepSeek-V4.1-Flash-1017 (Passcode Protected)
- * 2. GLM-5.3-Flash (Passcode Protected)
- * 3. Kimi K3.1 Pro (Passcode Protected)
- * 4. Nemotron 3.5 Super VL (Passcode Protected)
- * 5. Qwen 3.8 Omni Flash (Passcode Protected)
- * 6. Qwen 3.8 Max (Passcode Protected)
- * 7. Mistral Large 3 (Passcode Protected)
+ * 1. DeepSeek-V4.1-Flash-1017 (Passcode Protected unless set as DEFAULT_MODEL_ID)
+ * 2. GLM-5.3-Flash (Passcode Protected unless set as DEFAULT_MODEL_ID)
+ * 3. Kimi K3.1 Pro (Passcode Protected unless set as DEFAULT_MODEL_ID)
+ * 4. Nemotron 3.5 Super VL (Default / Unlocked)
+ * 5. Qwen 3.8 Omni Flash (Passcode Protected unless set as DEFAULT_MODEL_ID)
+ * 6. Qwen 3.8 Max (Passcode Protected unless set as DEFAULT_MODEL_ID)
+ * 7. Mistral Large 3 (Passcode Protected unless set as DEFAULT_MODEL_ID)
  * 8. OpenAI GPT-6 Astra (Low, Medium, High thinking - GPT Tier)
  * 9. OpenAI GPT-6.1 Sol (Low, Medium, High thinking - GPT Tier)
  * 10. Anthropic Claude Opus 5.5 (Low, Medium, High thinking - Claude Tier)
@@ -121,7 +123,11 @@ export function getModelPasscodeTier(modelId: string): PasscodeTier {
   return "other";
 }
 
-export const AVAILABLE_MODELS: ModelOption[] = [
+// Single source of truth for the default active model.
+// Only this exact model ID is unlocked without a passcode.
+export const DEFAULT_MODEL_ID = "nvidia/nemotron-3.5-super-vl:free";
+
+const RAW_MODELS: Array<Omit<ModelOption, "requiresPasscode">> = [
   // 1. DeepSeek-V4.1-Flash-1017
   {
     id: "deepseek/deepseek-v4.1-flash-1017",
@@ -130,7 +136,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "DeepSeek",
     description: "High-speed DeepSeek V4.1 reasoning and code intelligence engine.",
     contextWindow: "128,000 Tokens",
-    requiresPasscode: true,
   },
 
   // 2. GLM-5.3-Flash
@@ -141,7 +146,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "Zhipu",
     description: "High-speed GLM-5.3 reasoning and coding flash engine.",
     contextWindow: "128,000 Tokens",
-    requiresPasscode: true,
   },
 
   // 3. Kimi K3.1 Pro
@@ -152,7 +156,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "Moonshot",
     description: "Flagship Kimi K3.1 Pro engine for deep analysis and long-context reasoning.",
     contextWindow: "256,000 Tokens",
-    requiresPasscode: true,
   },
 
   // 4. Nemotron 3.5 Super VL
@@ -163,7 +166,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "NVIDIA",
     description: "NVIDIA multimodal Nemotron 3.5 Super vision-language reasoning engine.",
     contextWindow: "1,000,000 Tokens",
-    requiresPasscode: true,
   },
 
   // 5. Qwen 3.8 Omni Flash
@@ -174,7 +176,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "Qwen",
     description: "Ultra-fast omni multimodal speed engine with instant response generation.",
     contextWindow: "128,000 Tokens",
-    requiresPasscode: true,
   },
 
   // 6. Qwen 3.8 Max
@@ -185,7 +186,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "Qwen",
     description: "Alibaba's premier flagship reasoning engine. Exceptional math, coding, and logical reasoning.",
     contextWindow: "128,000 Tokens",
-    requiresPasscode: true,
   },
 
   // 7. Mistral Large 3
@@ -196,7 +196,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "Mistral",
     description: "Mistral's flagship reasoning model. Multilingual, vision-enabled, top-tier coding.",
     contextWindow: "128,000 Tokens",
-    requiresPasscode: true,
   },
 
   // 8. GPT-6 Astra - GPT Tier
@@ -207,7 +206,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "OpenAI",
     description: "OpenAI reasoning model with Low effort. Fast, token-efficient.",
     contextWindow: "128,000 Tokens",
-    requiresPasscode: true,
     defaultEffort: "low",
   },
   {
@@ -217,7 +215,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "OpenAI",
     description: "OpenAI premier reasoning model with Medium depth. Balanced synthesis.",
     contextWindow: "128,000 Tokens",
-    requiresPasscode: true,
     defaultEffort: "medium",
   },
   {
@@ -227,7 +224,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "OpenAI",
     description: "OpenAI premier reasoning model with High depth. Deep multi-step verification.",
     contextWindow: "128,000 Tokens",
-    requiresPasscode: true,
     defaultEffort: "high",
   },
 
@@ -239,7 +235,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "OpenAI",
     description: "Next-gen GPT-6.1 Sol with Low reasoning effort. Ultra-responsive intelligence.",
     contextWindow: "128,000 Tokens",
-    requiresPasscode: true,
     defaultEffort: "low",
   },
   {
@@ -249,7 +244,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "OpenAI",
     description: "Next-gen GPT-6.1 Sol premier reasoning model with Medium depth. High-accuracy cognitive synthesis.",
     contextWindow: "128,000 Tokens",
-    requiresPasscode: true,
     defaultEffort: "medium",
   },
   {
@@ -259,7 +253,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "OpenAI",
     description: "Next-gen GPT-6.1 Sol premier reasoning model with High depth. Deep multi-step verification.",
     contextWindow: "128,000 Tokens",
-    requiresPasscode: true,
     defaultEffort: "high",
   },
 
@@ -271,7 +264,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "Anthropic",
     description: "Anthropic flagship cognitive model with Low reasoning effort. Agile and direct.",
     contextWindow: "200,000 Tokens",
-    requiresPasscode: true,
     defaultEffort: "low",
   },
   {
@@ -281,7 +273,6 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "Anthropic",
     description: "Anthropic flagship cognitive model with Medium depth. Nuanced reasoning.",
     contextWindow: "200,000 Tokens",
-    requiresPasscode: true,
     defaultEffort: "medium",
   },
   {
@@ -291,12 +282,35 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "Anthropic",
     description: "Anthropic flagship cognitive model with High depth. Maximum architectural rigor.",
     contextWindow: "200,000 Tokens",
-    requiresPasscode: true,
     defaultEffort: "high",
   },
 ];
 
-export const DEFAULT_MODEL_ID = "qwen/qwen3.8-max:free";
+export const AVAILABLE_MODELS: ModelOption[] = RAW_MODELS.map((model) => ({
+  ...model,
+  requiresPasscode: model.id !== DEFAULT_MODEL_ID,
+}));
+
+export function getModelById(modelId?: string): ModelOption {
+  return (
+    AVAILABLE_MODELS.find((m) => m.id === modelId) ||
+    AVAILABLE_MODELS.find((m) => m.id === DEFAULT_MODEL_ID) ||
+    AVAILABLE_MODELS[0]
+  );
+}
+
+export function clearStoredPasscodes(): void {
+  if (typeof window === "undefined") return;
+  try {
+    for (const keys of Object.values(PASSCODE_STORAGE_KEYS)) {
+      localStorage.removeItem(keys.unlocked);
+      localStorage.removeItem(keys.code);
+    }
+    window.dispatchEvent(new Event("orion-unlock-changed"));
+  } catch {
+    // Ignore storage errors in sandbox environments
+  }
+}
 
 export function getStoredAccessCodeForModel(modelId: string): string {
   if (typeof window === "undefined") return "";
@@ -313,6 +327,7 @@ export function getStoredAccessCodeForModel(modelId: string): string {
 }
 
 export function isModelUnlocked(modelId: string, _effort?: string): boolean {
+  if (modelId === DEFAULT_MODEL_ID) return true;
   if (typeof window === "undefined") return false;
   try {
     const tier = getModelPasscodeTier(modelId);

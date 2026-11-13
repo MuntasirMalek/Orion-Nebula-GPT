@@ -1,5 +1,5 @@
 import { Message, HealthCheckResult, BalanceInfo } from "../types";
-import { getStoredAccessCodeForModel } from "../config";
+import { DEFAULT_MODEL_ID, getModelById, getStoredAccessCodeForModel } from "../config";
 import { parseEventStream } from "./streamParser";
 
 interface SendChatParams {
@@ -236,10 +236,11 @@ export async function streamChatCompletion({
     }
 
     // Friendly resolution for upstream API mismatches / unavailable channels
+    const defaultModelName = getModelById(DEFAULT_MODEL_ID).name;
     if (errorMessage.includes("/v1/responses") || errorMessage.includes("responses instead")) {
-      errorMessage = "This model now requires the OpenAI Responses API (/v1/responses). Please switch to Qwen 3.8 Max or another active model.";
+      errorMessage = `This model now requires the OpenAI Responses API (/v1/responses). Please switch to ${defaultModelName} or another active model.`;
     } else if (errorMessage.includes("无可用渠道")) {
-      errorMessage = "This model is currently unavailable on upstream servers. Please switch to Qwen 3.8 Max or another active model.";
+      errorMessage = `This model is currently unavailable on upstream servers. Please switch to ${defaultModelName} or another active model.`;
     }
 
     // Transparent Auto-Retry for Gateway Language/Anti-Abuse Filter:
