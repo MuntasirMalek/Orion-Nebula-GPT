@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { AVAILABLE_MODELS, DEFAULT_MODEL_ID, ModelOption, isModelUnlocked } from "../config";
+import { AVAILABLE_MODELS, DEFAULT_MODEL_ID, ModelOption, isModelUnlocked, getModelProviderUiStyle } from "../config";
 import { ThemeConfig } from "../themes";
 import { ChevronDown, Check, Lock } from "lucide-react";
 import { PasscodeModal } from "./PasscodeModal";
@@ -79,25 +79,6 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
     }
   };
 
-  const getProviderColorClass = (model: ModelOption) => {
-    if (model.provider === "Anthropic" || model.id.includes("claude")) {
-      return "bg-rose-50 text-rose-800 border-rose-200";
-    }
-    if (model.provider === "DeepSeek" || model.id.includes("deepseek")) {
-      return "bg-sky-50 text-sky-800 border-sky-200";
-    }
-    if (model.provider === "Mistral" || model.id.includes("mistral")) {
-      return "bg-orange-50 text-orange-800 border-orange-200";
-    }
-    if (model.provider === "Qwen" || model.id.includes("qwen")) {
-      return "bg-indigo-50 text-indigo-800 border-indigo-200";
-    }
-    if (model.provider === "Meta" || model.id.includes("meta") || model.id.includes("muse")) {
-      return "bg-blue-50 text-blue-800 border-blue-200";
-    }
-    return "bg-emerald-50 text-emerald-800 border-emerald-200";
-  };
-
   const btnBase = theme ? theme.header.badge : "text-xs font-semibold text-stone-900 bg-white hover:bg-stone-50 border border-stone-200 shadow-sm";
 
   return (
@@ -139,9 +120,9 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
 
           {/* Tag Pill */}
           <span
-            className={`hidden sm:inline-flex items-center text-[10px] tracking-tight font-semibold px-2 py-0.5 rounded-full border ${getProviderColorClass(
-              selectedModel
-            )}`}
+            className={`hidden sm:inline-flex items-center text-[10px] tracking-tight font-semibold px-2 py-0.5 rounded-full border ${
+              getModelProviderUiStyle(selectedModel).badgeClass
+            }`}
           >
             {selectedModel.tag}
           </span>
@@ -204,9 +185,9 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
 
                       <div className="flex items-center gap-2">
                         <span
-                          className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getProviderColorClass(
-                            model
-                          )}`}
+                          className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                            getModelProviderUiStyle(model).badgeClass
+                          }`}
                         >
                           {model.tag}
                         </span>

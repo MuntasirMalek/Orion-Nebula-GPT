@@ -8,13 +8,16 @@ export interface ModelLogoProps {
 }
 
 /**
- * High-fidelity, 100% authentic official branded badge tiles matching official platforms (OpenRouter, OpenAI, Anthropic, DeepSeek):
- * 1. DeepSeek V4 / V4.1 Flash: Official cobalt blue circular badge with white leaping whale inside
+ * High-fidelity, 100% authentic official branded badge tiles matching official platforms:
+ * 1. DeepSeek-V4.1-Flash-1017: Official cobalt blue circular badge with white leaping whale inside
  * 2. Opus 5.5 / Claude: Official terracotta/clay rounded square badge with white Claude sunburst inside
- * 3. Mistral AI: Official warm orange rounded square tile with white cascading Mistral blocks
- * 4. Alibaba Qwen: Official royal violet rounded squircle tile with white Qwen Mobius loop (centered)
- * 5. Meta AI: Official electric blue rounded squircle tile with white Meta infinity ribbon
- * 6. GPT-6 Astra / OpenAI: Official emerald green & white badge with white OpenAI vortex knot centered
+ * 3. Zhipu AI GLM-5.3-Flash: Official dark squircle badge with white stylized Z
+ * 4. Moonshot AI Kimi K3.1 Pro: Official obsidian rounded squircle badge with crisp white crescent moon & star mark
+ * 5. NVIDIA Nemotron 3.5 Super VL: Official NVIDIA lime green rounded squircle badge with white optical spiral
+ * 6. Mistral AI: Official warm orange rounded square tile with white cascading Mistral blocks
+ * 7. Alibaba Qwen: Official royal violet rounded squircle tile with white Qwen Mobius loop (centered)
+ * 8. Meta AI: Official electric blue rounded squircle tile with white Meta infinity ribbon
+ * 9. GPT-6 Astra / OpenAI: Official emerald green & white badge with white OpenAI vortex knot centered
  */
 export const ModelLogo: React.FC<ModelLogoProps> = ({
   modelId = "",
@@ -129,7 +132,80 @@ export const ModelLogo: React.FC<ModelLogoProps> = ({
     );
   }
 
-  // 5. Meta AI (Official Meta electric blue rounded squircle badge)
+  // 5. Zhipu AI GLM (Official dark squircle badge with white stylized Z)
+  if (normalized.includes("glm") || normalized.includes("zhipu") || normalized.includes("z-ai")) {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 32 32"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={`shrink-0 drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)] ${className}`}
+        aria-label="GLM Zhipu AI Official Badge"
+      >
+        <rect x="2" y="2" width="28" height="28" rx="7" fill="#262626" />
+        <g fill="#ffffff">
+          <path d="M6.5 7.7H16.3L14.5 9.9H6.5V7.7Z" />
+          <path d="M17.8 7.7H25.7L14.0 24.3H6.1L17.8 7.7Z" />
+          <path d="M17.3 22.1H25.3V24.3H15.5L17.3 22.1Z" />
+        </g>
+      </svg>
+    );
+  }
+
+  // 6. Moonshot AI Kimi (Obsidian crescent moon & star squircle badge)
+  if (normalized.includes("kimi") || normalized.includes("moonshot")) {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 32 32"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={`shrink-0 drop-shadow-[0_1px_3px_rgba(30,27,75,0.4)] ${className}`}
+        aria-label="Kimi Moonshot AI Official Badge"
+      >
+        <defs>
+          <linearGradient id="kimiBg" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#1e1b4b" />
+            <stop offset="100%" stopColor="#0f172a" />
+          </linearGradient>
+        </defs>
+        <rect x="2" y="2" width="28" height="28" rx="7" fill="url(#kimiBg)" />
+        <path
+          d="M17.8 8.2a8.2 8.2 0 1 0 6.8 12.8 6.8 6.8 0 0 1-6.8-12.8Z"
+          fill="#ffffff"
+        />
+        <path
+          d="M21.5 8.5l.8 2.1 2.1.8-2.1.8-.8 2.1-.8-2.1-2.1-.8 2.1-.8.8-2.1Z"
+          fill="#ffffff"
+        />
+      </svg>
+    );
+  }
+
+  // 7. NVIDIA Nemotron (Official NVIDIA signature lime green badge)
+  if (normalized.includes("nemotron") || normalized.includes("nvidia")) {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 32 32"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={`shrink-0 drop-shadow-[0_1px_3px_rgba(118,185,0,0.35)] ${className}`}
+        aria-label="NVIDIA Nemotron Official Badge"
+      >
+        <rect x="2" y="2" width="28" height="28" rx="7" fill="#76b900" />
+        <g transform="translate(6, 7.5) scale(0.85)" fill="#ffffff">
+          <path d="M11.76 2.05C6.46 2.05 2.14 6.32 2.14 11.58c0 4.19 2.76 7.74 6.6 8.97v-2.31c-2.65-.99-4.54-3.5-4.54-6.66 0-3.87 3.16-7.01 7.06-7.01 2.87 0 5.34 1.71 6.44 4.17h2.37c-1.25-3.66-4.75-6.69-8.31-6.69zm0 4.2c-2.95 0-5.34 2.37-5.34 5.33 0 2.45 1.63 4.51 3.87 5.12v-2.18c-1.04-.47-1.78-1.54-1.78-2.94 0-1.76 1.43-3.19 3.25-3.19 1.4 0 2.59.88 3.03 2.13h2.36c-.55-2.48-2.73-4.27-5.39-4.27zm0 4.19c-.64 0-1.16.51-1.16 1.14 0 .63.52 1.14 1.16 1.14.64 0 1.16-.51 1.16-1.14 0-.63-.52-1.14-1.16-1.14z" />
+        </g>
+      </svg>
+    );
+  }
+
+  // 8. Meta AI (Official Meta electric blue rounded squircle badge)
   if (normalized.includes("meta") || normalized.includes("muse")) {
     return (
       <svg

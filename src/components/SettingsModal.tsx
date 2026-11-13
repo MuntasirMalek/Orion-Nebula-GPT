@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { AppSettings } from "../types";
-import { DEFAULT_BACKEND_URL, DEFAULT_SYSTEM_PROMPT, AVAILABLE_MODELS, DEFAULT_MODEL_ID, ModelOption, isModelUnlocked } from "../config";
+import { DEFAULT_BACKEND_URL, DEFAULT_SYSTEM_PROMPT, AVAILABLE_MODELS, DEFAULT_MODEL_ID, ModelOption, isModelUnlocked, getModelProviderUiStyle } from "../config";
 import { PasscodeModal } from "./PasscodeModal";
 import { ModelNameLabel } from "./ModelNameLabel";
 import {
@@ -124,8 +124,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {AVAILABLE_MODELS.map((model) => {
                 const isSelected = selectedModel === model.id;
-                const isClaude = model.id.includes("claude");
-                const isDeepSeek = model.id.includes("deepseek");
+                const uiStyle = getModelProviderUiStyle(model);
                 const isLocked = Boolean(
                   model.requiresPasscode && !isModelUnlocked(model.id, model.defaultEffort || reasoningEffort)
                 );
@@ -146,11 +145,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     }}
                     className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                       isSelected
-                        ? isClaude
-                          ? "bg-rose-50/90 border-rose-400 shadow-sm"
-                          : isDeepSeek
-                          ? "bg-sky-50/90 border-sky-400 shadow-sm"
-                          : "bg-emerald-50/90 border-emerald-400 shadow-sm"
+                        ? uiStyle.selectedCardClass
                         : "bg-white/60 hover:bg-white border-slate-200"
                     }`}
                   >
@@ -162,19 +157,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         {isLocked && <Lock className="w-3 h-3 text-stone-400 inline ml-1 -mt-0.5 align-middle" />}
                       </div>
                       {isSelected && (
-                        <Check className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${
-                          isClaude ? "text-rose-600" : isDeepSeek ? "text-sky-600" : "text-emerald-600"
-                        }`} />
+                        <Check className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${uiStyle.checkClass}`} />
                       )}
                     </div>
                     <span
-                      className={`inline-block text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${
-                        isClaude
-                          ? "bg-rose-50 text-rose-900 border-rose-200"
-                          : isDeepSeek
-                          ? "bg-sky-50 text-sky-900 border-sky-200"
-                          : "bg-emerald-50 text-emerald-950 border-emerald-200"
-                      }`}
+                      className={`inline-block text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${uiStyle.badgeClass}`}
                     >
                       {model.tag}
                     </span>

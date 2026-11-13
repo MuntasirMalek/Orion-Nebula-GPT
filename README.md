@@ -56,8 +56,9 @@ The interface pairs cutting-edge AI inference capabilities with a **Raycast Pear
 ### 1. Frontier Multi-Model Suite & Tiered Access Control
 - **OpenAI GPT-6 Astra & GPT-6.1 Sol**: Next-generation reasoning and multi-step cognitive planning with granular thinking depth calibration (**Low**, **Medium**, **High**).
 - **Anthropic Claude Opus 5.5**: Flagship cognitive synthesis, code architecture analysis, and nuanced natural language comprehension.
-- **Qwen 3.8 Max & Omni-Flash**: High-throughput frontier reasoning and omni multimodal speed engines.
-- **Mistral Large 2512**: Multilingual reasoning, deep context recall, and deterministic code generation.
+- **DeepSeek-V4.1-Flash-1017 & GLM-5.3-Flash**: High-speed reasoning and coding intelligence engines.
+- **Kimi K3.1 Pro & NVIDIA Nemotron 3.5 Super VL**: Long-context synthesis and multimodal vision-language reasoning engines.
+- **Qwen 3.8 Max, Omni-Flash & Mistral Large 2512**: High-throughput frontier reasoning, multilingual depth, and deterministic code generation.
 
 ### 2. Cloudflare Workers Edge Gateway
 - **Zero Client Credential Exposure**: API keys and upstream tokens are securely retained in serverless edge environment variables; no secrets are ever bundled or transmitted to the client.

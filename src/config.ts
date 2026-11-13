@@ -1,13 +1,16 @@
 /**
  * Global configuration for Orion Nebula GPT.
  * Supports:
- * 1. DeepSeek V4 Flash (Passcode Protected)
- * 2. Qwen 3.8 Omni Flash (Passcode Protected)
- * 3. Qwen 3.8 Max (Passcode Protected)
- * 4. Mistral Large 3 (Passcode Protected)
- * 5. OpenAI GPT-6 Astra (Low, Medium, High thinking - GPT Tier)
- * 6. OpenAI GPT-6.1 Sol (Low, Medium, High thinking - GPT Tier)
- * 7. Anthropic Claude Opus 5.5 (Low, Medium, High thinking - Claude Tier)
+ * 1. DeepSeek-V4.1-Flash-1017 (Passcode Protected)
+ * 2. GLM-5.3-Flash (Passcode Protected)
+ * 3. Kimi K3.1 Pro (Passcode Protected)
+ * 4. Nemotron 3.5 Super VL (Passcode Protected)
+ * 5. Qwen 3.8 Omni Flash (Passcode Protected)
+ * 6. Qwen 3.8 Max (Passcode Protected)
+ * 7. Mistral Large 3 (Passcode Protected)
+ * 8. OpenAI GPT-6 Astra (Low, Medium, High thinking - GPT Tier)
+ * 9. OpenAI GPT-6.1 Sol (Low, Medium, High thinking - GPT Tier)
+ * 10. Anthropic Claude Opus 5.5 (Low, Medium, High thinking - Claude Tier)
  *
  * SECURITY NOTE:
  * Passcodes are verified server-side on the Serverless Gateway / Cloudflare Worker.
@@ -15,15 +18,84 @@
  * keeping the open-source GitHub repository and GitHub Pages 100% clean and secure.
  */
 
+export type ModelProvider =
+  | "OpenAI"
+  | "Anthropic"
+  | "DeepSeek"
+  | "Mistral"
+  | "Qwen"
+  | "Meta"
+  | "Zhipu"
+  | "Moonshot"
+  | "NVIDIA";
+
 export interface ModelOption {
   id: string;
   name: string;
   tag: string;
-  provider: "OpenAI" | "Anthropic" | "DeepSeek" | "Mistral" | "Qwen" | "Meta";
+  provider: ModelProvider;
   description: string;
   contextWindow: string;
   requiresPasscode: boolean;
   defaultEffort?: "low" | "medium" | "high";
+}
+
+export interface ProviderUiStyle {
+  badgeClass: string;
+  selectedCardClass: string;
+  checkClass: string;
+}
+
+const PROVIDER_UI_STYLES: Record<ModelProvider, ProviderUiStyle> = {
+  Anthropic: {
+    badgeClass: "bg-rose-50 text-rose-800 border-rose-200",
+    selectedCardClass: "bg-rose-50/90 border-rose-400 shadow-sm",
+    checkClass: "text-rose-600",
+  },
+  DeepSeek: {
+    badgeClass: "bg-sky-50 text-sky-800 border-sky-200",
+    selectedCardClass: "bg-sky-50/90 border-sky-400 shadow-sm",
+    checkClass: "text-sky-600",
+  },
+  Zhipu: {
+    badgeClass: "bg-zinc-100 text-zinc-800 border-zinc-300",
+    selectedCardClass: "bg-zinc-50/90 border-zinc-400 shadow-sm",
+    checkClass: "text-zinc-700",
+  },
+  Moonshot: {
+    badgeClass: "bg-violet-50 text-violet-800 border-violet-200",
+    selectedCardClass: "bg-violet-50/90 border-violet-400 shadow-sm",
+    checkClass: "text-violet-600",
+  },
+  NVIDIA: {
+    badgeClass: "bg-lime-50 text-lime-800 border-lime-300",
+    selectedCardClass: "bg-lime-50/90 border-lime-500 shadow-sm",
+    checkClass: "text-lime-700",
+  },
+  Mistral: {
+    badgeClass: "bg-orange-50 text-orange-800 border-orange-200",
+    selectedCardClass: "bg-orange-50/90 border-orange-400 shadow-sm",
+    checkClass: "text-orange-600",
+  },
+  Qwen: {
+    badgeClass: "bg-indigo-50 text-indigo-800 border-indigo-200",
+    selectedCardClass: "bg-indigo-50/90 border-indigo-400 shadow-sm",
+    checkClass: "text-indigo-600",
+  },
+  Meta: {
+    badgeClass: "bg-blue-50 text-blue-800 border-blue-200",
+    selectedCardClass: "bg-blue-50/90 border-blue-400 shadow-sm",
+    checkClass: "text-blue-600",
+  },
+  OpenAI: {
+    badgeClass: "bg-emerald-50 text-emerald-800 border-emerald-200",
+    selectedCardClass: "bg-emerald-50/90 border-emerald-400 shadow-sm",
+    checkClass: "text-emerald-600",
+  },
+};
+
+export function getModelProviderUiStyle(model: Pick<ModelOption, "id" | "provider">): ProviderUiStyle {
+  return PROVIDER_UI_STYLES[model.provider] || PROVIDER_UI_STYLES.OpenAI;
 }
 
 export type PasscodeTier = "claude" | "gpt" | "other";
@@ -50,18 +122,51 @@ export function getModelPasscodeTier(modelId: string): PasscodeTier {
 }
 
 export const AVAILABLE_MODELS: ModelOption[] = [
-  // 1. DeepSeek V4 Flash
+  // 1. DeepSeek-V4.1-Flash-1017
   {
-    id: "deepseek-v4-flash",
-    name: "DeepSeek V4 Flash",
+    id: "deepseek/deepseek-v4.1-flash-1017",
+    name: "DeepSeek-V4.1-Flash-1017",
     tag: "DeepSeek",
     provider: "DeepSeek",
-    description: "High-speed reasoning and code intelligence engine.",
+    description: "High-speed DeepSeek V4.1 reasoning and code intelligence engine.",
     contextWindow: "128,000 Tokens",
     requiresPasscode: true,
   },
 
-  // 2. Qwen 3.8 Omni Flash
+  // 2. GLM-5.3-Flash
+  {
+    id: "z-ai/glm-5.3-flash",
+    name: "GLM-5.3-Flash",
+    tag: "Zhipu AI",
+    provider: "Zhipu",
+    description: "High-speed GLM-5.3 reasoning and coding flash engine.",
+    contextWindow: "128,000 Tokens",
+    requiresPasscode: true,
+  },
+
+  // 3. Kimi K3.1 Pro
+  {
+    id: "moonshotai/kimi-k3.1-pro",
+    name: "Kimi K3.1 Pro",
+    tag: "Moonshot AI",
+    provider: "Moonshot",
+    description: "Flagship Kimi K3.1 Pro engine for deep analysis and long-context reasoning.",
+    contextWindow: "256,000 Tokens",
+    requiresPasscode: true,
+  },
+
+  // 4. Nemotron 3.5 Super VL
+  {
+    id: "nvidia/nemotron-3.5-super-vl:free",
+    name: "Nemotron 3.5 Super VL",
+    tag: "NVIDIA",
+    provider: "NVIDIA",
+    description: "NVIDIA multimodal Nemotron 3.5 Super vision-language reasoning engine.",
+    contextWindow: "1,000,000 Tokens",
+    requiresPasscode: true,
+  },
+
+  // 5. Qwen 3.8 Omni Flash
   {
     id: "qwen/qwen3.8-omni-flash:free",
     name: "Qwen 3.8 Omni Flash",
@@ -72,7 +177,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     requiresPasscode: true,
   },
 
-  // 3. Qwen 3.8 Max
+  // 6. Qwen 3.8 Max
   {
     id: "qwen/qwen3.8-max:free",
     name: "Qwen 3.8 Max",
@@ -83,7 +188,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     requiresPasscode: true,
   },
 
-  // 4. Mistral Large 3
+  // 7. Mistral Large 3
   {
     id: "mistralai/mistral-large-2512",
     name: "Mistral Large 3",

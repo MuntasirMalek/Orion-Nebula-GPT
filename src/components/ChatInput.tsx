@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ArrowUp, Square, ChevronUp, Check, Paperclip, X, Lock, FileText, FileCode, Loader2, Code2 } from "lucide-react";
-import { AVAILABLE_MODELS, DEFAULT_MODEL_ID, ModelOption, isModelUnlocked } from "../config";
+import { AVAILABLE_MODELS, DEFAULT_MODEL_ID, ModelOption, isModelUnlocked, getModelProviderUiStyle } from "../config";
 import { ThemeConfig } from "../themes";
 import { AttachedDocument } from "../types";
 import { processFile, isImageFile, isPdfFile, isTextFile, formatBytes } from "../utils/fileAttachment";
@@ -492,24 +492,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                           model.requiresPasscode && !isModelUnlocked(model.id, model.defaultEffort || reasoningEffort)
                         );
 
-                        const getTagStyle = () => {
-                          if (model.provider === "Anthropic" || model.id.includes("claude")) {
-                            return "bg-rose-50 text-rose-800 border-rose-200";
-                          }
-                          if (model.provider === "DeepSeek" || model.id.includes("deepseek")) {
-                            return "bg-sky-50 text-sky-800 border-sky-200";
-                          }
-                          if (model.provider === "Mistral" || model.id.includes("mistral")) {
-                            return "bg-orange-50 text-orange-800 border-orange-200";
-                          }
-                          if (model.provider === "Qwen" || model.id.includes("qwen")) {
-                            return "bg-indigo-50 text-indigo-800 border-indigo-200";
-                          }
-                          if (model.provider === "Meta" || model.id.includes("meta") || model.id.includes("muse")) {
-                            return "bg-blue-50 text-blue-800 border-blue-200";
-                          }
-                          return "bg-emerald-50 text-emerald-800 border-emerald-200";
-                        };
+                        const badgeClass = getModelProviderUiStyle(model).badgeClass;
 
                         return (
                           <button
@@ -549,7 +532,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                               </div>
                               <div className="pt-0.5">
                                 <span
-                                  className={`inline-block text-[10px] tracking-tight font-semibold px-2 py-0.5 rounded-full border ${getTagStyle()}`}
+                                  className={`inline-block text-[10px] tracking-tight font-semibold px-2 py-0.5 rounded-full border ${badgeClass}`}
                                 >
                                   {model.tag}
                                 </span>
