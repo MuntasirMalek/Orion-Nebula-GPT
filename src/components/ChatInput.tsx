@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { ArrowUp, Square, ChevronUp, Check, Paperclip, FolderPlus, FolderCode, X, Lock, FileText, FileCode, Loader2, Code2 } from "lucide-react";
+import { ArrowUp, Square, ChevronUp, Check, Paperclip, FolderPlus, FolderCode, X, FileText, FileCode, Loader2, Code2 } from "lucide-react";
+import { LockIcon } from "./LockIcon";
 import { AVAILABLE_MODELS, DEFAULT_MODEL_ID, ModelOption, isModelUnlocked, getModelProviderUiStyle, getModelById } from "../config";
 import { ThemeConfig } from "../themes";
 import { AttachedDocument } from "../types";
@@ -719,7 +720,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   <ModelLogo modelId={selectedModel.id} provider={selectedModel.provider} size={15} />
                   <ModelNameLabel name={selectedModel.name} shortOnMobile={true} />
                   {isSelectedModelLocked && (
-                    <Lock className="w-3 h-3 opacity-60 shrink-0" />
+                    <LockIcon className="w-3.5 h-3.5 text-stone-900 shrink-0" />
                   )}
                   <ChevronUp
                     className={`w-3.5 h-3.5 opacity-60 transition-transform duration-150 shrink-0 ${
@@ -786,7 +787,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                                   <ModelNameLabel name={model.name} />
                                 </span>
                                 {isLocked && (
-                                  <Lock className="w-3 h-3 text-stone-400 shrink-0" />
+                                  <LockIcon className="w-3.5 h-3.5 text-stone-900 shrink-0" />
                                 )}
                               </div>
                               <div className="pt-0.5">

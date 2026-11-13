@@ -17,6 +17,7 @@ import {
   Keyboard,
   Code2,
 } from "lucide-react";
+import { LockIcon } from "./LockIcon";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -155,7 +156,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         <span className="text-xs font-bold text-slate-900 leading-snug">
                           <ModelNameLabel name={model.name} />
                         </span>
-                        {isLocked && <Lock className="w-3 h-3 text-stone-400 inline ml-1 -mt-0.5 align-middle" />}
+                        {isLocked && <LockIcon className="w-3.5 h-3.5 text-slate-900 inline ml-1.5 -mt-0.5 align-middle" />}
                       </div>
                       {isSelected && (
                         <Check className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${uiStyle.checkClass}`} />

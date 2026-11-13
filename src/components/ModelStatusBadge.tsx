@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { AVAILABLE_MODELS, DEFAULT_MODEL_ID, ModelOption, isModelUnlocked, getModelProviderUiStyle, getModelById } from "../config";
 import { ThemeConfig } from "../themes";
-import { ChevronDown, Check, Lock } from "lucide-react";
+import { ChevronDown, Check } from "lucide-react";
+import { LockIcon } from "./LockIcon";
 import { PasscodeModal } from "./PasscodeModal";
 import { ModelNameLabel } from "./ModelNameLabel";
 import { ModelLogo } from "./ModelLogo";
@@ -114,7 +115,7 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
             <ModelNameLabel name={selectedModel.name} shortOnMobile={true} />
           </span>
           {isSelectedLocked && (
-            <Lock className="w-3 h-3 opacity-60 shrink-0" />
+            <LockIcon className="w-3.5 h-3.5 text-stone-900 shrink-0" />
           )}
 
           {/* Tag Pill */}
@@ -174,7 +175,7 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
                             <ModelNameLabel name={model.name} />
                           </span>
                           {isLocked && (
-                            <Lock className="w-3 h-3 text-stone-400 shrink-0" />
+                            <LockIcon className="w-3.5 h-3.5 text-stone-900 shrink-0" />
                           )}
                         </div>
                         {isSelected && (
