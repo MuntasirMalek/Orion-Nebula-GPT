@@ -45,7 +45,7 @@
 
 ## Overview
 
-**Orion Nebula GPT** is a high-performance web interface engineered for researchers, engineers, and AI practitioners. Designed around a decoupled, privacy-first edge architecture, it connects users with flagship AI models (**OpenAI GPT-6 Astra**, **Anthropic Claude Opus 5.5**, and **Qwen 3.8 Max**) through a low-latency **Cloudflare Workers** edge gateway.
+**Orion Nebula GPT** is a high-performance web interface engineered for researchers, engineers, and AI practitioners. Designed around a decoupled, privacy-first edge architecture, it connects users with **NVIDIA Nemotron 3.5 Super VL** (unlocked out of the box for instant evaluation) alongside **OpenAI GPT-6 Astra & GPT-6.1 Sol**, **Anthropic Claude Opus 5.5**, **DeepSeek-V4.1-Flash-1017**, **GLM-5.3-Flash**, **Kimi K3.1 Pro**, **Qwen 3.8**, and **Mistral Large 3** through a low-latency **Cloudflare Workers** edge gateway.
 
 The interface pairs cutting-edge AI inference capabilities with a **Raycast Pearl**-inspired aesthetic: native 4K Hubble Orion Nebula optical imagery, translucent frosted-glass panels, and responsive typography.
 
@@ -54,11 +54,12 @@ The interface pairs cutting-edge AI inference capabilities with a **Raycast Pear
 ## Key Highlights & Capabilities
 
 ### 1. Multi-Model Suite & Tiered Access Control
+- **NVIDIA Nemotron 3.5 Super VL (Default Unlocked)**: Works immediately out of the box with zero API key or passcode required for multimodal vision-language reasoning.
 - **OpenAI GPT-6 Astra & GPT-6.1 Sol**: Next-generation reasoning and multi-step cognitive planning with granular thinking depth calibration (**Low**, **Medium**, **High**).
 - **Anthropic Claude Opus 5.5**: Flagship cognitive synthesis, code architecture analysis, and nuanced natural language comprehension.
 - **DeepSeek-V4.1-Flash-1017 & GLM-5.3-Flash**: High-speed reasoning and coding intelligence engines.
-- **Kimi K3.1 Pro & NVIDIA Nemotron 3.5 Super VL**: Long-context synthesis and multimodal vision-language reasoning engines.
-- **Qwen 3.8 Max, Omni-Flash & Mistral Large 2512**: High-throughput reasoning, multilingual depth, and deterministic code generation.
+- **Kimi K3.1 Pro**: Long-context synthesis and deep analytical reasoning engine.
+- **Qwen 3.8 Max, Omni-Flash & Mistral Large 3**: High-throughput reasoning, multilingual depth, and deterministic code generation.
 
 ### 2. Cloudflare Workers Edge Gateway
 - **Zero Client Credential Exposure**: API keys and upstream tokens are securely retained in serverless edge environment variables; no secrets are ever bundled or transmitted to the client.
@@ -68,10 +69,10 @@ The interface pairs cutting-edge AI inference capabilities with a **Raycast Pear
 ### 3. Full-Context Multi-Turn Memory
 - Full conversation history is forwarded across turns without artificial question-count cutoffs, preserving earlier files, code, and reasoning context throughout your session.
 
-### 4. Multimodal Vision & Attachment Pipeline
-- Seamless input via drag-and-drop, system file picker, or direct clipboard paste (`Cmd + V` / `Ctrl + V`).
-- Ingests study materials, system architecture diagrams, mathematical equations, and raw code files.
-- Built-in HTML5 canvas optimization automatically scales images down to preserve quota while maintaining maximum OCR fidelity.
+### 4. Multimodal Vision, Project Folder & Attachment Pipeline
+- **Interactive Project Folder Upload & File Inspector**: Attach an entire codebase via drag-and-drop, File System Access API (`showDirectoryPicker`), or browser directory fallback — automatically filters build/secret files, displays total file & line counts, and lets you inspect/toggle individual files before sending.
+- Seamless file & image input via drag-and-drop, system file picker, or direct clipboard paste (`Cmd + V` / `Ctrl + V`) for PDFs, code files, diagrams, and math equations.
+- Built-in HTML5 canvas optimization automatically scales large images cleanly while maintaining OCR clarity.
 
 ### 5. Zero-Server Client Privacy & Data Ownership
 - **100% Client-Side Storage**: All conversations, custom titles, and reasoning traces live strictly inside the user's browser `localStorage`.

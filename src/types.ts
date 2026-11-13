@@ -47,20 +47,6 @@ export interface AppSettings {
   systemPrompt: string;
   autoScroll: boolean;
   selectedModel: string;
-  maxContextMessages: number; // 0 sends full conversation history without pruning
-  reasoningEffort?: "low" | "medium" | "high"; // Thinking depth control for GPT-6 Astra & Claude
+  reasoningEffort?: "low" | "medium" | "high"; // Thinking depth control for reasoning models
   sendKeyMode?: "enter" | "cmd_enter"; // Advanced setting: Enter vs Cmd+Enter to send
-}
-
-export interface BalanceInfo {
-  consumption: number;
-  currency: string;
-  timestamp?: string;
-}
-
-export interface HealthCheckResult {
-  status: "online" | "offline" | "error";
-  latencyMs?: number;
-  model?: string;
-  message?: string;
 }

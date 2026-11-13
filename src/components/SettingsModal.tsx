@@ -56,7 +56,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       backendUrl: DEFAULT_BACKEND_URL,
       temperature,
       systemPrompt,
-      maxContextMessages: 0,
       sendKeyMode,
     });
     onClose();

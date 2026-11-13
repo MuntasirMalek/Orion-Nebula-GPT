@@ -40,7 +40,7 @@ export async function* parseEventStream(
           trimmed.includes("aliyun_waf")
         ) {
           throw new Error(
-            "Upstream firewall challenge detected. Please ensure the latest orion-nebula-gpt-backend.zip is deployed to Netlify."
+            "Upstream firewall challenge detected. Please check the Cloudflare Worker edge gateway deployment."
           );
         }
         hasCheckedWaf = true;

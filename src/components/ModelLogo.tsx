@@ -211,7 +211,7 @@ export const ModelLogo: React.FC<ModelLogoProps> = ({
   }
 
   // 8. Meta AI (Official Meta electric blue rounded squircle badge)
-  if (normalized.includes("meta") || normalized.includes("muse")) {
+  if (normalized.includes("meta")) {
     return (
       <svg
         width={size}

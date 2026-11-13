@@ -1,4 +1,4 @@
-import { Message, HealthCheckResult, BalanceInfo } from "../types";
+import { Message } from "../types";
 import { DEFAULT_MODEL_ID, getModelById, getStoredAccessCodeForModel } from "../config";
 import { parseEventStream } from "./streamParser";
 
@@ -8,14 +8,13 @@ interface SendChatParams {
   model?: string;
   systemPrompt?: string;
   temperature?: number;
-  maxContextMessages?: number;
   reasoningEffort?: "low" | "medium" | "high";
   signal?: AbortSignal;
   onChunk: (chunk: string) => void;
 }
 
 /**
- * Sends a conversation to the Orion Nebula GPT backend proxy and streams the response.
+ * Sends a conversation to the Orion Nebula GPT Cloudflare Worker gateway and streams the response.
  * Implements:
  * 1. Multimodal Vision payloads (OpenAI standard image_url).
  * 2. Full-context multi-turn conversation forwarding (no automatic history pruning).
@@ -27,7 +26,6 @@ export async function streamChatCompletion({
   model,
   systemPrompt,
   temperature = 0.7,
-  maxContextMessages: _maxContextMessages = 0,
   reasoningEffort = "medium",
   signal,
   onChunk,
@@ -292,101 +290,5 @@ export async function streamChatCompletion({
   for await (const chunk of parseEventStream(response, signal)) {
     onChunk(chunk);
   }
-}
-
-/**
- * Diagnostic tool to check connectivity and latency with the Orion Nebula GPT backend proxy.
- */
-export async function testBackendHealth(backendUrl: string): Promise<HealthCheckResult> {
-  const url = backendUrl.trim();
-  if (!url) {
-    return {
-      status: "offline",
-      message: "No Backend Proxy URL provided.",
-    };
-  }
-
-  const startTime = performance.now();
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 7000);
-
-  try {
-    const res = await fetch(url, {
-      method: "GET",
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-
-    const latencyMs = Math.round(performance.now() - startTime);
-
-    if (res.ok) {
-      const data = await res.json().catch(() => ({}));
-      return {
-        status: "online",
-        latencyMs,
-        model: data.model || "gpt-6-astra",
-        message: data.gatewayConfigured
-          ? "Connected & Gateway Authenticated"
-          : "Connected to Proxy (Verify Gateway Keys)",
-      };
-    } else {
-      return {
-        status: "error",
-        latencyMs,
-        message: `HTTP ${res.status} response from proxy`,
-      };
-    }
-  } catch (err: any) {
-    clearTimeout(timeoutId);
-    return {
-      status: "offline",
-      message: err.name === "AbortError" ? "Connection timed out (7s)" : "Network connection failed",
-    };
-  }
-}
-
-/**
- * Stealth Balance & Quota Checker.
- * Communicates strictly with your Netlify backend proxy.
- * Upstream provider names and credentials are never exposed to the client.
- */
-export async function fetchBalanceInfo(backendUrl: string): Promise<BalanceInfo | null> {
-  const urlStr = backendUrl.trim();
-  if (!urlStr) return null;
-
-  try {
-    const url = new URL(urlStr);
-    url.searchParams.set("action", "balance");
-
-    const res = await fetch(url.toString(), {
-      method: "GET",
-      headers: {
-        "Accept": "application/json",
-      },
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      if (data) {
-        if (typeof data.consumption === "number") {
-          return {
-            consumption: data.consumption,
-            currency: data.currency || "USD",
-            timestamp: data.timestamp,
-          };
-        }
-        if (typeof data.total_usage === "number") {
-          return {
-            consumption: Number((data.total_usage / 100).toFixed(2)),
-            currency: "USD",
-            timestamp: data.timestamp,
-          };
-        }
-      }
-    }
-  } catch {
-    // Graceful fallback if proxy is unreachable
-  }
-  return null;
 }
 
