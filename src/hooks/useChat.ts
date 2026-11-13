@@ -222,10 +222,14 @@ export function useChat() {
         if (content.length > 0) {
           newTitle = content.slice(0, 32).trim() + (content.length > 32 ? "..." : "");
         } else if (hasDocs && documents[0]) {
-          newTitle =
-            documents.length > 1
-              ? `${documents[0].name.slice(0, 22).trim()} +${documents.length - 1} files`
-              : documents[0].name.slice(0, 32).trim();
+          if (documents.length === 1 && documents[0].type === "folder") {
+            newTitle = `${documents[0].name.slice(0, 20).trim()}/ (${documents[0].fileCount || 0} files)`;
+          } else {
+            newTitle =
+              documents.length > 1
+                ? `${documents[0].name.slice(0, 22).trim()} +${documents.length - 1} files`
+                : documents[0].name.slice(0, 32).trim();
+          }
         } else {
           newTitle = "Vision Analysis";
         }

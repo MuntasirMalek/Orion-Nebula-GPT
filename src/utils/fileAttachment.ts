@@ -26,15 +26,67 @@ export function generateAttachmentId(): string {
   return "att_" + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
 }
 
-// Common text-based and vibe-coding file extensions
+// Common text-based and coding file extensions
 const TEXT_EXTENSIONS = new Set([
-  "txt", "text", "md", "markdown", "json", "csv", "tsv", "xml", "yaml", "yml",
-  "html", "htm", "css", "scss", "sass", "less", "js", "jsx", "mjs", "cjs",
-  "ts", "tsx", "py", "pyw", "c", "cpp", "cc", "cxx", "h", "hpp", "java",
-  "go", "rs", "sql", "sh", "bash", "zsh", "env", "log", "ini", "toml",
-  "conf", "config", "tex", "bib", "diff", "patch", "svg", "graphql", "gql",
-  "prisma", "dockerfile", "makefile", "r", "swift", "kt", "kts", "rb", "php"
+  "txt", "text", "md", "mdx", "markdown", "rst", "adoc", "json", "jsonc", "json5",
+  "csv", "tsv", "xml", "yaml", "yml", "html", "htm", "css", "scss", "sass", "less",
+  "js", "jsx", "mjs", "cjs", "ts", "tsx", "mts", "cts", "vue", "svelte", "astro",
+  "py", "pyw", "pyi", "ipynb", "c", "cpp", "cc", "cxx", "h", "hpp", "hh", "java",
+  "go", "mod", "sum", "rs", "sql", "sh", "bash", "zsh", "fish", "ps1", "bat", "cmd",
+  "env", "example", "sample", "template", "log", "ini", "toml", "cfg", "conf", "config",
+  "tex", "bib", "diff", "patch", "svg", "graphql", "gql", "prisma", "proto",
+  "dockerfile", "makefile", "cmake", "gradle", "properties", "r", "rmd", "jl",
+  "swift", "kt", "kts", "rb", "erb", "php", "cs", "fs", "vb", "lua", "dart",
+  "ex", "exs", "erl", "hrl", "hs", "lhs", "scala", "clj", "cljs", "edn", "elm",
+  "pl", "pm", "zig", "nim", "v", "sol", "tf", "tfvars", "hcl", "nix", "lock"
 ]);
+
+// Known text/coding filenames without a standard extension
+const TEXT_FILENAMES = new Set([
+  "dockerfile", "makefile", "gnumakefile", "procfile", "justfile", "jenkinsfile",
+  "vagrantfile", "gemfile", "rakefile", "podfile", "fastfile", "brewfile",
+  "cmakelists.txt", "license", "licence", "readme", "changelog", "authors",
+  "notice", "contributing", "codeowners", ".gitignore", ".gitattributes",
+  ".gitmodules", ".dockerignore", ".editorconfig", ".nvmrc", ".npmrc", ".yarnrc",
+  ".prettierrc", ".eslintrc", ".babelrc", ".browserslistrc", ".env.example",
+  ".env.sample", ".env.template"
+]);
+
+// Known binary/media/compiled extensions (never attempt UTF-8 text decode)
+const BINARY_EXTENSIONS = new Set([
+  "png", "jpg", "jpeg", "gif", "webp", "bmp", "ico", "icns", "tiff", "tif", "avif", "heic", "heif",
+  "mp3", "mp4", "wav", "ogg", "flac", "m4a", "aac", "wma", "mov", "avi", "mkv", "webm", "m4v", "flv",
+  "woff", "woff2", "ttf", "otf", "eot",
+  "zip", "tar", "gz", "tgz", "bz2", "xz", "7z", "rar", "dmg", "iso", "img",
+  "exe", "dll", "so", "dylib", "bin", "o", "a", "lib", "obj", "class", "jar", "war", "ear",
+  "pyc", "pyo", "pyd", "wasm", "sqlite", "sqlite3", "db", "mdb", "pdb", "ilk", "suo",
+  "nupkg", "whl", "egg", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "odt", "ods", "psd", "ai", "sketch", "fig"
+]);
+
+export function getFileExtension(filename: string): string {
+  const baseName = filename.split("/").pop()?.toLowerCase() || "";
+  if (!baseName.includes(".")) return "";
+  return baseName.split(".").pop() || "";
+}
+
+export function isKnownBinaryFile(filename: string): boolean {
+  const ext = getFileExtension(filename);
+  return ext ? BINARY_EXTENSIONS.has(ext) : false;
+}
+
+export function containsBinaryBytes(text: string): boolean {
+  const sample = text.slice(0, 4096);
+  if (!sample) return false;
+  let replacementOrControl = 0;
+  for (let i = 0; i < sample.length; i++) {
+    const code = sample.charCodeAt(i);
+    if (code === 0) return true; // NUL byte is definitive binary indicator
+    if ((code < 9 || (code > 13 && code < 32)) && code !== 27) {
+      replacementOrControl++;
+    }
+  }
+  return replacementOrControl / sample.length > 0.08;
+}
 
 export function isTextFile(file: File): boolean {
   if (file.type && (
@@ -49,9 +101,10 @@ export function isTextFile(file: File): boolean {
   )) {
     return true;
   }
-  const name = file.name.toLowerCase();
-  if (name.endsWith(".txt") || name.endsWith(".text")) return true;
-  const ext = name.split(".").pop();
+  const baseName = file.name.toLowerCase();
+  if (TEXT_FILENAMES.has(baseName)) return true;
+  if (baseName.endsWith(".txt") || baseName.endsWith(".text")) return true;
+  const ext = getFileExtension(baseName);
   return ext ? TEXT_EXTENSIONS.has(ext) : false;
 }
 
@@ -170,20 +223,26 @@ export async function processFile(file: File): Promise<ProcessedAttachment> {
     }
   }
 
-  if (isTextFile(file) || file.size < 5 * 1024 * 1024) {
+  if (isTextFile(file) || (!isKnownBinaryFile(file.name) && file.size < 5 * 1024 * 1024)) {
     // Treat as text or code document
     try {
       let text = await processTextFile(file);
+      if (containsBinaryBytes(text)) {
+        throw new Error(`Unsupported binary file: ${file.name}`);
+      }
       if (text.length > MAX_DOCUMENT_CHARS) {
         text = text.slice(0, MAX_DOCUMENT_CHARS) + `\n\n[Note: File truncated to first ${MAX_DOCUMENT_CHARS} characters]`;
       }
       const lineCount = text.split("\n").length;
-      const ext = file.name.split(".").pop()?.toLowerCase();
+      const ext = getFileExtension(file.name);
       const isCode = [
-        "js", "jsx", "ts", "tsx", "py", "html", "css", "scss", "json", "sql",
-        "sh", "bash", "zsh", "rs", "go", "c", "cpp", "h", "hpp", "java", "php",
-        "rb", "swift", "kt", "diff", "patch", "xml", "yaml", "yml"
-      ].includes(ext || "");
+        "js", "jsx", "mjs", "cjs", "ts", "tsx", "mts", "cts", "vue", "svelte", "astro",
+        "py", "pyw", "pyi", "html", "htm", "css", "scss", "sass", "less", "json", "jsonc",
+        "sql", "sh", "bash", "zsh", "ps1", "rs", "go", "c", "cpp", "cc", "h", "hpp",
+        "java", "php", "rb", "swift", "kt", "kts", "cs", "fs", "lua", "dart", "ex", "exs",
+        "scala", "clj", "zig", "nim", "sol", "tf", "hcl", "proto", "prisma", "graphql",
+        "gql", "diff", "patch", "xml", "yaml", "yml", "toml", "ini"
+      ].includes(ext);
 
       return {
         id,

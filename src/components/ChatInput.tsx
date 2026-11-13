@@ -1,10 +1,20 @@
 import React, { useState, useRef, useEffect } from "react";
-import { ArrowUp, Square, ChevronUp, Check, Paperclip, X, Lock, FileText, FileCode, Loader2, Code2 } from "lucide-react";
+import { ArrowUp, Square, ChevronUp, Check, Paperclip, FolderPlus, FolderCode, X, Lock, FileText, FileCode, Loader2, Code2 } from "lucide-react";
 import { AVAILABLE_MODELS, DEFAULT_MODEL_ID, ModelOption, isModelUnlocked, getModelProviderUiStyle } from "../config";
 import { ThemeConfig } from "../themes";
 import { AttachedDocument } from "../types";
 import { processFile, isImageFile, isPdfFile, isTextFile, formatBytes } from "../utils/fileAttachment";
+import {
+  FolderAttachmentDraft,
+  FolderImportResult,
+  captureDropPayload,
+  processCapturedDropDirectories,
+  processDirectoryHandle,
+  processFolderFileList,
+  rebuildFolderDraft,
+} from "../utils/folderAttachment";
 import { PasscodeModal } from "./PasscodeModal";
+import { FolderInspectorModal } from "./FolderInspectorModal";
 import { ModelNameLabel } from "./ModelNameLabel";
 import { ModelLogo } from "./ModelLogo";
 
@@ -36,6 +46,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const [text, setText] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const [documents, setDocuments] = useState<AttachedDocument[]>([]);
+  const [folderDrafts, setFolderDrafts] = useState<Record<string, FolderAttachmentDraft>>({});
+  const [inspectingFolderId, setInspectingFolderId] = useState<string | null>(null);
+  const [attachmentNotice, setAttachmentNotice] = useState<{ message: string; tone: "info" | "warn" } | null>(null);
   const [isParsingFiles, setIsParsingFiles] = useState(false);
   const [showVibePrompts, setShowVibePrompts] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -45,6 +58,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modelMenuRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
 
   const selectedModel =
     AVAILABLE_MODELS.find((m) => m.id === currentModelId) || AVAILABLE_MODELS[0];
@@ -98,17 +112,162 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (folderInputRef.current) {
+      folderInputRef.current.setAttribute("webkitdirectory", "");
+      folderInputRef.current.setAttribute("directory", "");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!attachmentNotice) return;
+    const timer = setTimeout(() => setAttachmentNotice(null), 6500);
+    return () => clearTimeout(timer);
+  }, [attachmentNotice]);
+
   const removeImage = (indexToRemove: number) => {
     setImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
   const removeDocument = (indexToRemove: number) => {
+    const targetDoc = documents[indexToRemove];
     setDocuments((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+    if (targetDoc?.type === "folder") {
+      setFolderDrafts((prev) => {
+        const next = { ...prev };
+        delete next[targetDoc.id];
+        return next;
+      });
+      if (inspectingFolderId === targetDoc.id) {
+        setInspectingFolderId(null);
+      }
+    }
   };
 
   const clearAllAttachments = () => {
     setImages([]);
     setDocuments([]);
+    setFolderDrafts({});
+    setInspectingFolderId(null);
+  };
+
+  const applyFolderResults = (results: FolderImportResult[]) => {
+    const newDocs: AttachedDocument[] = [];
+    const newDrafts: Record<string, FolderAttachmentDraft> = {};
+    const errors: string[] = [];
+
+    for (const res of results) {
+      if (res.draft) {
+        newDocs.push(res.draft.document);
+        newDrafts[res.draft.id] = res.draft;
+      } else if (res.error) {
+        errors.push(res.error);
+      }
+    }
+
+    if (newDocs.length > 0) {
+      setFolderDrafts((prev) => ({ ...prev, ...newDrafts }));
+      setDocuments((prev) => {
+        const existingKeys = new Set(
+          prev.map((d) => `${d.type}:${d.name}:${d.size}:${d.fileCount || 0}`)
+        );
+        const uniqueNew = newDocs.filter(
+          (d) => !existingKeys.has(`${d.type}:${d.name}:${d.size}:${d.fileCount || 0}`)
+        );
+        return [...prev, ...uniqueNew];
+      });
+
+      const primary = newDocs[0];
+      const skippedText =
+        primary.skippedSummary && primary.skippedSummary.length > 0
+          ? ` (excluded ${primary.skippedSummary.join(", ")})`
+          : "";
+      setAttachmentNotice({
+        message:
+          newDocs.length === 1
+            ? `Attached ${primary.name}/ — ${primary.fileCount} files${skippedText}`
+            : `Attached ${newDocs.length} folders`,
+        tone: primary.skippedSummary?.some((s) => s.includes("context limit")) ? "warn" : "info",
+      });
+    } else if (errors.length > 0) {
+      setAttachmentNotice({
+        message: errors[0],
+        tone: "warn",
+      });
+    }
+  };
+
+  const updateFolderDraft = (folderId: string, updater: (draft: FolderAttachmentDraft) => FolderAttachmentDraft) => {
+    const current = folderDrafts[folderId];
+    if (!current) return;
+    const updated = updater(current);
+    setFolderDrafts((prev) => ({ ...prev, [folderId]: updated }));
+    setDocuments((prev) =>
+      prev.map((doc) => (doc.id === folderId ? updated.document : doc))
+    );
+  };
+
+  const handleToggleFolderFile = (folderId: string, filePath: string) => {
+    updateFolderDraft(folderId, (draft) => {
+      const nextEntries = draft.entries.map((entry) =>
+        entry.path === filePath && !entry.budgetOmitted
+          ? { ...entry, included: !entry.included }
+          : entry
+      );
+      return rebuildFolderDraft(draft, nextEntries);
+    });
+  };
+
+  const handleSetAllFolderFiles = (folderId: string, included: boolean) => {
+    updateFolderDraft(folderId, (draft) => {
+      const nextEntries = draft.entries.map((entry) =>
+        entry.budgetOmitted ? entry : { ...entry, included }
+      );
+      return rebuildFolderDraft(draft, nextEntries);
+    });
+  };
+
+  const handleRemoveFolderById = (folderId: string) => {
+    const idx = documents.findIndex((d) => d.id === folderId);
+    if (idx !== -1) removeDocument(idx);
+  };
+
+  const handleFolderButtonClick = async () => {
+    if (typeof (window as any).showDirectoryPicker === "function") {
+      try {
+        const dirHandle = await (window as any).showDirectoryPicker({ mode: "read" });
+        setIsParsingFiles(true);
+        try {
+          const result = await processDirectoryHandle(dirHandle);
+          applyFolderResults([result]);
+        } finally {
+          setIsParsingFiles(false);
+        }
+        return;
+      } catch (err: any) {
+        if (err?.name === "AbortError") return;
+      }
+    }
+    folderInputRef.current?.click();
+  };
+
+  const handleFolderInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const selectedFiles = Array.from(e.target.files);
+      e.target.value = "";
+      setIsParsingFiles(true);
+      try {
+        const result = await processFolderFileList(selectedFiles);
+        applyFolderResults([result]);
+      } catch (err: any) {
+        setAttachmentNotice({
+          message: err?.message || "Failed to read selected folder.",
+          tone: "warn",
+        });
+      } finally {
+        setIsParsingFiles(false);
+      }
+    }
   };
 
   const handleFiles = async (files: FileList | File[]) => {
@@ -221,11 +380,45 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     setIsDragging(false);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    if (e.dataTransfer?.files) {
-      handleFiles(e.dataTransfer.files);
+    if (!e.dataTransfer) return;
+
+    const payload = captureDropPayload(e.dataTransfer);
+    if (payload.directoryEntries.length > 0) {
+      setIsParsingFiles(true);
+      try {
+        const folderResults = await processCapturedDropDirectories(payload.directoryEntries);
+        applyFolderResults(folderResults);
+      } catch (err: any) {
+        setAttachmentNotice({
+          message: err?.message || "Failed to read dropped folder.",
+          tone: "warn",
+        });
+      } finally {
+        setIsParsingFiles(false);
+      }
+      if (payload.looseFiles.length > 0) {
+        await handleFiles(payload.looseFiles);
+      }
+      return;
+    }
+
+    if (payload.looseFiles.length > 0) {
+      await handleFiles(payload.looseFiles);
+    }
+  };
+
+  const resetComposer = () => {
+    setText("");
+    setImages([]);
+    setDocuments([]);
+    setFolderDrafts({});
+    setInspectingFolderId(null);
+    setAttachmentNotice(null);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
     }
   };
 
@@ -253,12 +446,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       images.length > 0 ? images : undefined,
       documents.length > 0 ? documents : undefined
     );
-    setText("");
-    setImages([]);
-    setDocuments([]);
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-    }
+    resetComposer();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -292,6 +480,16 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         multiple
         className="hidden"
       />
+      {/* Hidden Folder Input fallback for browsers without showDirectoryPicker (Safari/Firefox) */}
+      <input
+        type="file"
+        ref={folderInputRef}
+        onChange={handleFolderInputChange}
+        webkitdirectory=""
+        directory=""
+        multiple
+        className="hidden"
+      />
 
       <form onSubmit={handleSubmit} className="relative">
         <div
@@ -309,7 +507,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 { label: "🚀 Full Component", prompt: "Build a complete, drop-in React + Tailwind component for " },
                 { label: "🐞 Fix Bug", prompt: "Analyze and fix the error in this code: " },
                 { label: "⚡ Refactor", prompt: "Refactor this code for cleaner architecture and maximum performance: " },
-                { label: "📂 Multi-File Review", prompt: "Review all attached files together, explain how they interact, and provide any fixes or improvements across files: " },
+                { label: "📂 Folder / Multi-File Review", prompt: "Review the attached folder structure and files together, explain how they interact, and provide any fixes or improvements across files: " },
                 { label: "🧪 Write Tests", prompt: "Write comprehensive unit tests with edge cases for " },
                 { label: "📝 Explain Code", prompt: "Explain how this code works step-by-step: " },
               ].map((item) => (
@@ -329,59 +527,111 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             </div>
           )}
 
-          {/* File & Image Preview Chips (Shown above textarea if files or pictures are attached) */}
+          {/* Folder / File Import Status Notice */}
+          {attachmentNotice && (
+            <div className="px-3 pt-2.5">
+              <div
+                className={`flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl text-[11px] border ${
+                  attachmentNotice.tone === "warn"
+                    ? "bg-amber-50/90 border-amber-200 text-amber-900"
+                    : "bg-cyan-50/90 border-cyan-200 text-cyan-900"
+                }`}
+              >
+                <span className="truncate">{attachmentNotice.message}</span>
+                <button
+                  type="button"
+                  onClick={() => setAttachmentNotice(null)}
+                  className="shrink-0 opacity-60 hover:opacity-100 cursor-pointer"
+                  title="Dismiss"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* File, Folder & Image Preview Chips (Shown above textarea if attached) */}
           {(images.length > 0 || documents.length > 0 || isParsingFiles) && (
             <div className="flex flex-col gap-1.5 p-3 pb-0">
-              {documents.length + images.length > 1 && (
+              {documents.length + images.length > 0 && (documents.length + images.length > 1 || documents.some((d) => d.type === "folder")) && (
                 <div className="flex items-center justify-between px-0.5 text-[11px] text-slate-500">
                   <span className="font-semibold text-cyan-700">
-                    {documents.length + images.length} files attached
+                    {documents.length + images.length} {documents.length + images.length === 1 ? "attachment" : "attachments"}
                   </span>
                   <button
                     type="button"
                     onClick={clearAllAttachments}
                     className="text-slate-400 hover:text-rose-600 font-medium transition-colors cursor-pointer"
-                    title="Remove all attached files"
+                    title="Remove all attachments"
                   >
                     Clear all
                   </button>
                 </div>
               )}
               <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none]">
-                {/* Document Chips */}
-                {documents.map((doc, idx) => (
-                  <div
-                    key={doc.id || idx}
-                    className="relative group shrink-0 inline-flex items-center gap-2.5 pl-2.5 pr-8 py-2 rounded-xl bg-slate-50/90 border border-slate-200/90 shadow-xs text-xs text-slate-800"
-                  >
-                    <div className={`p-1.5 rounded-lg flex items-center justify-center ${doc.type === "pdf" ? "bg-rose-50 text-rose-600 border border-rose-100" : "bg-cyan-50 text-cyan-700 border border-cyan-100"}`}>
-                      {doc.type === "pdf" ? (
-                        <FileText className="w-4 h-4 text-rose-500" />
-                      ) : (
-                        <FileCode className="w-4 h-4 text-cyan-600" />
-                      )}
-                    </div>
-                    <div className="flex flex-col min-w-0 pr-1">
-                      <span className="font-semibold truncate max-w-[130px] sm:max-w-[180px] text-slate-800" title={doc.name}>
-                        {doc.name}
-                      </span>
-                      <span className="text-[10px] text-slate-500">
-                        {doc.type === "pdf" ? "PDF" : doc.name.split(".").pop()?.toUpperCase() || "TXT"}
-                        {doc.pageCount ? ` · ${doc.pageCount} ${doc.pageCount === 1 ? 'page' : 'pages'}` : ""}
-                        {doc.lineCount ? ` · ${doc.lineCount} ${doc.lineCount === 1 ? 'line' : 'lines'}` : ""}
-                        {doc.size ? ` · ${formatBytes(doc.size)}` : ""}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeDocument(idx)}
-                      className="absolute top-1.5 right-1.5 p-1 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                      title="Remove file"
+                {/* Document & Folder Chips */}
+                {documents.map((doc, idx) => {
+                  const isFolder = doc.type === "folder";
+                  const isPdf = doc.type === "pdf";
+                  const canInspect = isFolder && Boolean(folderDrafts[doc.id]);
+
+                  return (
+                    <div
+                      key={doc.id || idx}
+                      onClick={canInspect ? () => setInspectingFolderId(doc.id) : undefined}
+                      title={canInspect ? "Click to inspect or filter files in this folder" : doc.name}
+                      className={`relative group shrink-0 inline-flex items-center gap-2.5 pl-2.5 pr-8 py-2 rounded-xl bg-slate-50/90 border shadow-xs text-xs text-slate-800 transition-colors ${
+                        canInspect
+                          ? "border-amber-200/90 hover:border-amber-400 hover:bg-amber-50/40 cursor-pointer"
+                          : "border-slate-200/90"
+                      }`}
                     >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))}
+                      <div
+                        className={`p-1.5 rounded-lg flex items-center justify-center ${
+                          isFolder
+                            ? "bg-amber-50 text-amber-700 border border-amber-200/90"
+                            : isPdf
+                            ? "bg-rose-50 text-rose-600 border border-rose-100"
+                            : "bg-cyan-50 text-cyan-700 border border-cyan-100"
+                        }`}
+                      >
+                        {isFolder ? (
+                          <FolderCode className="w-4 h-4 text-amber-600" />
+                        ) : isPdf ? (
+                          <FileText className="w-4 h-4 text-rose-500" />
+                        ) : (
+                          <FileCode className="w-4 h-4 text-cyan-600" />
+                        )}
+                      </div>
+                      <div className="flex flex-col min-w-0 pr-1">
+                        <span className="font-semibold truncate max-w-[140px] sm:max-w-[190px] text-slate-800" title={doc.name}>
+                          {isFolder ? `${doc.name}/` : doc.name}
+                        </span>
+                        <span className="text-[10px] text-slate-500">
+                          {isFolder
+                            ? `${doc.fileCount ?? 0} ${doc.fileCount === 1 ? "file" : "files"} · Inspect`
+                            : isPdf
+                            ? "PDF"
+                            : doc.name.split(".").pop()?.toUpperCase() || "TXT"}
+                          {doc.pageCount ? ` · ${doc.pageCount} ${doc.pageCount === 1 ? "page" : "pages"}` : ""}
+                          {doc.lineCount ? ` · ${doc.lineCount.toLocaleString()} ${doc.lineCount === 1 ? "line" : "lines"}` : ""}
+                          {doc.size ? ` · ${formatBytes(doc.size)}` : ""}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeDocument(idx);
+                        }}
+                        className="absolute top-1.5 right-1.5 p-1 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                        title={isFolder ? "Remove folder" : "Remove file"}
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  );
+                })}
 
                 {/* Parsing Indicator */}
                 {isParsingFiles && (
@@ -416,11 +666,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="shrink-0 w-16 h-16 rounded-xl border border-dashed border-slate-300 hover:border-cyan-500 hover:bg-cyan-50/50 flex flex-col items-center justify-center text-slate-400 hover:text-cyan-700 transition-colors gap-1"
+                  className="shrink-0 w-16 h-16 rounded-xl border border-dashed border-slate-300 hover:border-cyan-500 hover:bg-cyan-50/50 flex flex-col items-center justify-center text-slate-400 hover:text-cyan-700 transition-colors gap-1 cursor-pointer"
                   title="Add more files (.py, .txt, .pdf, code, or pictures)"
                 >
                   <Paperclip className="w-4 h-4" />
-                  <span className="text-[10px] font-medium">+Add</span>
+                  <span className="text-[10px] font-medium">+File</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleFolderButtonClick}
+                  className="shrink-0 w-16 h-16 rounded-xl border border-dashed border-slate-300 hover:border-amber-500 hover:bg-amber-50/50 flex flex-col items-center justify-center text-slate-400 hover:text-amber-700 transition-colors gap-1 cursor-pointer"
+                  title="Insert another project folder"
+                >
+                  <FolderPlus className="w-4 h-4" />
+                  <span className="text-[10px] font-medium">+Folder</span>
                 </button>
               </div>
             </div>
@@ -436,7 +696,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             placeholder={
               isMobile
                 ? `Message ${selectedModel.name}...`
-                : `Message ${selectedModel.name} (attach multiple .py, .txt, PDF, code or pictures)...`
+                : `Message ${selectedModel.name} (attach files, project folders, PDFs or pictures)...`
             }
             rows={1}
             disabled={disabled}
@@ -580,6 +840,16 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 <Paperclip className="w-4 h-4" />
               </button>
 
+              <button
+                type="button"
+                onClick={handleFolderButtonClick}
+                disabled={isParsingFiles || disabled}
+                className="p-2 rounded-xl text-slate-500 hover:text-amber-700 hover:bg-amber-50/90 active:scale-95 transition-all cursor-pointer disabled:opacity-40"
+                title="Insert project folder (preserves file tree & relative paths)"
+              >
+                <FolderPlus className="w-4 h-4" />
+              </button>
+
               {isStreaming ? (
                 <button
                   type="button"
@@ -636,17 +906,28 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               images.length > 0 ? images : undefined,
               documents.length > 0 ? documents : undefined
             );
-            setText("");
-            setImages([]);
-            setDocuments([]);
-            if (textareaRef.current) {
-              textareaRef.current.style.height = "auto";
-            }
+            resetComposer();
           }
         }}
         targetModel={passcodeTarget}
         targetModelName={passcodeTarget?.name}
         reasoningEffort={reasoningEffort}
+      />
+
+      {/* Interactive Folder Files Inspector Modal */}
+      <FolderInspectorModal
+        isOpen={Boolean(inspectingFolderId && folderDrafts[inspectingFolderId])}
+        onClose={() => setInspectingFolderId(null)}
+        draft={inspectingFolderId ? folderDrafts[inspectingFolderId] : null}
+        onToggleFile={(path) => {
+          if (inspectingFolderId) handleToggleFolderFile(inspectingFolderId, path);
+        }}
+        onSetAllFiles={(included) => {
+          if (inspectingFolderId) handleSetAllFolderFiles(inspectingFolderId, included);
+        }}
+        onRemoveFolder={() => {
+          if (inspectingFolderId) handleRemoveFolderById(inspectingFolderId);
+        }}
       />
     </div>
   );

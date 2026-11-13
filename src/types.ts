@@ -1,10 +1,22 @@
+export interface AttachedFolderFile {
+  path: string;
+  size: number;
+  lineCount?: number;
+  pageCount?: number;
+  truncated?: boolean;
+}
+
 export interface AttachedDocument {
   id: string;
   name: string;
-  type: "pdf" | "text" | "code";
+  type: "pdf" | "text" | "code" | "folder";
   size: number;
   pageCount?: number;
   lineCount?: number;
+  fileCount?: number;
+  skippedCount?: number;
+  skippedSummary?: string[];
+  folderFiles?: AttachedFolderFile[];
   extractedText?: string;
 }
 

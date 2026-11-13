@@ -99,6 +99,19 @@ export async function streamChatCompletion({
       const totalDocs = validDocs.length;
       const docHeaders = validDocs
         .map((d, index) => {
+          const indexPrefix = totalDocs > 1 ? ` ${index + 1}/${totalDocs}` : "";
+
+          if (d.type === "folder") {
+            const folderMeta = [
+              d.fileCount ? `${d.fileCount} ${d.fileCount === 1 ? "file" : "files"}` : "",
+              d.lineCount ? `${d.lineCount.toLocaleString()} lines` : "",
+            ]
+              .filter(Boolean)
+              .join(", ");
+            const metaInfo = folderMeta ? ` (${folderMeta})` : "";
+            return `[Attached Project Folder${indexPrefix}: ${d.name}/${metaInfo}]\n${d.extractedText}\n[End of Folder ${d.name}/]`;
+          }
+
           const ext = d.name.includes(".") ? d.name.split(".").pop()?.toLowerCase() || "" : "";
           const typeLabel =
             d.type === "pdf"
@@ -110,7 +123,6 @@ export async function streamChatCompletion({
           if (d.pageCount) metaParts.push(`${d.pageCount} ${d.pageCount === 1 ? "page" : "pages"}`);
           if (d.lineCount) metaParts.push(`${d.lineCount} ${d.lineCount === 1 ? "line" : "lines"}`);
           const metaInfo = metaParts.length > 0 ? ` (${metaParts.join(", ")})` : "";
-          const indexPrefix = totalDocs > 1 ? ` ${index + 1}/${totalDocs}` : "";
           const body =
             d.type === "pdf" || ext === "txt" || ext === ""
               ? d.extractedText
@@ -120,10 +132,12 @@ export async function streamChatCompletion({
         .join("\n\n");
 
       if (docHeaders) {
-        const defaultPrompt =
-          totalDocs > 1
-            ? `Please analyze and review these ${totalDocs} attached files (${validDocs.map((d) => d.name).join(", ")}).`
-            : "Please analyze, summarize, or explain the attached file.";
+        const hasFolder = validDocs.some((d) => d.type === "folder");
+        const defaultPrompt = hasFolder
+          ? `Please analyze the attached folder${totalDocs > 1 ? "s and files" : ""} (${validDocs.map((d) => d.type === "folder" ? `${d.name}/` : d.name).join(", ")}), explain the project structure and how components interact, and point out any bugs or improvements.`
+          : totalDocs > 1
+          ? `Please analyze and review these ${totalDocs} attached files (${validDocs.map((d) => d.name).join(", ")}).`
+          : "Please analyze, summarize, or explain the attached file.";
         textContent = textContent.trim()
           ? `${docHeaders}\n\n${textContent.trim()}`
           : `${docHeaders}\n\n${defaultPrompt}`;
