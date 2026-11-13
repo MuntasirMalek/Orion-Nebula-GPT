@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AppSettings } from "../types";
 import { DEFAULT_BACKEND_URL, DEFAULT_SYSTEM_PROMPT } from "../config";
 import {
@@ -19,6 +19,11 @@ interface SettingsModalProps {
   onSave: (newSettings: AppSettings) => void;
 }
 
+const sanitizeSystemPrompt = (prompt?: string): string =>
+  prompt?.includes("You are a premier") && prompt?.includes("intelligence model")
+    ? ""
+    : prompt || "";
+
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
@@ -26,13 +31,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onSave,
 }) => {
   const [temperature, setTemperature] = useState(settings.temperature);
-  const [systemPrompt, setSystemPrompt] = useState(
-    settings.systemPrompt?.includes("You are a premier") &&
-      settings.systemPrompt?.includes("intelligence model")
-      ? ""
-      : settings.systemPrompt || ""
-  );
+  const [systemPrompt, setSystemPrompt] = useState(() => sanitizeSystemPrompt(settings.systemPrompt));
   const [sendKeyMode, setSendKeyMode] = useState<"enter" | "cmd_enter">(settings.sendKeyMode || "enter");
+
+  useEffect(() => {
+    if (isOpen) {
+      setTemperature(settings.temperature);
+      setSystemPrompt(sanitizeSystemPrompt(settings.systemPrompt));
+      setSendKeyMode(settings.sendKeyMode || "enter");
+    }
+  }, [isOpen, settings.temperature, settings.systemPrompt, settings.sendKeyMode]);
 
   if (!isOpen) return null;
 

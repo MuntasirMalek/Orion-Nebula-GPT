@@ -41,7 +41,7 @@ export function useChat() {
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Auto-migrate legacy cached prompt and model to DeepSeek V4 default
+  // Auto-migrate legacy cached prompt and active default model whenever DEFAULT_MODEL_ID changes
   useEffect(() => {
     if (
       settings.systemPrompt &&
@@ -220,6 +220,8 @@ export function useChat() {
         ...(hasDocs ? { documents } : {}),
       };
 
+      const activeModelId = currentSession.model || settings.selectedModel || DEFAULT_MODEL_ID;
+
       const assistantMsgId = generateId();
       const initialAssistantMsg: Message = {
         id: assistantMsgId,
@@ -227,7 +229,7 @@ export function useChat() {
         content: "",
         timestamp: Date.now(),
         isStreaming: true,
-        model: settings.selectedModel,
+        model: activeModelId,
       };
 
       // Auto title session from first user message if title is default
@@ -296,7 +298,7 @@ export function useChat() {
         await streamChatCompletion({
           backendUrl: DEFAULT_BACKEND_URL,
           messages: historyWithUser,
-          model: currentSession.model || settings.selectedModel || DEFAULT_MODEL_ID,
+          model: activeModelId,
           systemPrompt: settings.systemPrompt,
           temperature: settings.temperature,
           maxContextMessages: settings.maxContextMessages ?? 0,

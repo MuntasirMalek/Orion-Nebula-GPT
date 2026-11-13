@@ -22,7 +22,7 @@ export function getShortModelName(name: string): string {
   if (name.includes("Qwen 3.8 Omni Flash")) return "Qwen Omni";
   if (name.includes("Qwen 3.8 Max")) return "Qwen Max";
   if (name.includes("Mistral Large")) return "Mistral Large";
-  if (name.includes("Claude 4.5 Sonnet")) return "Claude 4.5";
+  if (name.includes("GPT-6 Astra")) return "GPT-6 Astra";
   if (name.includes("GPT-6.1 Sol")) return "GPT-6.1";
   if (name.includes("Claude Opus 5.5")) return "Opus 5.5";
   return name;
