@@ -18,10 +18,8 @@ interface SendChatParams {
  * Sends a conversation to the Orion Nebula GPT backend proxy and streams the response.
  * Implements:
  * 1. Multimodal Vision payloads (OpenAI standard image_url).
- * 2. Sliding window token pruning:
- *    - For flagship reasoning models (GPT-6 Astra & Claude Opus 5.5), kicks in strictly after the 3rd question (keeps latest 6 messages).
- *    - For other models, maintains generous context window (8 messages).
- * 3. Thinking depth control (reasoning_effort) for GPT-6 Astra.
+ * 2. Full-context multi-turn conversation forwarding (no automatic history pruning).
+ * 3. Thinking depth control (reasoning_effort) for reasoning models.
  */
 export async function streamChatCompletion({
   backendUrl,
@@ -29,7 +27,7 @@ export async function streamChatCompletion({
   model,
   systemPrompt,
   temperature = 0.7,
-  maxContextMessages: _maxContextMessages = 16,
+  maxContextMessages: _maxContextMessages = 0,
   reasoningEffort = "medium",
   signal,
   onChunk,
@@ -60,22 +58,8 @@ export async function streamChatCompletion({
     }
   }
 
-  // Model-specific Context Window Optimization:
-  // High-cost reasoning models (Astra / Claude): Pruning kicks in directly at Question 3 (max 3 messages = 1 prior Q&A turn + current question) to maximize token savings.
-  // - Question 1: Sends [System, Q1]
-  // - Question 2: Sends [System, Q1, A1, Q2]
-  // - Question 3: Pruning kicks in! Drops Q1 & A1 -> Sends [System, Q2, A2, Q3]
-  // - Question 4: Drops Q2 & A2 -> Sends [System, Q3, A3, Q4]
-  // Cohort Quota Shield:
-  // - High-cost reasoning models (Astra / Claude): Pruning kicks in directly at Question 3 (max 3 messages = 1 prior Q&A turn + current question) to maximize token savings.
-  // - Standard models: Capped at 8 messages to maintain token safety while allowing fluid context.
-  const isHighCostModel = Boolean(model?.includes("astra") || model?.includes("claude"));
-  const effectiveWindow = isHighCostModel ? 3 : 8;
-
-  let windowedMessages =
-    effectiveWindow > 0 && validMessages.length > effectiveWindow
-      ? validMessages.slice(-effectiveWindow)
-      : validMessages;
+  // Send full valid conversation history without pruning earlier turns
+  let windowedMessages = validMessages;
 
   // Ensure first message after system prompt is always a user message (crucial for Claude / Anthropic compliance)
   while (windowedMessages.length > 1 && windowedMessages[0].role !== "user") {

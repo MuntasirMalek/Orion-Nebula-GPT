@@ -47,7 +47,7 @@ export interface AppSettings {
   systemPrompt: string;
   autoScroll: boolean;
   selectedModel: string;
-  maxContextMessages: number; // Token-saving context pruning (e.g. 10, 16, or 0 for full)
+  maxContextMessages: number; // 0 sends full conversation history without pruning
   reasoningEffort?: "low" | "medium" | "high"; // Thinking depth control for GPT-6 Astra & Claude
   sendKeyMode?: "enter" | "cmd_enter"; // Advanced setting: Enter vs Cmd+Enter to send
 }

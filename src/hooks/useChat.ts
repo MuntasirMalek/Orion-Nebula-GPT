@@ -15,7 +15,7 @@ export function useChat() {
     systemPrompt: DEFAULT_SYSTEM_PROMPT,
     autoScroll: true,
     selectedModel: DEFAULT_MODEL_ID,
-    maxContextMessages: 8,
+    maxContextMessages: 0,
     reasoningEffort: "low",
     sendKeyMode: "enter",
   });
@@ -299,7 +299,7 @@ export function useChat() {
           model: currentSession.model || settings.selectedModel || DEFAULT_MODEL_ID,
           systemPrompt: settings.systemPrompt,
           temperature: settings.temperature,
-          maxContextMessages: settings.maxContextMessages ?? 16,
+          maxContextMessages: settings.maxContextMessages ?? 0,
           reasoningEffort: settings.reasoningEffort || "medium",
           signal: abortController.signal,
           onChunk: (chunk: string) => {

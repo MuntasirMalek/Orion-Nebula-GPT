@@ -5,8 +5,6 @@ import {
   X,
   Sliders,
   RotateCcw,
-  Lock,
-  ShieldCheck,
   GraduationCap,
   Lightbulb,
   Zap,
@@ -50,7 +48,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       backendUrl: DEFAULT_BACKEND_URL,
       temperature,
       systemPrompt,
-      maxContextMessages: 8,
+      maxContextMessages: 0,
       sendKeyMode,
     });
     onClose();
@@ -88,22 +86,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Form Body */}
         <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
-          {/* Cohort Quota Shield (Enforced Token Guard) */}
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/90 shadow-2xs space-y-1.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span className="text-xs font-bold text-slate-800">Cohort Quota Shield</span>
-              </div>
-              <span className="text-[10px] font-mono font-semibold text-emerald-700 bg-emerald-100/80 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1">
-                <Lock className="w-2.5 h-2.5" /> Enforced
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-500 leading-relaxed">
-              Automated sliding-window token pruning is permanently locked by administrator. Expensive models (GPT-6 Astra & Claude) are strictly pruned on Question 3 to protect shared API credits and eliminate latency.
-            </p>
-          </div>
-
           {/* Send Message Shortcut (Input Ergonomics) */}
           <div className="space-y-1.5">
             <div className="flex justify-between items-center text-xs">

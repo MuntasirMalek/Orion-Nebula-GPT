@@ -65,10 +65,8 @@ The interface pairs cutting-edge AI inference capabilities with a **Raycast Pear
 - **OpenAI Responses API Bridge**: Transparently handles the transition from legacy completions to `/v1/responses`, dynamically translating server-sent event (SSE) delta chunks into smooth, real-time client streams.
 - **Global Low Latency**: Runs on Cloudflare's edge network across 300+ cities worldwide, achieving near-zero Time-to-First-Token (TTFT).
 
-### 3. Token-Saving Sliding Context Pruning
-- Reasoning models with deep thinking chains consume thousands of tokens per request.
-- Orion Nebula GPT automatically activates a **Sliding Context Window** starting on turn 3, pruning older historical turns while intelligently preserving core system prompts and recent context.
-- **Result:** Decreases token consumption by **50%–60%** without losing continuity or reasoning depth.
+### 3. Full-Context Multi-Turn Memory
+- Full conversation history is forwarded across turns without artificial question-count cutoffs, preserving earlier files, code, and reasoning context throughout your session.
 
 ### 4. Multimodal Vision & Attachment Pipeline
 - Seamless input via drag-and-drop, system file picker, or direct clipboard paste (`Cmd + V` / `Ctrl + V`).
