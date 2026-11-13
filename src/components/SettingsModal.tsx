@@ -1,14 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { AppSettings } from "../types";
-import { DEFAULT_BACKEND_URL, DEFAULT_SYSTEM_PROMPT, AVAILABLE_MODELS, DEFAULT_MODEL_ID, ModelOption, isModelUnlocked, getModelProviderUiStyle } from "../config";
-import { PasscodeModal } from "./PasscodeModal";
-import { ModelNameLabel } from "./ModelNameLabel";
+import { DEFAULT_BACKEND_URL, DEFAULT_SYSTEM_PROMPT } from "../config";
 import {
   X,
   Sliders,
   RotateCcw,
-  Check,
-  Cpu,
   Lock,
   ShieldCheck,
   GraduationCap,
@@ -17,7 +13,6 @@ import {
   Keyboard,
   Code2,
 } from "lucide-react";
-import { LockIcon } from "./LockIcon";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -39,31 +34,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       ? ""
       : settings.systemPrompt || ""
   );
-  const [selectedModel, setSelectedModel] = useState(settings.selectedModel || DEFAULT_MODEL_ID);
   const [sendKeyMode, setSendKeyMode] = useState<"enter" | "cmd_enter">(settings.sendKeyMode || "enter");
-  const [reasoningEffort, setReasoningEffort] = useState<"low" | "medium" | "high">(
-    settings.reasoningEffort || "medium"
-  );
-  const [, setUnlockTick] = useState(0);
-  const [passcodeTarget, setPasscodeTarget] = useState<ModelOption | null>(null);
-
-  useEffect(() => {
-    const handleUnlockChange = () => setUnlockTick((t) => t + 1);
-    window.addEventListener("orion-unlock-changed", handleUnlockChange);
-    window.addEventListener("storage", handleUnlockChange);
-    return () => {
-      window.removeEventListener("orion-unlock-changed", handleUnlockChange);
-      window.removeEventListener("storage", handleUnlockChange);
-    };
-  }, []);
 
   if (!isOpen) return null;
 
   const handleResetDefaults = () => {
     setTemperature(0.7);
     setSystemPrompt(DEFAULT_SYSTEM_PROMPT);
-    setSelectedModel(DEFAULT_MODEL_ID);
-    setReasoningEffort("low");
     setSendKeyMode("enter");
   };
 
@@ -73,9 +50,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       backendUrl: DEFAULT_BACKEND_URL,
       temperature,
       systemPrompt,
-      selectedModel,
       maxContextMessages: 8,
-      reasoningEffort,
       sendKeyMode,
     });
     onClose();
@@ -99,7 +74,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
             <div>
               <h2 className="text-sm font-semibold text-slate-900">System Settings</h2>
-              <p className="text-[11px] text-slate-500">Model selection and cognitive parameters</p>
+              <p className="text-[11px] text-slate-500">Cognitive parameters, persona, and input preferences</p>
             </div>
           </div>
 
@@ -113,66 +88,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Form Body */}
         <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
-
-          {/* Model Selection */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center text-xs">
-              <span className="font-semibold text-slate-800 flex items-center gap-1.5">
-                <Cpu className="w-3.5 h-3.5 text-cyan-700" />
-                <span>Model Selection</span>
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {AVAILABLE_MODELS.map((model) => {
-                const isSelected = selectedModel === model.id;
-                const uiStyle = getModelProviderUiStyle(model);
-                const isLocked = Boolean(
-                  model.requiresPasscode && !isModelUnlocked(model.id, model.defaultEffort || reasoningEffort)
-                );
-
-                return (
-                  <button
-                    key={model.id}
-                    type="button"
-                    onClick={() => {
-                      if (isLocked) {
-                        setPasscodeTarget(model);
-                        return;
-                      }
-                      if (model.defaultEffort) {
-                        setReasoningEffort(model.defaultEffort);
-                      }
-                      setSelectedModel(model.id);
-                    }}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                      isSelected
-                        ? uiStyle.selectedCardClass
-                        : "bg-white/60 hover:bg-white border-slate-200"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-1 mb-1">
-                      <div className="flex-1 min-w-0">
-                        <span className="text-xs font-bold text-slate-900 leading-snug">
-                          <ModelNameLabel name={model.name} />
-                        </span>
-                        {isLocked && <LockIcon className="w-3.5 h-3.5 text-slate-900 inline ml-1.5 -mt-0.5 align-middle" />}
-                      </div>
-                      {isSelected && (
-                        <Check className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${uiStyle.checkClass}`} />
-                      )}
-                    </div>
-                    <span
-                      className={`inline-block text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${uiStyle.badgeClass}`}
-                    >
-                      {model.tag}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           {/* Cohort Quota Shield (Enforced Token Guard) */}
           <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/90 shadow-2xs space-y-1.5">
             <div className="flex items-center justify-between">
@@ -394,30 +309,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
         </div>
       </div>
-
-      {/* Passcode Unlock Modal */}
-      <PasscodeModal
-        isOpen={Boolean(passcodeTarget)}
-        onClose={() => setPasscodeTarget(null)}
-        onSuccess={(_code, switchedModelId) => {
-          setUnlockTick((t) => t + 1);
-          const target = switchedModelId
-            ? AVAILABLE_MODELS.find((m) => m.id === switchedModelId) || passcodeTarget
-            : passcodeTarget;
-          const targetId = switchedModelId || passcodeTarget?.id;
-
-          if (target && target.defaultEffort) {
-            setReasoningEffort(target.defaultEffort);
-          }
-          if (targetId) {
-            setSelectedModel(targetId);
-          }
-          setPasscodeTarget(null);
-        }}
-        targetModel={passcodeTarget}
-        targetModelName={passcodeTarget?.name}
-        reasoningEffort={reasoningEffort}
-      />
     </div>
   );
 };
