@@ -1,14 +1,14 @@
 /**
  * Global configuration for Orion Nebula GPT.
  * Supports:
- * 1. DeepSeek V4 Flash (Default, Unlocked, Free access)
- * 2. Qwen 3.8 Omni Flash (Free, Unlocked)
- * 3. Qwen 3.8 Max (Free, Unlocked)
- * 4. Mistral Large 4 (Free, Unlocked)
- * 5. OpenAI GPT-6 Astra (Low, Medium, High thinking - Frontier Cohort)
- * 6. OpenAI GPT-6.1 Sol (Low, Medium, High thinking - Frontier Cohort)
- * 7. Anthropic Claude Opus 5.5 (Low, Medium, High thinking - Frontier Cohort)
- * 
+ * 1. DeepSeek V4 Flash (Passcode Protected)
+ * 2. Qwen 3.8 Omni Flash (Passcode Protected)
+ * 3. Qwen 3.8 Max (Passcode Protected)
+ * 4. Mistral Large 3 (Passcode Protected)
+ * 5. OpenAI GPT-6 Astra (Low, Medium, High thinking - GPT Tier)
+ * 6. OpenAI GPT-6.1 Sol (Low, Medium, High thinking - GPT Tier)
+ * 7. Anthropic Claude Opus 5.5 (Low, Medium, High thinking - Claude Tier)
+ *
  * SECURITY NOTE:
  * Passcodes are verified server-side on the Serverless Gateway / Cloudflare Worker.
  * No plaintext passcodes or secrets are stored in this frontend codebase,
@@ -26,19 +26,42 @@ export interface ModelOption {
   defaultEffort?: "low" | "medium" | "high";
 }
 
+export type PasscodeTier = "claude" | "gpt" | "other";
+
+export const PASSCODE_STORAGE_KEYS: Record<PasscodeTier, { unlocked: string; code: string }> = {
+  claude: { unlocked: "orion_v2_unlocked_claude", code: "orion_v2_code_claude" },
+  gpt: { unlocked: "orion_v2_unlocked_gpt", code: "orion_v2_code_gpt" },
+  other: { unlocked: "orion_v2_unlocked_other", code: "orion_v2_code_other" },
+};
+
+export function getModelPasscodeTier(modelId: string): PasscodeTier {
+  const normalized = (modelId || "").toLowerCase();
+  if (normalized.includes("claude") || normalized.includes("opus")) {
+    return "claude";
+  }
+  if (
+    normalized.includes("gpt") ||
+    normalized.includes("astra") ||
+    normalized.includes("sol")
+  ) {
+    return "gpt";
+  }
+  return "other";
+}
+
 export const AVAILABLE_MODELS: ModelOption[] = [
-  // 1. DeepSeek V4 Flash (Unlocked)
+  // 1. DeepSeek V4 Flash
   {
     id: "deepseek-v4-flash",
     name: "DeepSeek V4 Flash",
     tag: "DeepSeek",
     provider: "DeepSeek",
-    description: "High-speed reasoning and code intelligence engine. Free and unlocked for everyone.",
+    description: "High-speed reasoning and code intelligence engine.",
     contextWindow: "128,000 Tokens",
-    requiresPasscode: false,
+    requiresPasscode: true,
   },
 
-  // 2. Qwen 3.8 Omni Flash (Unlocked)
+  // 2. Qwen 3.8 Omni Flash
   {
     id: "qwen/qwen3.8-omni-flash:free",
     name: "Qwen 3.8 Omni Flash",
@@ -46,10 +69,10 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "Qwen",
     description: "Ultra-fast omni multimodal speed engine with instant response generation.",
     contextWindow: "128,000 Tokens",
-    requiresPasscode: false,
+    requiresPasscode: true,
   },
 
-  // 3. Qwen 3.8 Max (Unlocked)
+  // 3. Qwen 3.8 Max
   {
     id: "qwen/qwen3.8-max:free",
     name: "Qwen 3.8 Max",
@@ -57,10 +80,10 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "Qwen",
     description: "Alibaba's premier flagship reasoning engine. Exceptional math, coding, and logical reasoning.",
     contextWindow: "128,000 Tokens",
-    requiresPasscode: false,
+    requiresPasscode: true,
   },
 
-  // 4. Mistral Large 3 (Unlocked)
+  // 4. Mistral Large 3
   {
     id: "mistralai/mistral-large-2512",
     name: "Mistral Large 3",
@@ -68,10 +91,10 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     provider: "Mistral",
     description: "Mistral's flagship frontier reasoning model. Multilingual, vision-enabled, top-tier coding.",
     contextWindow: "128,000 Tokens",
-    requiresPasscode: false,
+    requiresPasscode: true,
   },
 
-  // 5. GPT-6 Astra - Frontier Cohort
+  // 5. GPT-6 Astra - GPT Tier
   {
     id: "gpt-6-astra-low",
     name: "GPT-6 Astra (Low Thinking)",
@@ -103,7 +126,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     defaultEffort: "high",
   },
 
-  // 6. GPT-6.1 Sol - Frontier Cohort
+  // 6. GPT-6.1 Sol - GPT Tier
   {
     id: "gpt-6.1-sol-low",
     name: "GPT-6.1 Sol (Low Thinking)",
@@ -135,7 +158,7 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     defaultEffort: "high",
   },
 
-  // 7. Claude Opus 5.5 - Frontier Cohort
+  // 7. Claude Opus 5.5 - Claude Tier
   {
     id: "claude-opus-5.5-low",
     name: "Claude Opus 5.5 (Low Thinking)",
@@ -170,65 +193,32 @@ export const AVAILABLE_MODELS: ModelOption[] = [
 
 export const DEFAULT_MODEL_ID = "qwen/qwen3.8-max:free";
 
-// Backward-compatible self-healing persistence for authorized user passcodes
-if (typeof window !== "undefined") {
+export function getStoredAccessCodeForModel(modelId: string): string {
+  if (typeof window === "undefined") return "";
   try {
-    const frontierCode =
-      localStorage.getItem("orion_code_frontier") ||
-      localStorage.getItem("astra_frontier_unlocked_code") ||
-      localStorage.getItem("orion_code_low") ||
-      localStorage.getItem("orion_code_medium_high");
-
-    const isFrontierUnlocked =
-      localStorage.getItem("orion_unlocked_frontier") === "true" ||
-      localStorage.getItem("astra_frontier_unlocked") === "true" ||
-      Boolean(frontierCode);
-
-    if (isFrontierUnlocked) {
-      localStorage.setItem("orion_unlocked_frontier", "true");
-      localStorage.setItem("astra_frontier_unlocked", "true");
-      if (frontierCode) {
-        localStorage.setItem("orion_code_frontier", frontierCode);
-        localStorage.setItem("astra_frontier_unlocked_code", frontierCode);
-      }
+    const tier = getModelPasscodeTier(modelId);
+    const keys = PASSCODE_STORAGE_KEYS[tier];
+    if (localStorage.getItem(keys.unlocked) === "true") {
+      return localStorage.getItem(keys.code) || "";
     }
   } catch {
     // Ignore storage errors in sandbox environments
   }
+  return "";
 }
 
 export function isModelUnlocked(modelId: string, _effort?: string): boolean {
   if (typeof window === "undefined") return false;
-
-  const target = AVAILABLE_MODELS.find((m) => m.id === modelId);
-  // Any model with requiresPasscode = false is always unlocked (DeepSeek, Mistral, Qwen, Meta)
-  if (target && !target.requiresPasscode) {
-    return true;
+  try {
+    const tier = getModelPasscodeTier(modelId);
+    const keys = PASSCODE_STORAGE_KEYS[tier];
+    return (
+      localStorage.getItem(keys.unlocked) === "true" &&
+      Boolean(localStorage.getItem(keys.code))
+    );
+  } catch {
+    return false;
   }
-
-  if (
-    modelId.includes("deepseek") ||
-    modelId.includes("mistral") ||
-    modelId.includes("qwen") ||
-    modelId.includes("free") ||
-    modelId.includes("meta") ||
-    modelId.includes("muse")
-  ) {
-    return true;
-  }
-
-  // All GPT Astra and Claude models (Low, Medium, High) require verified cohort authorization
-  const hasCode =
-    Boolean(localStorage.getItem("orion_code_frontier")) ||
-    Boolean(localStorage.getItem("astra_frontier_unlocked_code")) ||
-    Boolean(localStorage.getItem("orion_code_low")) ||
-    Boolean(localStorage.getItem("orion_code_medium_high"));
-
-  const isUnlocked =
-    localStorage.getItem("orion_unlocked_frontier") === "true" ||
-    localStorage.getItem("astra_frontier_unlocked") === "true";
-
-  return isUnlocked && hasCode;
 }
 
 // Permanent hardcoded Cloudflare Worker proxy gateway

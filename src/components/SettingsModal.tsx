@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AppSettings } from "../types";
 import { DEFAULT_BACKEND_URL, DEFAULT_SYSTEM_PROMPT, AVAILABLE_MODELS, DEFAULT_MODEL_ID, ModelOption, isModelUnlocked } from "../config";
 import { PasscodeModal } from "./PasscodeModal";
@@ -42,10 +42,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [reasoningEffort, setReasoningEffort] = useState<"low" | "medium" | "high">(
     settings.reasoningEffort || "medium"
   );
-  const [, setIsUnlocked] = useState<boolean>(
-    () => typeof window !== "undefined" && localStorage.getItem("astra_frontier_unlocked") === "true"
-  );
+  const [, setUnlockTick] = useState(0);
   const [passcodeTarget, setPasscodeTarget] = useState<ModelOption | null>(null);
+
+  useEffect(() => {
+    const handleUnlockChange = () => setUnlockTick((t) => t + 1);
+    window.addEventListener("orion-unlock-changed", handleUnlockChange);
+    window.addEventListener("storage", handleUnlockChange);
+    return () => {
+      window.removeEventListener("orion-unlock-changed", handleUnlockChange);
+      window.removeEventListener("storage", handleUnlockChange);
+    };
+  }, []);
 
   if (!isOpen) return null;
 
@@ -403,7 +411,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         isOpen={Boolean(passcodeTarget)}
         onClose={() => setPasscodeTarget(null)}
         onSuccess={(_code, switchedModelId) => {
-          setIsUnlocked(true);
+          setUnlockTick((t) => t + 1);
           const target = switchedModelId
             ? AVAILABLE_MODELS.find((m) => m.id === switchedModelId) || passcodeTarget
             : passcodeTarget;

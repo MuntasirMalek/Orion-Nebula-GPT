@@ -16,7 +16,7 @@
 </h2>
 
 <p align="center">
-  <b>✨ Free & Unlocked • No Account or API Key Required • Real-Time Edge Streaming ✨</b>
+  <b>✨ Passcode-Protected Access • No User API Key Required • Real-Time Edge Streaming ✨</b>
 </p>
 
 <br />
@@ -53,10 +53,10 @@ The interface pairs cutting-edge AI inference capabilities with a **Raycast Pear
 
 ## Key Highlights & Capabilities
 
-### 1. Frontier Reasoning & Free Unlocked Engines
+### 1. Frontier Multi-Model Suite & Tiered Access Control
 - **OpenAI GPT-6 Astra & GPT-6.1 Sol**: Next-generation reasoning and multi-step cognitive planning with granular thinking depth calibration (**Low**, **Medium**, **High**).
 - **Anthropic Claude Opus 5.5**: Flagship cognitive synthesis, code architecture analysis, and nuanced natural language comprehension.
-- **Qwen 3.8 Max & Omni-Flash**: Unlocked high-throughput frontier reasoning engines available with zero barrier to entry.
+- **Qwen 3.8 Max & Omni-Flash**: High-throughput frontier reasoning and omni multimodal speed engines.
 - **Mistral Large 2512**: Multilingual reasoning, deep context recall, and deterministic code generation.
 
 ### 2. Cloudflare Workers Edge Gateway

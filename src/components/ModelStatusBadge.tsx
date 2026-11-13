@@ -20,14 +20,26 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
   theme,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [, setIsUnlocked] = useState<boolean>(
-    () => typeof window !== "undefined" && localStorage.getItem("astra_frontier_unlocked") === "true"
-  );
+  const [, setUnlockTick] = useState(0);
   const [passcodeTarget, setPasscodeTarget] = useState<ModelOption | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const selectedModel =
     AVAILABLE_MODELS.find((m) => m.id === currentModelId) || AVAILABLE_MODELS[0];
+  const isSelectedLocked = Boolean(
+    selectedModel.requiresPasscode && !isModelUnlocked(selectedModel.id, selectedModel.defaultEffort)
+  );
+
+  // Sync unlock state across sibling components
+  useEffect(() => {
+    const handleUnlockChange = () => setUnlockTick((t) => t + 1);
+    window.addEventListener("orion-unlock-changed", handleUnlockChange);
+    window.addEventListener("storage", handleUnlockChange);
+    return () => {
+      window.removeEventListener("orion-unlock-changed", handleUnlockChange);
+      window.removeEventListener("storage", handleUnlockChange);
+    };
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -45,12 +57,12 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
   }, []);
 
   const handleSelectModel = (model: ModelOption) => {
-    if (model.id === currentModelId) {
+    if (model.requiresPasscode && !isModelUnlocked(model.id, model.defaultEffort)) {
+      setPasscodeTarget(model);
       setIsOpen(false);
       return;
     }
-    if (model.requiresPasscode && !isModelUnlocked(model.id, model.defaultEffort)) {
-      setPasscodeTarget(model);
+    if (model.id === currentModelId) {
       setIsOpen(false);
       return;
     }
@@ -59,7 +71,7 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
   };
 
   const handlePasscodeSuccess = (_code?: string, switchedModelId?: string) => {
-    setIsUnlocked(true);
+    setUnlockTick((t) => t + 1);
     const targetId = switchedModelId || passcodeTarget?.id;
     if (targetId) {
       onSelectModel(targetId);
@@ -121,6 +133,9 @@ export const ModelStatusBadge: React.FC<ModelStatusBadgeProps> = ({
           <span className="text-[11px] sm:text-xs font-bold tracking-wide truncate max-w-[110px] xs:max-w-[145px] sm:max-w-none">
             <ModelNameLabel name={selectedModel.name} shortOnMobile={true} />
           </span>
+          {isSelectedLocked && (
+            <Lock className="w-3 h-3 opacity-60 shrink-0" />
+          )}
 
           {/* Tag Pill */}
           <span

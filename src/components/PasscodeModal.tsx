@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Lock, X, CheckCircle2, ShieldCheck, Loader2 } from "lucide-react";
-import { ModelOption } from "../config";
+import {
+  ModelOption,
+  PasscodeTier,
+  PASSCODE_STORAGE_KEYS,
+  getModelPasscodeTier,
+  DEFAULT_BACKEND_URL,
+} from "../config";
 
 interface PasscodeModalProps {
   isOpen: boolean;
@@ -54,43 +60,54 @@ export const PasscodeModal: React.FC<PasscodeModalProps> = ({
     setErrorMessage("");
 
     // Determine target tier
-    const isDeepSeekTarget = modelId.includes("deepseek");
+    const tier = getModelPasscodeTier(modelId);
 
     // Salted cryptographic hashes for authorized access tiers
     // Prevents credentials from being exposed in source code
-    const HASH_AUTH_DEEPSEEK = "922d49186cfbe2d73264530da0850e2bfebd5ff5f1dbbca3887cdd5c2c111f0b";
-    const HASH_AUTH_TIER_A = "a373b6750a7851b7e0f56fca634c454569a86a22b2f762017600bea041420074";
-    const HASH_AUTH_TIER_B = "814f76ba52f531349ec55800af3850e356bbda4352d32a057533b47b1f3eee80";
+    const TIER_HASHES: Record<PasscodeTier, string> = {
+      claude: "070456b7f99ff5b6cc610f38720b5af0a666c9ef6b25ac5fe9e258cb3ab4cff0",
+      gpt: "a373b6750a7851b7e0f56fca634c454569a86a22b2f762017600bea041420074",
+      other: "922d49186cfbe2d73264530da0850e2bfebd5ff5f1dbbca3887cdd5c2c111f0b",
+    };
+    const HASH_AUTH_MASTER = "814f76ba52f531349ec55800af3850e356bbda4352d32a057533b47b1f3eee80";
 
     let isValid = false;
 
-    try {
-      const enc = new TextEncoder().encode(`orion_frontier_salt_2026_${entered}`);
-      const buf = await crypto.subtle.digest("SHA-256", enc);
-      const enteredHash = Array.from(new Uint8Array(buf))
-        .map((b) => b.toString(16).padStart(2, "0"))
-        .join("");
+    if (typeof crypto !== "undefined" && crypto.subtle) {
+      try {
+        const enc = new TextEncoder().encode(`orion_frontier_salt_2026_${entered}`);
+        const buf = await crypto.subtle.digest("SHA-256", enc);
+        const enteredHash = Array.from(new Uint8Array(buf))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
 
-      if (isDeepSeekTarget) {
-        if (enteredHash === HASH_AUTH_DEEPSEEK) {
+        if (enteredHash === TIER_HASHES[tier] || enteredHash === HASH_AUTH_MASTER) {
           isValid = true;
-          localStorage.setItem("orion_unlocked_deepseek", "true");
-          localStorage.setItem("orion_code_deepseek", entered);
         }
-      } else {
-        if (enteredHash === HASH_AUTH_TIER_A || enteredHash === HASH_AUTH_TIER_B) {
-          isValid = true;
-          localStorage.setItem("orion_unlocked_frontier", "true");
-          localStorage.setItem("astra_frontier_unlocked", "true");
-          localStorage.setItem("orion_code_frontier", entered);
-          localStorage.setItem("astra_frontier_unlocked_code", entered);
-        }
+      } catch {
+        // Fallback to gateway verification below
       }
-    } catch {
-      // Ignore subtle crypto failure
+    } else {
+      // Fallback for non-HTTPS contexts where WebCrypto subtle API is unavailable
+      try {
+        const gateway = _backendUrl || DEFAULT_BACKEND_URL;
+        const res = await fetch(
+          `${gateway}?action=verify&model=${encodeURIComponent(modelId)}&code=${encodeURIComponent(entered)}`
+        );
+        if (res.ok) {
+          isValid = true;
+        }
+      } catch {
+        // Verification failed
+      }
     }
 
     if (isValid) {
+      const storageKeys = PASSCODE_STORAGE_KEYS[tier];
+      localStorage.setItem(storageKeys.unlocked, "true");
+      localStorage.setItem(storageKeys.code, entered);
+      window.dispatchEvent(new Event("orion-unlock-changed"));
+
       setIsSuccess(true);
       setIsVerifying(false);
 

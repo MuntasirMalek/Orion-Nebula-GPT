@@ -40,9 +40,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const [showVibePrompts, setShowVibePrompts] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
-  const [, setIsUnlocked] = useState<boolean>(
-    () => typeof window !== "undefined" && localStorage.getItem("astra_frontier_unlocked") === "true"
-  );
+  const [, setUnlockTick] = useState(0);
   const [passcodeTarget, setPasscodeTarget] = useState<ModelOption | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modelMenuRef = useRef<HTMLDivElement>(null);
@@ -50,7 +48,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   const selectedModel =
     AVAILABLE_MODELS.find((m) => m.id === currentModelId) || AVAILABLE_MODELS[0];
+  const isSelectedModelLocked = Boolean(
+    selectedModel.requiresPasscode &&
+      !isModelUnlocked(selectedModel.id, selectedModel.defaultEffort || reasoningEffort)
+  );
   const isDark = false;
+
+  useEffect(() => {
+    const handleUnlockChange = () => setUnlockTick((t) => t + 1);
+    window.addEventListener("orion-unlock-changed", handleUnlockChange);
+    window.addEventListener("storage", handleUnlockChange);
+    return () => {
+      window.removeEventListener("orion-unlock-changed", handleUnlockChange);
+      window.removeEventListener("storage", handleUnlockChange);
+    };
+  }, []);
 
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth < 640 : false
@@ -447,6 +459,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 >
                   <ModelLogo modelId={selectedModel.id} provider={selectedModel.provider} size={15} />
                   <ModelNameLabel name={selectedModel.name} shortOnMobile={true} />
+                  {isSelectedModelLocked && (
+                    <Lock className="w-3 h-3 opacity-60 shrink-0" />
+                  )}
                   <ChevronUp
                     className={`w-3.5 h-3.5 opacity-60 transition-transform duration-150 shrink-0 ${
                       isModelMenuOpen ? "rotate-180" : ""
@@ -611,7 +626,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         isOpen={Boolean(passcodeTarget)}
         onClose={() => setPasscodeTarget(null)}
         onSuccess={(_code, switchedModelId) => {
-          setIsUnlocked(true);
+          setUnlockTick((t) => t + 1);
           const effectiveModelId = switchedModelId || passcodeTarget?.id;
           const target = switchedModelId
             ? AVAILABLE_MODELS.find((m) => m.id === switchedModelId) || passcodeTarget
@@ -627,9 +642,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           }
           setPasscodeTarget(null);
 
-          // Auto-send pending message seamlessly upon unlock
+          // Auto-send pending message seamlessly when unlocking the active model
           const trimmed = text.trim();
-          if (trimmed || images.length > 0 || documents.length > 0) {
+          if (
+            (trimmed || images.length > 0 || documents.length > 0) &&
+            (!effectiveModelId || effectiveModelId === selectedModel.id)
+          ) {
             onSendMessage(
               trimmed,
               images.length > 0 ? images : undefined,

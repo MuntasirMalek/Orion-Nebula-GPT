@@ -1,4 +1,5 @@
 import { Message, HealthCheckResult, BalanceInfo } from "../types";
+import { getStoredAccessCodeForModel } from "../config";
 import { parseEventStream } from "./streamParser";
 
 interface SendChatParams {
@@ -166,28 +167,8 @@ export async function streamChatCompletion({
     "Content-Type": "application/json",
   };
 
-  // Attach user's authorized access code and gateway routing based on target model
-  const isDeepSeek = model?.includes("deepseek");
-  const isFreeModel =
-    model?.includes("mistral") ||
-    model?.includes("qwen") ||
-    model?.includes("meta") ||
-    model?.includes("muse");
-
-  let userAccessCode = "";
-  if (isDeepSeek || isFreeModel) {
-    // Unlocked models: Supply default gateway handshake token transparently in background
-    userAccessCode = localStorage.getItem("orion_code_deepseek") || atob("MTk0Nw==");
-  } else {
-    // Frontier cohort (GPT-6 Astra & Claude Opus)
-    userAccessCode =
-      localStorage.getItem("orion_code_frontier") ||
-      localStorage.getItem("astra_frontier_unlocked_code") ||
-      localStorage.getItem("orion_code_low") ||
-      localStorage.getItem("orion_code_medium_high") ||
-      atob("MTk1Mg==");
-  }
-
+  // Attach user's authorized access code for the target model tier
+  const userAccessCode = getStoredAccessCodeForModel(model || "");
   if (userAccessCode) {
     requestHeaders["x-access-code"] = userAccessCode;
   }
